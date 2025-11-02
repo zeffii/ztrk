@@ -11,6 +11,7 @@ var g_Mouse = [-1, -1];
 var g_pattern_playhead = 0;
 var g_in_edit_mode = false;
 var g_key_codes = [];
+var g_mouse_on_rect = false;
 var settings_font_size = 12;
 
 function bang(){
@@ -41,7 +42,7 @@ function key_handler(){
 }
 
 function keys(a1, a2, a3, a4) {
-    if (a1 === 32){
+    if (a1 === 32 && g_mouse_on_rect){
         g_in_edit_mode = !g_in_edit_mode;
         mgraphics.redraw();
     }
@@ -107,6 +108,7 @@ function paint(){
         mgraphics.fill();        
     }
 
+    post('mouse in rect?', g_mouse_on_rect);
 }
 
 function onclick(x, y, button){
@@ -119,3 +121,6 @@ function onclick(x, y, button){
 function ondrag(x, y, button){
     return;
 }
+
+function onidle(x, y, button, mod1, shift, caps, opt, mod2) { g_mouse_on_rect = true; }
+function onidleout(x, y, button, mod1, shift, caps, opt, mod2) { g_mouse_on_rect = false; }
