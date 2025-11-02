@@ -12,7 +12,14 @@ var g_pattern_playhead = 0;
 var g_in_edit_mode = false;
 var g_key_codes = [];
 var g_mouse_on_rect = false;
+var g_caret = [0, 0]
+
+var start_x = 30;
+var start_y = 30;
+
 var settings_font_size = 12;
+var charwidth = 8;
+var charheight = settings_font_size;
 
 function bang(){
     mgraphics.redraw();
@@ -27,16 +34,43 @@ function clear(){
     mgraphics.redraw();
 }
 
+function caret_to_location(){
+    var caret_x = start_x + ((4 + g_caret[0]) * charwidth);
+    var caret_y = start_y + (g_caret[1] * charheight);
+    return [caret_x, caret_y];
+}
+
+function set_caret(x, y){ g_caret = [x, y]; }
+
+function move_caret(direction){
+    switch (direction) {
+        case 28:  
+            if (g_caret[0] > 0){ set_caret(g_caret[0]-1, g_caret[1]); } // left
+            break;
+        case 29: 
+            if (g_caret[0] < 20){ set_caret(g_caret[0]+1, g_caret[1]); } // right
+            break;
+        case 30: 
+            if (g_caret[1] > 0){ set_caret(g_caret[0], g_caret[1]-1); } // up
+            break;
+        case 31: 
+            if (g_caret[1] < 15){ set_caret(g_caret[0], g_caret[1]+1); } // down
+            break;
+        default:
+            post('not possible');
+    }
+    post(g_caret);
+
+}
+
 function key_handler(){
-    /*
-    28 left
-    29 right
-    30 up
-    31 down
-    32 spacebar
-    */
     if (g_in_edit_mode){
-        post('Keys: ', g_key_codes);
+        // post('Keys: ', g_key_codes);
+        var directions = [28, 29, 30, 31];
+        if (directions.indexOf(g_key_codes[0]) !== -1){
+            move_caret(g_key_codes[0]);
+            mgraphics.redraw();
+        }
     }
 
 }
@@ -55,11 +89,10 @@ function paint(){
 
     var w = mgraphics.size[0];
     var h = mgraphics.size[1];
-    var start_x = 30;
-    var start_y = 30;
 
     mgraphics.set_font_size(settings_font_size);
     mgraphics.select_font_face("Consolas", "normal", "normal");
+    charwidth = mgraphics.text_measure('_')[0];
     var tx_wh = mgraphics.text_measure('000 C-5 01 80 0A FFFF 0B FFFF');  // returns width and height
     var text_w = tx_wh[0];
     var text_h = tx_wh[1];
@@ -94,6 +127,11 @@ function paint(){
         '015 ... .. .. .. .... .. ....',        
     ]
 
+    // draw caret
+    mgraphics.set_source_rgba(0.7, 0.2, 0.4, 1);
+    var caret_pos = caret_to_location();
+    mgraphics.rectangle(caret_pos[0], caret_pos[1] - (0.9 * charheight), charwidth, charheight);
+    mgraphics.fill();        
 
     mgraphics.set_source_rgba(0.4, 0.9, 1.0, 1);
     for (idx in faux_pattern){
@@ -108,7 +146,6 @@ function paint(){
         mgraphics.fill();        
     }
 
-    post('mouse in rect?', g_mouse_on_rect);
 }
 
 function onclick(x, y, button){
