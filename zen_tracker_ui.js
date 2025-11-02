@@ -1,4 +1,4 @@
-// include("ztrk_squareClass.js");
+// include("ztrk_patternClass.js");
 outlets = 2;
 inlets = 3;
 
@@ -25,10 +25,6 @@ function msg_int(tick){
 function clear(){
     mgraphics.redraw();
 }
-
-// function keys(...args){
-//     post('function call to keys!' + args + '\n');
-// }
 
 function key_handler(){
     /*
