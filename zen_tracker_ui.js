@@ -1,20 +1,19 @@
-include("ztrk_squareClass.js");
+// include("ztrk_squareClass.js");
 outlets = 2;
-inlets = 2;
-
+inlets = 3;
 
 mgraphics.init();
+
 mgraphics.relative_coords = 0;
 mgraphics.autofill = 0;
 
-var g_SquaresArray = [];
 var g_Mouse = [-1, -1];
-var g_IsSomethingClicked = false;
 var g_pattern_playhead = 0;
+var g_in_edit_mode = false;
+var g_key_codes = [];
 var settings_font_size = 12;
 
 function bang(){
-    set_tick_idx();
     mgraphics.redraw();
     outlet(0, g_pattern_playhead);
 }
@@ -23,15 +22,37 @@ function msg_int(tick){
     g_pattern_playhead = tick;
 }
 
-function set_tick_idx(){
-    //post("tick: " + g_pattern_playhead);
-    return;
-}
-
 function clear(){
-    g_SquaresArray = [];
     mgraphics.redraw();
 }
+
+// function keys(...args){
+//     post('function call to keys!' + args + '\n');
+// }
+
+function key_handler(){
+    /*
+    28 left
+    29 right
+    30 up
+    31 down
+    32 spacebar
+    */
+    if (g_in_edit_mode){
+        post('Keys: ', g_key_codes);
+    }
+
+}
+
+function keys(a1, a2, a3, a4) {
+    if (a1 === 32){
+        g_in_edit_mode = !g_in_edit_mode;
+        mgraphics.redraw();
+    }
+    g_key_codes = [a1, a2, a3, a4];
+
+}
+
 
 function paint(){
 
@@ -47,7 +68,7 @@ function paint(){
     var text_h = tx_wh[1];
 
     // --- dark background ---
-    mgraphics.set_source_rgba(0.2, 0.3, 0.3, 1);  // almost black
+    mgraphics.set_source_rgba(0.1, 0.2, 0.4, 1);  // almost black
     mgraphics.rectangle(0, 0, w, h);
     mgraphics.fill();
 
@@ -83,47 +104,22 @@ function paint(){
         mgraphics.show_text(faux_pattern[idx]);
     }
     
-    // mgraphics.text_measure(text)  // returns width and height
-
-    for (var square in g_SquaresArray){
-        mgraphics.rectangle(g_SquaresArray[square].GetRect());
-        if (g_SquaresArray[square].isClicked){
-            mgraphics.fill();
-        }
-        mgraphics.stroke();
+    // mgraphics.stroke();
+    if (g_in_edit_mode){
+        mgraphics.set_source_rgba(0.9, 0.5, 0.5, 1.0);
+        mgraphics.rectangle(0, 0, 5, h);
+        mgraphics.fill();        
     }
 
 }
 
 function onclick(x, y, button){
     g_Mouse = [x, y];
-    g_IsSomethingClicked = false;
-
-    for (var square in g_SquaresArray){
-        g_SquaresArray[square].ResetIsClicked();
-
-        if (g_SquaresArray[square].CheckIfIsClicked(x, y)){
-            g_IsSomethingClicked = true;
-            // post("IS CLICKED\n");
-            mgraphics.redraw();
-            //outlet(0, g_pattern_playhead);
-        }
-    }
-    if (!g_IsSomethingClicked){
-        g_SquaresArray.push(new Square([x, y, 0, 0]));
-    }
-    // mgraphics.redraw();
-
+    g_in_edit_mode = !g_in_edit_mode;
+    mgraphics.redraw();
 }
 
 
 function ondrag(x, y, button){
-
-    if (!g_IsSomethingClicked){
-        var rect = g_SquaresArray[g_SquaresArray.length-1].GetRect();
-        var width = x - rect[0];  // width
-        var height = y - rect[1];  // height
-        g_SquaresArray[g_SquaresArray.length-1].SetWidthHeight(width, height);
-        mgraphics.redraw();
-    }
+    return;
 }
