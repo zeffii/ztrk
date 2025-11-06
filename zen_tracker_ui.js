@@ -21,6 +21,20 @@ var settings_font_size = 12;
 var charwidth = 8;
 var charheight = settings_font_size;
 
+var started_selection_mode = false;
+var g_updating_selection = true;
+var selection_range = [1, 1, 1, 1];  // x, y, w, h
+
+function set_selection(x, y, w, h){
+    selection_range = [x, y, w, h];
+}
+
+function draw_selection(){
+    mgraphics.set_source_rgba(0.7, 0.7, 0.9, 1);  // almost black
+    mgraphics.rectangle(g_caret[0],g_caret[1], 300, charheight*2);
+    mgraphics.stroke();
+}
+
 function bang(){
     mgraphics.redraw();
     outlet(0, g_pattern_playhead);
@@ -48,7 +62,7 @@ function move_caret(direction){
             if (g_caret[0] > 0){ set_caret(g_caret[0]-1, g_caret[1]); } // left
             break;
         case 29: 
-            if (g_caret[0] < 20){ set_caret(g_caret[0]+1, g_caret[1]); } // right
+            if (g_caret[0] < 24){ set_caret(g_caret[0]+1, g_caret[1]); } // right
             break;
         case 30: 
             if (g_caret[1] > 0){ set_caret(g_caret[0], g_caret[1]-1); } // up
@@ -59,8 +73,7 @@ function move_caret(direction){
         default:
             post('not possible');
     }
-    post(g_caret);
-
+    //  post(g_caret);
 }
 
 function key_handler(){
@@ -70,6 +83,20 @@ function key_handler(){
         if (directions.indexOf(g_key_codes[0]) !== -1){
             move_caret(g_key_codes[0]);
             mgraphics.redraw();
+        }
+
+        var just_shift = 512;
+        if (g_key_codes[2] === just_shift){
+            if (started_selection_mode){
+                // means we are modying a current selection
+                post('modifying');
+            } else {
+                // means the section is going to start at cursor index x, y, w, h where w and h are 1.
+                post('starting');
+            }
+            started_selection_mode = true;
+        } else {
+            started_selection_mode = false;
         }
     }
 
@@ -108,6 +135,13 @@ function paint(){
     mgraphics.rectangle(start_x, tick_y, text_w, settings_font_size);
     mgraphics.fill();
 
+    var pattern_markup = "ttt nnn hh ss hh hhhh hh hhhh"
+    // ttt  = ticks
+    // nnn  = note
+    // hh   = 2hex
+    // ss   = short (ints 0..80)
+    // hhhh = 4hex
+
     var faux_pattern = [
         '000 C-5 01 80 0A FFFF 0B FFFF',
         '001 ... .. 70 .. .... .. ....',
@@ -125,7 +159,7 @@ function paint(){
         '013 ... .. 70 .. .... .. ....',
         '014 ^^^ 67 .. .. .... .. ....',
         '015 ... .. .. .. .... .. ....',        
-    ]
+    ];
 
     // draw caret
     mgraphics.set_source_rgba(0.7, 0.2, 0.4, 1);
@@ -145,6 +179,8 @@ function paint(){
         mgraphics.rectangle(0, 0, 5, h);
         mgraphics.fill();        
     }
+
+    draw_selection();
 
 }
 
