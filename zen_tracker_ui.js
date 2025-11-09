@@ -24,14 +24,21 @@ var charheight = settings_font_size;
 var started_selection_mode = false;
 var g_updating_selection = true;
 var selection_range = [1, 1, 1, 1];  // x, y, w, h
+var selection_w_idx = 1;
+var selection_h_idx = 1;
+var sel_x_start = 30; 
+var sel_y_start = 30;
 
 function set_selection(x, y, w, h){
     selection_range = [x, y, w, h];
 }
 
 function draw_selection(){
+    if (!started_selection_mode){
+        return;
+    }
     mgraphics.set_source_rgba(0.7, 0.7, 0.9, 1);  // almost black
-    mgraphics.rectangle(g_caret[0],g_caret[1], 300, charheight*2);
+    mgraphics.rectangle(sel_x_start, sel_y_start, selection_w_idx * charwidth, selection_h_idx * charheight);
     mgraphics.stroke();
 }
 
@@ -56,6 +63,11 @@ function caret_to_location(){
 
 function set_caret(x, y){ g_caret = [x, y]; }
 
+function reset_selection_range(){
+    selection_w_idx = 1;
+    selection_h_idx = 1;
+}
+
 function move_caret(direction){
     switch (direction) {
         case 28:  
@@ -76,28 +88,55 @@ function move_caret(direction){
     //  post(g_caret);
 }
 
+function update_selection_dimensions(direction){
+        switch (direction) {
+        case 28:  
+            if (g_caret[0] > 0){ selection_w_idx = selection_w_idx - 1 ; } // left
+            break;
+        case 29: 
+            if (g_caret[0] < 24){ selection_w_idx = selection_w_idx + 1; } // right
+            break;
+        case 30: 
+            if (g_caret[1] > 0){ selection_h_idx = selection_h_idx - 1; } // up
+            break;
+        case 31: 
+            if (g_caret[1] < 15){ selection_h_idx = selection_h_idx + 1; } // down
+            break;
+        default:
+            post('not possible');
+    }
+    post('selection', selection_w_idx, selection_h_idx);
+}
+
 function key_handler(){
     if (g_in_edit_mode){
-        // post('Keys: ', g_key_codes);
         var directions = [28, 29, 30, 31];
         if (directions.indexOf(g_key_codes[0]) !== -1){
             move_caret(g_key_codes[0]);
-            mgraphics.redraw();
         }
 
         var just_shift = 512;
         if (g_key_codes[2] === just_shift){
             if (started_selection_mode){
-                // means we are modying a current selection
                 post('modifying');
+                update_selection_dimensions(g_key_codes[0]);
+                set_selection(sel_x_start, sel_y_start, selection_w_idx * charwidth, selection_h_idx * charheight);
             } else {
                 // means the section is going to start at cursor index x, y, w, h where w and h are 1.
+                reset_selection_range();
+                var decomposexy = caret_to_location()
+                sel_x_start = decomposexy[0]; 
+                sel_y_start = decomposexy[1];
+                set_selection(sel_x_start, sel_y_start, charwidth, charheight);
                 post('starting');
             }
             started_selection_mode = true;
         } else {
             started_selection_mode = false;
         }
+
+        // we can restrict this to redraw iff there are updates, but for now this is convenient.
+        mgraphics.redraw();
     }
 
 }
