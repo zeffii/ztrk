@@ -4,15 +4,15 @@ I decided to get a max/msp license because of gen~ and jsui. The goal is to make
 
 Some milestones i will need to tackle, in no particular order
 
-[x] handleing keyboard qwerty input
-[ ] loading existing patterns
-[ ] sequencing patterns
-[x] displaying patterns
-[x] displaying current tick location
-[x] cursor + navigation
-[.] selection rectangle
-[ ] input error handling
-[ ] interpolation
-[ ] util functions(hex to int, etc)
-[x] note to midinote
+- [x] handleing keyboard qwerty input
+- [ ] loading existing patterns
+- [ ] sequencing patterns
+- [x] displaying patterns
+- [x] displaying current tick location
+- [x] cursor + navigation
+- [ ] selection rectangle
+- [ ] input error handling
+- [ ] interpolation
+- [ ] util functions(hex to int, etc)
+- [x] note to midinote
 
