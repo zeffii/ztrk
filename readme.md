@@ -7,12 +7,13 @@ Some milestones i will need to tackle, in no particular order
 - [x] handleing keyboard qwerty input
 - [ ] loading existing patterns
 - [ ] sequencing patterns
+- [ ] editing pattern
 - [x] displaying patterns
 - [x] displaying current tick location
 - [x] cursor + navigation
 - [ ] selection rectangle
 - [ ] input error handling
-- [ ] interpolation
 - [ ] util functions(hex to int, etc)
 - [x] note to midinote
-
+- [ ] general pattern editor functions (reverse, spread, interpolate, transpose, shift, uzi, splay)
+- [ ] trigger from tick
