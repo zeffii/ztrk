@@ -12,8 +12,6 @@ Some milestones i will need to tackle, in no particular order
 - [x] displaying current tick location
 - [x] cursor + navigation
 - [x] selection rectangle
-      - for now it works enough for testing functions that operate on selections
-      - current limitations, select from top left to bottom right of a desired region is fine, but negative selection ranges are unhandled for now.
 - [ ] input error handling
 - [ ] util functions(hex to int, etc)
 - [x] note to midinote
