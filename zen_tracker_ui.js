@@ -31,6 +31,67 @@ var cols = 25;
 var caret = { row: 0, col: 0 };
 var anchor = null;
 
+
+var pattern_markup = {
+    globals: "hh hh hh hh", 
+    track: "nnn hh ss hh hhhh hh hhhh"
+};
+// ttt  = ticks
+// nnn  = note
+// hh   = 2hex
+// ss   = short (ints 0..80)
+// hhhh = 4hex
+
+var faux_pattern = [
+    'C-5 01 80 0A FFFF 0B FFFF',
+    '... .. 70 .. .... .. ....',
+    '... .. 70 .. .... .. ....',
+    'D#5 01 80 .. .... 0B 20FF',
+    '... .. 70 .. .... .. ....',
+    '... .. 70 .. .... .. ....',
+    'C-5 01 80 0A FFFF 0B FFFF',
+    '=== .. 70 .. .... .. ....',
+    '... .. 70 .. .... .. ....',
+    'C-5 01 80 0A FFFF 0B FFFF',
+    '... .. 70 .. .... .. ....',
+    '... .. 70 .. .... .. ....',        
+    'C-5 01 80 0A FFFF 0B FFFF',
+    '... .. 70 .. .... .. ....',
+    '^^^ 67 .. .. .... .. ....',
+    '... .. .. .. .... .. ....',        
+];
+
+function make_empty_pattern(descriptor, length, ntracks){
+    // ntracks not handled yet, ntracks is to define how many note+params tracks show up
+    // this is destinct from globals.
+    var pattern = [];
+    const empty_row = descriptor.track.replace(/\S/g, ".");
+    for (var i = 0; i < length; i++) {
+        pattern.push(empty_row);
+    }
+    return pattern;
+}
+
+faux_pattern = make_empty_pattern(pattern_markup, 16, 1);
+
+
+function replaceAt(str, index, replacement) {
+  return str.substring(0, index) + replacement + str.substring(index + 1);
+}
+
+function patterm_input_handler(key, caret, desciptor, pattern){
+    if ([0, 1, 2].indexOf(caret.col) !== -1){
+        if (caret.col === 0){
+            //   a   b   c   d    e    f   // lowercase input only.
+            if ([97, 98, 99, 100, 101, 102].indexOf(key) !== -1) {
+                const current_row = pattern[caret.row];
+                const key_char = {97: 'A', 98: 'B', 99: 'C', 100: 'D', 101: 'E', 102: 'F'}[key];
+                pattern[caret.row] = replaceAt(current_row, caret.col, key_char);
+            }
+        }
+    }
+}
+
 function clamp(v, lo, hi) {
     return Math.max(lo, Math.min(hi, v));
 }
@@ -103,6 +164,23 @@ function key_handler(){
         var directions = [28, 29, 30, 31];
         var direction_input = (directions.indexOf(g_key_codes[0]) !== -1);
 
+        post(g_key_codes);
+
+        if ((g_key_codes[2] === just_shift) && direction_input){
+            if (started_selection_mode){
+                post('modifying');
+            } else {
+                // means the section is going to start at cursor index x, y, w, h where w and h are 1.
+                anchor = { row: caret.row, col: caret.col };
+                post('starting');
+                started_selection_mode = true;
+            }
+
+        } else {
+            started_selection_mode = false;
+            anchor = null;
+        }
+
         if (direction_input){
             switch(g_key_codes[0]) {
                 case 28: moveCaret(0, -1); break;  // left
@@ -112,21 +190,9 @@ function key_handler(){
                 default: return;
             }
         }
-        
-        if ((g_key_codes[2] === just_shift) && direction_input){
-            if (started_selection_mode){
-                post('modifying');
-            } else {
-                // means the section is going to start at cursor index x, y, w, h where w and h are 1.
-                anchor = { row: caret.row, col: caret.col };
-                post('starting');
-            }
-            started_selection_mode = true;
 
-        } else {
-            started_selection_mode = false;
-            anchor = null;
-        }
+        patterm_input_handler(g_key_codes[0], caret, pattern_markup, faux_pattern);
+
         // we can restrict this to redraw iff there are updates, but for now this is convenient.
         mgraphics.redraw();
     }
@@ -141,6 +207,9 @@ function keys(a1, a2, a3, a4) {
 
 }
 
+function fmt(n) {
+    return ('000' + Math.floor(Math.abs(n))).slice(-3) + ' ';
+}
 
 function paint(){
 
@@ -165,38 +234,13 @@ function paint(){
     mgraphics.rectangle(start_x, tick_y, text_w, settings_font_size);
     mgraphics.fill();
 
-    var pattern_markup = "ttt nnn hh ss hh hhhh hh hhhh"
-    // ttt  = ticks
-    // nnn  = note
-    // hh   = 2hex
-    // ss   = short (ints 0..80)
-    // hhhh = 4hex
-
-    var faux_pattern = [
-        '000 C-5 01 80 0A FFFF 0B FFFF',
-        '001 ... .. 70 .. .... .. ....',
-        '002 ... .. 70 .. .... .. ....',
-        '003 D#5 01 80 .. .... 0B 20FF',
-        '004 ... .. 70 .. .... .. ....',
-        '005 ... .. 70 .. .... .. ....',
-        '006 C-5 01 80 0A FFFF 0B FFFF',
-        '007 === .. 70 .. .... .. ....',
-        '008 ... .. 70 .. .... .. ....',
-        '009 C-5 01 80 0A FFFF 0B FFFF',
-        '010 ... .. 70 .. .... .. ....',
-        '011 ... .. 70 .. .... .. ....',        
-        '012 C-5 01 80 0A FFFF 0B FFFF',
-        '013 ... .. 70 .. .... .. ....',
-        '014 ^^^ 67 .. .. .... .. ....',
-        '015 ... .. .. .. .... .. ....',        
-    ];
-
     draw_caret();
 
     mgraphics.set_source_rgba(0.4, 0.9, 1.0, 1);
     for (idx in faux_pattern){
         mgraphics.move_to(start_x, start_y + (idx * settings_font_size));
-        mgraphics.show_text(faux_pattern[idx]);
+        var pattern_row = fmt(idx) + faux_pattern[idx]
+        mgraphics.show_text(pattern_row);
     }
     
     // mgraphics.stroke();
