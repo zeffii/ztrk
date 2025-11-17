@@ -31,6 +31,7 @@ var cols = 25;
 var caret = { row: 0, col: 0 };
 var anchor = null;
 
+var g_pattern_octave = 4;
 
 var pattern_markup = {
     globals: "hh hh hh hh", 
@@ -75,18 +76,50 @@ function make_empty_pattern(descriptor, length, ntracks){
 faux_pattern = make_empty_pattern(pattern_markup, 16, 1);
 
 
-function replaceAt(str, index, replacement) {
-  return str.substring(0, index) + replacement + str.substring(index + 1);
+function replaceAt(str, index, replacement, count) {
+    return str.substr(0, index)
+         + replacement
+         + str.substr(index + count);
 }
 
 function patterm_input_handler(key, caret, desciptor, pattern){
     if ([0, 1, 2].indexOf(caret.col) !== -1){
         if (caret.col === 0){
             //   a   b   c   d    e    f   // lowercase input only.
-            if ([97, 98, 99, 100, 101, 102].indexOf(key) !== -1) {
+            // if ([97, 98, 99, 100, 101, 102].indexOf(key) !== -1) {
+            //     const current_row = pattern[caret.row];
+            //     const key_char = {97: 'A', 98: 'B', 99: 'C', 100: 'D', 101: 'E', 102: 'F'}[key];
+            //     pattern[caret.row] = replaceAt(current_row, caret.col, key_char, 1);
+            // }
+
+            /*
+
+                        +1                   +2
+            |  C#  D#      F#  G#  A#   |  C#  D#
+            | |_2_|_3_| | |_5_|_6_|_7_| | |_9_|_0_| |
+            |_Q_|_W_|_E_|_R_|_T_|_Y_|_U_|_I_|_O_|_P_|
+            | C   D   E   F   G   A   B | C   D   E 
+
+                        +0               
+            |  C#  D#      F#  G#  A#   |
+            | |_S_|_D_| | |_G_|_H_|_J_| |
+            |_Z_|_X_|_C_|_V_|_B_|_N_|_M_|
+            | C   D   E   F   G   A   B |
+
+            deal with note data on note params
+            */
+            const g_keyjam_encoding = {
+                122: ['C-', 0], 115: ['C#', 0], 120: ['D-', 0], 100: ['D#', 0], 99: ['E-', 0], 
+                118: ['F-', 0], 103: ['F#', 0], 98: ['G-', 0], 104: ['G#', 0], 110: ['A-', 0], 106: ['A#', 0], 109: ['B-', 0],
+                113: ['C-', 1], 50: ['C#', 1], 119: ['D-', 1], 51: ['D#', 1], 101: ['E-', 1], 
+                114: ['F-', 1], 53: ['F#', 1], 116: ['G-', 1], 54: ['G#', 1], 121: ['A-', 1], 55: ['A#', 1], 117: ['B-', 1],
+                105: ['C-', 2], 57: ['C#', 2], 111: ['D-', 2], 48: ['D#', 2], 112: ['E-', 2], 
+            }
+            if (key in g_keyjam_encoding){
+                const key_info = g_keyjam_encoding[key];
                 const current_row = pattern[caret.row];
-                const key_char = {97: 'A', 98: 'B', 99: 'C', 100: 'D', 101: 'E', 102: 'F'}[key];
-                pattern[caret.row] = replaceAt(current_row, caret.col, key_char);
+                const note = String(key_info[0]) + String(key_info[1] + g_pattern_octave);
+                pattern[caret.row] = replaceAt(current_row, caret.col, note, 3);
             }
         }
     }
