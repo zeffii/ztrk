@@ -13,6 +13,10 @@ function fmt4(n) {
     return ('0000' + Math.floor(Math.abs(n))).slice(-4) + ' ';
 }
 
+function set_rgb(color, dimming){
+    mgraphics.set_source_rgba(color.r / dimming, color.g / dimming, color.b / dimming, 1);
+}
+
 function paint(){
 
     var w = mgraphics.size[0];
@@ -30,6 +34,7 @@ function paint(){
     // post('CH', charheight);
 
     // --- dark background ---
+    var color = {r: 0.4, g: 0.9, b: 1.0};
     var dimming  = 1.5;
     mgraphics.set_source_rgba(0.1/dimming, 0.2/dimming, 0.4/dimming, 1);  // almost black
     mgraphics.rectangle(0, 0, w, h);
@@ -39,15 +44,25 @@ function paint(){
     // sequence info
     mgraphics.translate(30, 50);
 
+    // secondary horizontal separator lines
+    var sdim = 0.34;
+    for (var i = 1; i < 20; i++){
+        mgraphics.set_source_rgba(0.4*sdim, 0.9*sdim, 1.0*sdim, 1);
+        var lineh = -10.5 + ((i * 8) * charheight);    
+        mgraphics.move_to(0, lineh);
+        mgraphics.line_to(500, lineh);
+        mgraphics.stroke();
+    }
+
     // display patterns ..start with a placeholder structure
     var pattern_data = [
         {pname: '01', trk: 0, start: 0, length: 16, color: [0.2, 0.4, 0.5]},
-        {pname: '02', trk: 1, start: 16, length: 48, color: [0.3, 0.4, 0.5]},
+        {pname: '02', trk: 1, start: 16, length: 48, color: [0.2, 0.4, 0.5]},
         {pname: '03', trk: 2, start: 64, length: 64, color: [0.2, 0.4, 0.5]},
-        {pname: '04', trk: 0, start: 128, length: 64, color: [0.1, 0.2, 0.5]},
-        {pname: '05', trk: 1, start: 192, length: 16, color: [0.2, 0.4, 0.2]},
-        {pname: '06', trk: 2, start: 256, length: 16, color: [0.1, 0.5, 0.5]},
-        {pname: '07', trk: 0, start: 384, length: 32, color: [0.2, 0.2, 0.9]}
+        {pname: '04', trk: 0, start: 128, length: 64, color: [0.2, 0.4, 0.5]},
+        {pname: '05', trk: 1, start: 192, length: 16, color: [0.2, 0.4, 0.5]},
+        {pname: '06', trk: 2, start: 256, length: 16, color: [0.2, 0.4, 0.5]},
+        {pname: '07', trk: 0, start: 384, length: 32, color: [0.2, 0.4, 0.5]}
     ];
 
     var yoffset = (0.75 * charheight);
@@ -58,6 +73,9 @@ function paint(){
         mgraphics.set_source_rgba(cr, cg, cb, 1);
         mgraphics.rectangle(side_width + (pattern.trk * trk_width) - xoffset, ((pattern.start/16) * charheight) - yoffset, trk_width, ((pattern.length / 16) * charheight) );
         mgraphics.fill();
+        set_rgb(color, 0.7);
+        mgraphics.rectangle(side_width + (pattern.trk * trk_width) - xoffset, ((pattern.start/16) * charheight) - yoffset, trk_width, ((pattern.length / 16) * charheight) );
+        mgraphics.stroke();
 
 
     }
@@ -68,16 +86,6 @@ function paint(){
     mgraphics.move_to(0, -10.5);
     mgraphics.line_to(500, -10.5);
     mgraphics.stroke();
-
-    // secondary separator lines
-    var sdim = 0.34;
-    for (var i = 1; i < 20; i++){
-        mgraphics.set_source_rgba(0.4*sdim, 0.9*sdim, 1.0*sdim, 1);
-        var lineh = -10.5 + ((i * 8) * charheight);    
-        mgraphics.move_to(0, lineh);
-        mgraphics.line_to(500, lineh);
-        mgraphics.stroke();
-    }
 
     // header
     mgraphics.set_source_rgba(0.4, 0.9, 1.0, 1);
@@ -90,6 +98,11 @@ function paint(){
     for (var idx = 0; idx < 38; idx++){
         mgraphics.move_to(0,  (idx * charheight));
         var pattern_row = String(fmt4(idx * 16)) + '|'; // |█';
+        if (idx % 4 === 0){
+            set_rgb(color, 1.3);
+        } else {
+            set_rgb(color, 1.0);
+        }
         mgraphics.show_text(pattern_row);        
     }
 
