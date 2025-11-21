@@ -17,3 +17,8 @@ Some milestones i will need to tackle, in no particular order
 - [x] note to midinote
 - [ ] general pattern editor functions (reverse, spread, interpolate, transpose, shift, uzi, splay)
 - [ ] trigger from tick
+
+-----------------
+
+
+What i'm attempting here is a cross between sunvox/buzz/st3/impulsetracker/tetramed. I want to have high control via keyboard like oldschool trackers, while also being able to use synths/samplers that i design and can edit at runtime. ..And why not also allow myself to also trigger visuals too?! max/msp and puredata have always been on my todo list of things to learn. I also wish to be able to implement a trigger grammer
