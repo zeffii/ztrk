@@ -8,6 +8,7 @@ mgraphics.autofill = 0;
 var settings_font_size = 12;
 var charwidth = 0;
 var charheight = 0;
+var global_tick = 0;
 
 function fmt4(n) {
     return ('0000' + Math.floor(Math.abs(n))).slice(-4) + ' ';
@@ -15,6 +16,21 @@ function fmt4(n) {
 
 function set_rgb(color, dimming){
     mgraphics.set_source_rgba(color.r / dimming, color.g / dimming, color.b / dimming, 1);
+}
+
+function msg_int(tick){
+    global_tick = tick;
+    mgraphics.redraw();
+}
+
+
+function display_current_tick(){
+    var tick_distance = charheight / 16;
+    var lineh = (global_tick * tick_distance) - charheight + 3.5;
+    set_rgb({r:0.95 ,g: 0.44, b: 0.4}, 0.9);
+    mgraphics.move_to(0, lineh);
+    mgraphics.line_to(500, lineh);
+    mgraphics.stroke();
 }
 
 function paint(){
@@ -46,23 +62,30 @@ function paint(){
 
     // secondary horizontal separator lines
     var sdim = 0.34;
-    for (var i = 1; i < 20; i++){
+    for (var i = 0; i < 20; i++){
         mgraphics.set_source_rgba(0.4*sdim, 0.9*sdim, 1.0*sdim, 1);
-        var lineh = -10.5 + ((i * 8) * charheight);    
+        var lineh = -10.5 + ((i * 8) * charheight);
         mgraphics.move_to(0, lineh);
         mgraphics.line_to(500, lineh);
         mgraphics.stroke();
     }
 
+    // separator line header
+    //set_rgb(color, 2.5);
+    //mgraphics.move_to(0, -10.5);
+    //mgraphics.line_to(500, -10.5);
+    //mgraphics.stroke();
+
+
     // display patterns ..start with a placeholder structure
     var pattern_data = [
-        {pname: '01', trk: 0, start: 0, length: 16, color: [0.2, 0.4, 0.5]},
-        {pname: '02', trk: 1, start: 16, length: 48, color: [0.2, 0.4, 0.5]},
-        {pname: '03', trk: 2, start: 64, length: 64, color: [0.2, 0.4, 0.5]},
-        {pname: '04', trk: 0, start: 128, length: 64, color: [0.2, 0.4, 0.5]},
-        {pname: '05', trk: 1, start: 192, length: 16, color: [0.2, 0.4, 0.5]},
-        {pname: '06', trk: 2, start: 256, length: 16, color: [0.2, 0.4, 0.5]},
-        {pname: '07', trk: 0, start: 384, length: 32, color: [0.2, 0.4, 0.5]}
+        {pname: '01', trk: 0, start: 0, length: 16, color: [0.2, 0.4, 0.5], kind: "gen"},
+        {pname: '02', trk: 1, start: 16, length: 48, color: [0.2, 0.4, 0.5], kind: "gen"},
+        {pname: '03', trk: 2, start: 64, length: 64, color: [0.2, 0.4, 0.5], kind: "fx"},
+        {pname: '04', trk: 0, start: 128, length: 64, color: [0.2, 0.4, 0.5], kind: "gen"},
+        {pname: '05', trk: 1, start: 192, length: 16, color: [0.2, 0.4, 0.5], kind: "gen"},
+        {pname: '06', trk: 2, start: 256, length: 16, color: [0.2, 0.4, 0.5], kind: "fx"},
+        {pname: '07', trk: 0, start: 384, length: 32, color: [0.2, 0.4, 0.5], kind: "gen"}
     ];
 
     var yoffset = (0.75 * charheight);
@@ -71,21 +94,19 @@ function paint(){
         pattern = pattern_data[pattern_idx];
         var [cr, cg, cb] = pattern.color; 
         mgraphics.set_source_rgba(cr, cg, cb, 1);
+        if (pattern.kind === "fx"){
+            set_rgb({r:0.9 ,g: 0.34, b: 0.3}, 1.2);    
+        }
         mgraphics.rectangle(side_width + (pattern.trk * trk_width) - xoffset, ((pattern.start/16) * charheight) - yoffset, trk_width, ((pattern.length / 16) * charheight) );
         mgraphics.fill();
         set_rgb(color, 0.7);
+        if (pattern.kind === "fx"){
+            set_rgb({r:0.9 ,g: 0.34, b: 0.2}, 0.5);    
+        }        
         mgraphics.rectangle(side_width + (pattern.trk * trk_width) - xoffset, ((pattern.start/16) * charheight) - yoffset, trk_width, ((pattern.length / 16) * charheight) );
         mgraphics.stroke();
 
-
     }
-
-
-    // separator lines header
-    mgraphics.set_source_rgba(0.4, 0.9, 1.0, 1);
-    mgraphics.move_to(0, -10.5);
-    mgraphics.line_to(500, -10.5);
-    mgraphics.stroke();
 
     // header
     mgraphics.set_source_rgba(0.4, 0.9, 1.0, 1);
@@ -106,7 +127,7 @@ function paint(){
         mgraphics.show_text(pattern_row);        
     }
 
-
+    display_current_tick();
 
     post('wooot');
 };
