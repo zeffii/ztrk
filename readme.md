@@ -9,7 +9,7 @@ Some milestones i will need to tackle, in no particular order
 - [x] handleing keyboard qwerty input
 - [ ] loading existing patterns
 - [ ] sequencing patterns
-- [ ] editing pattern
+- [x] editing pattern
 - [x] displaying patterns
 - [x] displaying current tick location
 - [x] cursor + navigation
