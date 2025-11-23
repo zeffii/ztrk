@@ -161,7 +161,7 @@ function paint(){
 
     display_current_tick();
 
-    post('wooot');
+    // post('wooot');
 };
 
 function onclick(x, y, button){

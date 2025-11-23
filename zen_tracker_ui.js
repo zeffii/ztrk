@@ -35,15 +35,20 @@ var g_pattern_octave = 4;
 
 var pattern_markup = {
     globals: "hh hh hh hh", 
-    track: "nnn hh ss hh hhhh hh hhhh"
+    track: "nnn hh b hh b hh b hh b hh b hh"
 };
+
+//track: "nnn hh ss hh hhhh hh hhhh"
 // ttt  = ticks
 // nnn  = note
 // hh   = 2hex
 // ss   = short (ints 0..80)
 // hhhh = 4hex
+// b    = bang/trigger  ( 1 or .)
+// ggg  = signed (-20 .. +20)
 
-var faux_pattern = [
+var faux_pattern = [];
+/*
     'C-5 01 80 0A FFFF 0B FFFF',
     '... .. 70 .. .... .. ....',
     '... .. 70 .. .... .. ....',
@@ -61,6 +66,7 @@ var faux_pattern = [
     '^^^ 67 .. .. .... .. ....',
     '... .. .. .. .... .. ....',        
 ];
+*/
 
 function make_empty_pattern(descriptor, length, ntracks){
     // ntracks not handled yet, ntracks is to define how many note+params tracks show up
@@ -75,6 +81,9 @@ function make_empty_pattern(descriptor, length, ntracks){
 
 faux_pattern = make_empty_pattern(pattern_markup, 16, 1);
 
+function found_in(iterable, number){
+    return iterable.indexOf(number) !== -1;
+}
 
 function replaceAt(str, index, replacement, count) {
     return str.substr(0, index)
@@ -82,7 +91,7 @@ function replaceAt(str, index, replacement, count) {
          + str.substr(index + count);
 }
 
-function patterm_input_handler(key, caret, desciptor, pattern){
+function pattern_input_handler(key, caret, desciptor, pattern){
     if ([0, 1, 2].indexOf(caret.col) !== -1){
         if (caret.col === 0){
             //   a   b   c   d    e    f   // lowercase input only.
@@ -121,6 +130,14 @@ function patterm_input_handler(key, caret, desciptor, pattern){
                 const note = String(key_info[0]) + String(key_info[1] + g_pattern_octave);
                 pattern[caret.row] = replaceAt(current_row, caret.col, note, 3);
             }
+        }
+    }
+    if (found_in([7, 12, 17, 22], caret.col)){
+        var keybangs = {49: "1", 46: "."};
+        if (key in keybangs){
+            const key_infoB = keybangs[key];
+            const current_rowB = pattern[caret.row];
+            pattern[caret.row] = replaceAt(current_rowB, caret.col, key_infoB, 1);
         }
     }
 }
@@ -179,6 +196,7 @@ function draw_selection(){
 function bang(){
     mgraphics.redraw();
     outlet(0, g_pattern_playhead);
+    outlet(1, faux_pattern[g_pattern_playhead % 16]);
 }
 
 function msg_int(tick){
@@ -224,7 +242,7 @@ function key_handler(){
             }
         }
 
-        patterm_input_handler(g_key_codes[0], caret, pattern_markup, faux_pattern);
+        pattern_input_handler(g_key_codes[0], caret, pattern_markup, faux_pattern);
 
         // we can restrict this to redraw iff there are updates, but for now this is convenient.
         mgraphics.redraw();
