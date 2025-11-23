@@ -10,6 +10,26 @@ var charwidth = 0;
 var charheight = 0;
 var global_tick = 0;
 
+var g_looping = 0;
+var g_loop_start = 0;
+var g_loop_end = 128;
+
+function loop(mode){
+    g_looping = mode;
+    mgraphics.redraw();
+}
+
+function loop_start(tick){
+    g_loop_start = tick;
+    mgraphics.redraw();
+}
+
+function loop_end(tick){
+    g_loop_end = tick;
+    mgraphics.redraw();
+}
+
+
 function fmt4(n) {
     return ('0000' + Math.floor(Math.abs(n))).slice(-4) + ' ';
 }
@@ -33,6 +53,21 @@ function display_current_tick(){
     mgraphics.stroke();
 }
 
+function draw_looping_indicators(){
+
+    if (g_looping === 1){
+        var loop_start_y = -10.5 + ((g_loop_start / 16.0) * charheight);
+        var loop_end_y = -10.5 + ((g_loop_end / 16.0 ) * charheight);
+        set_rgb({r: 0.2, g: 0.6, b:0.9}, 1.3);
+        mgraphics.move_to(0, loop_start_y);
+        mgraphics.line_to(500, loop_start_y);
+        mgraphics.stroke();
+        mgraphics.move_to(0, loop_end_y);
+        mgraphics.line_to(500, loop_end_y);
+        mgraphics.stroke();
+    }
+}
+
 function paint(){
 
     var w = mgraphics.size[0];
@@ -43,11 +78,6 @@ function paint(){
     [charwidth, charheight] = mgraphics.text_measure('/');
     var trk_width = mgraphics.text_measure('|    Λ    ')[0];
     var side_width = mgraphics.text_measure('tick  ')[0];
-    // post(charwidth, charheight);
-    // var tx_wh = mgraphics.text_measure('000 C-5 01 80 0A FFFF 0B FFFF');  // returns width and height
-    // var text_w = tx_wh[0];
-    // var text_h = tx_wh[1];
-    // post('CH', charheight);
 
     // --- dark background ---
     var color = {r: 0.4, g: 0.9, b: 1.0};
@@ -69,6 +99,8 @@ function paint(){
         mgraphics.line_to(500, lineh);
         mgraphics.stroke();
     }
+
+    draw_looping_indicators();
 
     // separator line header
     //set_rgb(color, 2.5);
