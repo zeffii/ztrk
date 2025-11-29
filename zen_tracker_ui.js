@@ -1,5 +1,5 @@
 // include("ztrk_patternClass.js");
-outlets = 2;
+outlets = 3;
 inlets = 3;
 
 mgraphics.init();
@@ -26,26 +26,10 @@ var g_updating_selection = true;
 var sel_x_start = 30; 
 var sel_y_start = 30;
 
-var rows = 16;
-var cols = 25;
 var caret = { row: 0, col: 0 };
 var anchor = null;
 
 var g_pattern_octave = 4;
-
-var pattern_markup = {
-    globals: "hh hh hh hh", 
-    track: "nnn hh b hh b hh b hh b hh b hh"
-};
-
-//track: "nnn hh ss hh hhhh hh hhhh"
-// ttt  = ticks
-// nnn  = note
-// hh   = 2hex
-// ss   = short (ints 0..80)
-// hhhh = 4hex
-// b    = bang/trigger  ( 1 or .)
-// ggg  = signed (-20 .. +20)
 
 var faux_pattern = [];
 /*
@@ -68,18 +52,37 @@ var faux_pattern = [];
 ];
 */
 
-function make_empty_pattern(descriptor, length, ntracks){
+var pattern_markup = {
+    globals: "hh hh hh hh", 
+    track: "nnn hh b hh b hh b hh b hh b hh",
+    length: 32,
+    data: faux_pattern
+};
+var rows = pattern_markup.length;
+var cols = pattern_markup.track.length;
+
+//track: "nnn hh ss hh hhhh hh hhhh"
+// ttt  = ticks
+// nnn  = note
+// hh   = 2hex
+// ss   = short (ints 0..80)
+// hhhh = 4hex
+// b    = bang/trigger  ( 1 or .)
+// ggg  = signed (-20 .. +20)
+
+
+function make_empty_pattern(descriptor, ntracks){
     // ntracks not handled yet, ntracks is to define how many note+params tracks show up
     // this is destinct from globals.
     var pattern = [];
     const empty_row = descriptor.track.replace(/\S/g, ".");
-    for (var i = 0; i < length; i++) {
+    for (var i = 0; i < descriptor.length; i++) {
         pattern.push(empty_row);
     }
     return pattern;
 }
 
-faux_pattern = make_empty_pattern(pattern_markup, 16, 1);
+faux_pattern = make_empty_pattern(pattern_markup, 1);
 
 function found_in(iterable, number){
     return iterable.indexOf(number) !== -1;
@@ -196,7 +199,8 @@ function draw_selection(){
 function bang(){
     mgraphics.redraw();
     outlet(0, g_pattern_playhead);
-    outlet(1, faux_pattern[g_pattern_playhead % 16]);
+    outlet(1, faux_pattern[g_pattern_playhead]);
+    // outlet(2, faux_pattern);
 }
 
 function msg_int(tick){
@@ -205,6 +209,22 @@ function msg_int(tick){
 
 function clear(){
     mgraphics.redraw();
+}
+
+function command(instruction){
+    if (instruction === 'export_pattern'){
+        post('Export Pattern\n');
+        //var myDict = new Dict('pattern_file')
+        //var hack = JSON.stringify(pattern_markup);
+        //myDict.parse(hack);
+
+
+        var outputDict = new Dict('pattern_data');
+        outputDict.parse(JSON.stringify(pattern_markup));
+        post('---->', pattern_markup);
+
+        outlet(2, "dictionary", outputDict.name);
+    }
 }
 
 
@@ -270,7 +290,7 @@ function paint(){
     mgraphics.set_font_size(settings_font_size);
     mgraphics.select_font_face("Consolas", "normal", "normal");
     charwidth = mgraphics.text_measure('_')[0];
-    var tx_wh = mgraphics.text_measure('000 C-5 01 80 0A FFFF 0B FFFF');  // returns width and height
+    var tx_wh = mgraphics.text_measure('000 ' + pattern_markup.track);  // returns width and height
     var text_w = tx_wh[0];
     var text_h = tx_wh[1];
 
