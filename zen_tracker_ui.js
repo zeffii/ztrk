@@ -220,6 +220,8 @@ function command(instruction){
 
 
         var outputDict = new Dict('pattern_data');
+        
+        pattern_markup.data = faux_pattern;
         outputDict.parse(JSON.stringify(pattern_markup));
         post('---->', pattern_markup);
         post('faux_pattern, :', faux_pattern, '\n');
