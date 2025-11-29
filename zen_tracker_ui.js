@@ -222,7 +222,7 @@ function command(instruction){
         var outputDict = new Dict('pattern_data');
         outputDict.parse(JSON.stringify(pattern_markup));
         post('---->', pattern_markup);
-
+        post('faux_pattern, :', faux_pattern, '\n');
         outlet(2, "dictionary", outputDict.name);
     }
 }
