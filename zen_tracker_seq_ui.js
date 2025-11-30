@@ -1,5 +1,5 @@
 outlets = 2;
-inlets = 3;
+inlets = 1;
 
 mgraphics.init();
 mgraphics.relative_coords = 0;
@@ -15,14 +15,14 @@ var g_loop_start = 0;
 var g_loop_end = 128;
 
 // display patterns ..start with a placeholder structure
-var pattern_data = [
-    {pname: '01', trk: 0, start: 0, length: 16, color: [0.2, 0.4, 0.5], kind: "gen"},
-    {pname: '02', trk: 1, start: 16, length: 48, color: [0.2, 0.4, 0.5], kind: "gen"},
-    {pname: '03', trk: 2, start: 64, length: 64, color: [0.2, 0.4, 0.5], kind: "fx"},
-    {pname: '04', trk: 0, start: 128, length: 64, color: [0.2, 0.4, 0.5], kind: "gen"},
-    {pname: '05', trk: 1, start: 192, length: 16, color: [0.2, 0.4, 0.5], kind: "gen"},
-    {pname: '06', trk: 2, start: 256, length: 16, color: [0.2, 0.4, 0.5], kind: "fx"},
-    {pname: '07', trk: 0, start: 384, length: 32, color: [0.2, 0.4, 0.5], kind: "gen"}
+var sequence_data = [
+    {pname: "01", trk: 0, start: 0, length: 16, color: [0.2, 0.4, 0.5], kind: "gen"},
+    {pname: "02", trk: 1, start: 16, length: 48, color: [0.2, 0.4, 0.5], kind: "gen"},
+    {pname: "03", trk: 2, start: 64, length: 64, color: [0.2, 0.4, 0.5], kind: "fx"},
+    {pname: "04", trk: 0, start: 128, length: 64, color: [0.2, 0.4, 0.5], kind: "gen"},
+    {pname: "05", trk: 1, start: 192, length: 16, color: [0.2, 0.4, 0.5], kind: "gen"},
+    {pname: "06", trk: 2, start: 256, length: 16, color: [0.2, 0.4, 0.5], kind: "fx"},
+    {pname: "07", trk: 0, start: 288, length: 32, color: [0.2, 0.4, 0.5], kind: "gen"}
 ];
 
 
@@ -39,6 +39,21 @@ function loop_start(tick){
 function loop_end(tick){
     g_loop_end = tick;
     mgraphics.redraw();
+}
+
+function command(instruction){
+    if (instruction === 'export_sequence_data'){
+        post('Exporting Sequence Data\n');
+        var outputDict = new Dict('sequence_dict');
+
+        // compose sequencer dict from sequencer list:
+        var sequence_data_dict = {};
+        for (pattern_idx in sequence_data){
+            sequence_data_dict[pattern_idx] = sequence_data[pattern_idx];
+        }
+        outputDict.parse(JSON.stringify(sequence_data_dict));
+        outlet(1, "dictionary", outputDict.name);
+    }
 }
  
 function fmt4(n) {
@@ -114,8 +129,8 @@ function paint(){
 
     var yoffset = (0.75 * charheight);
     var xoffset = (0.46 * charwidth);
-    for (pattern_idx in pattern_data){
-        pattern = pattern_data[pattern_idx];
+    for (pattern_idx in sequence_data){
+        pattern = sequence_data[pattern_idx];
         var [cr, cg, cb] = pattern.color; 
         mgraphics.set_source_rgba(cr, cg, cb, 1);
         if (pattern.kind === "fx"){
@@ -159,8 +174,6 @@ function paint(){
     }
 
     display_current_tick();
-
-    // post('wooot');
 };
 
 function onclick(x, y, button){
