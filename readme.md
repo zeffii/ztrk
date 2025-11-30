@@ -7,7 +7,7 @@ I decided to get a max/msp license because of gen~ and jsui. The goal is to make
 Some milestones i will need to tackle, in no particular order
 
 - [x] handleing keyboard qwerty input
-- [ ] loading existing patterns
+- [x] loading existing patterns
 - [ ] sequencing patterns
 - [x] editing pattern
 - [x] displaying patterns
