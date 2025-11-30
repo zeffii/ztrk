@@ -1,6 +1,6 @@
 // include("ztrk_patternClass.js");
 outlets = 3;
-inlets = 3;
+inlets = 4;
 
 mgraphics.init();
 
@@ -200,11 +200,18 @@ function bang(){
     mgraphics.redraw();
     outlet(0, g_pattern_playhead);
     outlet(1, faux_pattern[g_pattern_playhead]);
-    // outlet(2, faux_pattern);
 }
 
 function msg_int(tick){
     g_pattern_playhead = tick;
+}
+
+function dictionary(dictName) {
+    var inputDict = new Dict(dictName);
+    var jsObject = JSON.parse(inputDict.stringify());
+    // post(jsObject.data);
+    pattern_markup = jsObject;
+    faux_pattern = pattern_markup.data;
 }
 
 function clear(){
@@ -213,18 +220,11 @@ function clear(){
 
 function command(instruction){
     if (instruction === 'export_pattern'){
-        post('Export Pattern\n');
-        //var myDict = new Dict('pattern_file')
-        //var hack = JSON.stringify(pattern_markup);
-        //myDict.parse(hack);
-
-
+        post('Exporting Pattern\n');
         var outputDict = new Dict('pattern_data');
         
         pattern_markup.data = faux_pattern;
         outputDict.parse(JSON.stringify(pattern_markup));
-        post('---->', pattern_markup);
-        post('faux_pattern, :', faux_pattern, '\n');
         outlet(2, "dictionary", outputDict.name);
     }
 }
