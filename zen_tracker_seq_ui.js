@@ -14,6 +14,18 @@ var g_looping = 0;
 var g_loop_start = 0;
 var g_loop_end = 128;
 
+// display patterns ..start with a placeholder structure
+var pattern_data = [
+    {pname: '01', trk: 0, start: 0, length: 16, color: [0.2, 0.4, 0.5], kind: "gen"},
+    {pname: '02', trk: 1, start: 16, length: 48, color: [0.2, 0.4, 0.5], kind: "gen"},
+    {pname: '03', trk: 2, start: 64, length: 64, color: [0.2, 0.4, 0.5], kind: "fx"},
+    {pname: '04', trk: 0, start: 128, length: 64, color: [0.2, 0.4, 0.5], kind: "gen"},
+    {pname: '05', trk: 1, start: 192, length: 16, color: [0.2, 0.4, 0.5], kind: "gen"},
+    {pname: '06', trk: 2, start: 256, length: 16, color: [0.2, 0.4, 0.5], kind: "fx"},
+    {pname: '07', trk: 0, start: 384, length: 32, color: [0.2, 0.4, 0.5], kind: "gen"}
+];
+
+
 function loop(mode){
     g_looping = mode;
     mgraphics.redraw();
@@ -28,8 +40,7 @@ function loop_end(tick){
     g_loop_end = tick;
     mgraphics.redraw();
 }
-
-
+ 
 function fmt4(n) {
     return ('0000' + Math.floor(Math.abs(n))).slice(-4) + ' ';
 }
@@ -86,7 +97,6 @@ function paint(){
     mgraphics.rectangle(0, 0, w, h);
     mgraphics.fill();
 
-
     // sequence info
     mgraphics.translate(30, 50);
 
@@ -102,24 +112,6 @@ function paint(){
 
     draw_looping_indicators();
 
-    // separator line header
-    //set_rgb(color, 2.5);
-    //mgraphics.move_to(0, -10.5);
-    //mgraphics.line_to(500, -10.5);
-    //mgraphics.stroke();
-
-
-    // display patterns ..start with a placeholder structure
-    var pattern_data = [
-        {pname: '01', trk: 0, start: 0, length: 16, color: [0.2, 0.4, 0.5], kind: "gen"},
-        {pname: '02', trk: 1, start: 16, length: 48, color: [0.2, 0.4, 0.5], kind: "gen"},
-        {pname: '03', trk: 2, start: 64, length: 64, color: [0.2, 0.4, 0.5], kind: "fx"},
-        {pname: '04', trk: 0, start: 128, length: 64, color: [0.2, 0.4, 0.5], kind: "gen"},
-        {pname: '05', trk: 1, start: 192, length: 16, color: [0.2, 0.4, 0.5], kind: "gen"},
-        {pname: '06', trk: 2, start: 256, length: 16, color: [0.2, 0.4, 0.5], kind: "fx"},
-        {pname: '07', trk: 0, start: 384, length: 32, color: [0.2, 0.4, 0.5], kind: "gen"}
-    ];
-
     var yoffset = (0.75 * charheight);
     var xoffset = (0.46 * charwidth);
     for (pattern_idx in pattern_data){
@@ -129,14 +121,21 @@ function paint(){
         if (pattern.kind === "fx"){
             set_rgb({r:0.9 ,g: 0.34, b: 0.3}, 1.2);    
         }
-        mgraphics.rectangle(side_width + (pattern.trk * trk_width) - xoffset, ((pattern.start/16) * charheight) - yoffset, trk_width, ((pattern.length / 16) * charheight) );
+
+        var rect_start_x = side_width + (pattern.trk * trk_width) - xoffset;
+        var rect_start_y = ((pattern.start/16) * charheight) - yoffset;
+        mgraphics.rectangle(rect_start_x, rect_start_y, trk_width, ((pattern.length / 16) * charheight) );
         mgraphics.fill();
         set_rgb(color, 0.7);
         if (pattern.kind === "fx"){
             set_rgb({r:0.9 ,g: 0.34, b: 0.2}, 0.5);    
         }        
-        mgraphics.rectangle(side_width + (pattern.trk * trk_width) - xoffset, ((pattern.start/16) * charheight) - yoffset, trk_width, ((pattern.length / 16) * charheight) );
+        mgraphics.rectangle(rect_start_x, rect_start_y, trk_width, ((pattern.length / 16) * charheight) );
         mgraphics.stroke();
+
+        set_rgb({r:0.82, g:0.82, b:0.82}, 1.0);
+        mgraphics.move_to(rect_start_x + xoffset, rect_start_y + yoffset);
+        mgraphics.show_text(pattern.pname);
 
     }
 

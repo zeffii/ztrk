@@ -19,6 +19,8 @@ var start_y = 30;
 var settings_font_size = 12;
 var charwidth = 8;
 var charheight = settings_font_size;
+var text_w = 1;
+var text_h = settings_font_size;
 
 var started_selection_mode = false;
 var g_updating_selection = true;
@@ -30,6 +32,10 @@ var caret = { row: 0, col: 0 };
 var anchor = null;
 
 var g_pattern_octave = 4;
+
+function set_rgb(color, dimming){
+    mgraphics.set_source_rgba(color.r / dimming, color.g / dimming, color.b / dimming, 1);
+}
 
 var faux_pattern = [];
 /*
@@ -136,7 +142,7 @@ function pattern_input_handler(key, caret, desciptor, pattern){
         }
     }
     if (found_in([7, 12, 17, 22], caret.col)){
-        var keybangs = {49: "1", 46: "."};
+        var keybangs = {49: "1", 46: ".", 127: "."};
         if (key in keybangs){
             const key_infoB = keybangs[key];
             const current_rowB = pattern[caret.row];
@@ -196,6 +202,25 @@ function draw_selection(){
     mgraphics.stroke();
 }
 
+function draw_highlighted_lines(every_nth){
+    set_rgb({r: 0.1, g: 0.2, b:0.4}, 1.3);
+    var total_draw_amount = Math.floor(pattern_markup.length / Math.max(every_nth, 1));
+    for (var i = 0; i < total_draw_amount; i++){
+        var tick_y = start_y + (i * every_nth * settings_font_size) - (0.75*text_h) ;
+        mgraphics.rectangle(start_x, tick_y, text_w, settings_font_size);
+        mgraphics.fill();
+    }
+}
+
+function draw_edit_mode_indicator(h){
+
+    if (g_in_edit_mode){
+        mgraphics.set_source_rgba(0.9, 0.5, 0.5, 1.0);
+        mgraphics.rectangle(0, 0, 5, mgraphics.size[1]);
+        mgraphics.fill();        
+    }
+}
+
 function bang(){
     mgraphics.redraw();
     outlet(0, g_pattern_playhead);
@@ -209,7 +234,6 @@ function msg_int(tick){
 function dictionary(dictName) {
     var inputDict = new Dict(dictName);
     var jsObject = JSON.parse(inputDict.stringify());
-    // post(jsObject.data);
     pattern_markup = jsObject;
     faux_pattern = pattern_markup.data;
 }
@@ -293,13 +317,15 @@ function paint(){
     mgraphics.select_font_face("Consolas", "normal", "normal");
     charwidth = mgraphics.text_measure('_')[0];
     var tx_wh = mgraphics.text_measure('000 ' + pattern_markup.track);  // returns width and height
-    var text_w = tx_wh[0];
-    var text_h = tx_wh[1];
+    text_w = tx_wh[0];
+    text_h = tx_wh[1];
 
     // --- dark background ---
     mgraphics.set_source_rgba(0.1, 0.2, 0.4, 1);  // almost black
     mgraphics.rectangle(0, 0, w, h);
     mgraphics.fill();
+
+    draw_highlighted_lines(4);
 
     // --- draw tick position
     var tick_y = start_y + (g_pattern_playhead * settings_font_size) - (0.75*text_h) ;
@@ -316,13 +342,7 @@ function paint(){
         mgraphics.show_text(pattern_row);
     }
     
-    // mgraphics.stroke();
-    if (g_in_edit_mode){
-        mgraphics.set_source_rgba(0.9, 0.5, 0.5, 1.0);
-        mgraphics.rectangle(0, 0, 5, h);
-        mgraphics.fill();        
-    }
-
+    draw_edit_mode_indicator();
     draw_selection();
 
 }
