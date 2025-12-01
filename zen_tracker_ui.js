@@ -37,7 +37,17 @@ function set_rgb(color, dimming){
     mgraphics.set_source_rgba(color.r / dimming, color.g / dimming, color.b / dimming, 1);
 }
 
-var faux_pattern = [];
+function make_empty_pattern(descriptor, ntracks){
+    // ntracks not handled yet, ntracks is to define how many note+params tracks show up
+    // this is destinct from globals.
+    var pattern = [];
+    const empty_row = descriptor.track.replace(/\S/g, ".");
+    for (var i = 0; i < descriptor.length; i++) {
+        pattern.push(empty_row);
+    }
+    return pattern;
+}
+
 /*  [
     'C-5 01 80 0A FFFF 0B FFFF',
     '... .. 70 .. .... .. ....',
@@ -50,8 +60,12 @@ var pattern_markup = {
     globals: "hh hh hh hh", 
     track: "nnn hh b hh b hh b hh b hh b hh",
     length: 32,
-    data: faux_pattern
+    data: []
 };
+
+var faux_pattern = make_empty_pattern(pattern_markup, 1);
+pattern_markup.data = faux_pattern;
+
 var rows = pattern_markup.length;
 var cols = pattern_markup.track.length;
 
@@ -65,18 +79,7 @@ var cols = pattern_markup.track.length;
 // ggg  = signed (-20 .. +20)
 
 
-function make_empty_pattern(descriptor, ntracks){
-    // ntracks not handled yet, ntracks is to define how many note+params tracks show up
-    // this is destinct from globals.
-    var pattern = [];
-    const empty_row = descriptor.track.replace(/\S/g, ".");
-    for (var i = 0; i < descriptor.length; i++) {
-        pattern.push(empty_row);
-    }
-    return pattern;
-}
 
-faux_pattern = make_empty_pattern(pattern_markup, 1);
 
 function found_in(iterable, number){
     return iterable.indexOf(number) !== -1;
