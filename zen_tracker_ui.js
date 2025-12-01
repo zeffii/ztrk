@@ -37,6 +37,9 @@ function set_rgb(color, dimming){
     mgraphics.set_source_rgba(color.r / dimming, color.g / dimming, color.b / dimming, 1);
 }
 
+
+var faux_pattern = [];
+
 function make_empty_pattern(descriptor, ntracks){
     // ntracks not handled yet, ntracks is to define how many note+params tracks show up
     // this is destinct from globals.
@@ -63,7 +66,7 @@ var pattern_markup = {
     data: []
 };
 
-var faux_pattern = make_empty_pattern(pattern_markup, 1);
+faux_pattern = make_empty_pattern(pattern_markup, 1);
 pattern_markup.data = faux_pattern;
 
 var rows = pattern_markup.length;
@@ -215,7 +218,9 @@ function draw_edit_mode_indicator(h){
 function bang(){
     mgraphics.redraw();
     outlet(0, g_pattern_playhead);
-    outlet(1, faux_pattern[g_pattern_playhead]);
+    if (faux_pattern){
+        outlet(1, faux_pattern[g_pattern_playhead]);
+    }
 }
 
 function msg_int(tick){
@@ -279,7 +284,9 @@ function key_handler(){
             }
         }
 
-        pattern_input_handler(g_key_codes[0], caret, pattern_markup, faux_pattern);
+        if (faux_pattern){
+            pattern_input_handler(g_key_codes[0], caret, pattern_markup, faux_pattern);
+        }
 
         // we can restrict this to redraw iff there are updates, but for now this is convenient.
         mgraphics.redraw();
