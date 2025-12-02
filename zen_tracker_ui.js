@@ -254,6 +254,7 @@ function key_handler(){
     if (g_in_edit_mode){
 
         var just_shift = 512;
+        var just_ctrl = 4352;
         var directions = [28, 29, 30, 31];
         var direction_input = (directions.indexOf(g_key_codes[0]) !== -1);
 
