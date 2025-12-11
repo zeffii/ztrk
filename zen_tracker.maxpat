@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ -1693.0, 98.0, 1335.0, 785.0 ],
+        "rect": [ -1693.0, 98.0, 1598.0, 1162.0 ],
         "toolbars_unpinned_last_save": 4,
         "boxes": [
             {
@@ -402,7 +402,6 @@
                         },
                         "classnamespace": "box",
                         "rect": [ 706.0, 120.0, 714.0, 730.0 ],
-                        "visible": 1,
                         "boxes": [
                             {
                                 "box": {
@@ -455,7 +454,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 378.0, 274.0, 50.0, 22.0 ],
-                                    "text": "99"
+                                    "text": "28"
                                 }
                             },
                             {
@@ -597,7 +596,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "8",
+                                    "text": "123",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -642,7 +641,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 255.38463020324707, 154.0, 22.0 ],
-                                    "text": "keys 99 8 0 99",
+                                    "text": "keys 28 123 0 -11",
                                     "varname": "input_keys[1]"
                                 }
                             },

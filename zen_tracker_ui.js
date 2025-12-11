@@ -63,6 +63,28 @@ var pattern_markup = {
     globals: "hh hh hh hh", 
     track: "nnn hh b hh b hh b hh b hh b hh",
     length: 32,
+    descriptors: {
+        global: {
+            0: ['hh', 'Spatial'],
+            1: ['hh', 'Clarity'],
+            2: ['hh', 'Smoothness'],
+            3: ['hh', 'Crispyness']
+        },
+        track: {
+            0: ['nnn', 'Note'],
+            1: ['hh', 'Volume'],
+            2: ['b', 'Trigger'],
+            3: ['hh', 'Volume'], 
+            4: ['b', 'Trigger'], 
+            5: ['hh', 'Volume'],
+            6: ['b', 'Trigger'], 
+            7: ['hh', 'Volume'],
+            8: ['b', 'Trigger'], 
+            9: ['hh', 'Volume'],
+            10: ['b', 'Trigger'], 
+            11: ['hh', 'Volume']
+        }
+    },
     data: []
 };
 
@@ -81,7 +103,18 @@ var cols = pattern_markup.track.length;
 // b    = bang/trigger  ( 1 or .)
 // ggg  = signed (-20 .. +20)
 
-
+// untested.
+function find_idx_after_space(str) {
+    const indices = [];
+  
+    indices.push(0);
+    for (var i = 1; i < str.length; i++) {
+        if (str[i - 1] === ' ') {
+            indices.push(i);
+        }
+    }
+    return indices;
+}
 
 
 function found_in(iterable, number){
@@ -249,6 +282,30 @@ function command(instruction){
     }
 }
 
+function wheres_the_caret(){
+    // dont do this frequently
+    var indices = find_idx_after_space(pattern_markup.track);
+    for (var idx = indices.length - 1; idx >= 0; idx--) {
+        if (caret.col >= indices[idx]) {
+            return [indices[idx], idx];
+        }
+    }
+    return [-1, -1];
+}
+
+
+function draw_track_descriptor(){
+
+    var idx = wheres_the_caret();
+    if (idx[0] >= 0) {
+        const vidx = idx + 4;
+        set_rgb({r: 0.9, g: 0.9, b:0.7}, 1.3);
+        // mgraphics.rectangle(start_x + (idx * charwidth) , start_y - (1.9 * charheight), charwidth, charheight);
+        // mgraphics.fill();   
+        mgraphics.move_to(start_x + ((idx[0] + 4) * charwidth), start_y - (0.9 * charheight));
+        mgraphics.show_text(pattern_markup.descriptors.track[idx[1]][1]);
+    }
+}
 
 function key_handler(){
     if (g_in_edit_mode){
@@ -343,6 +400,7 @@ function paint(){
     
     draw_edit_mode_indicator();
     draw_selection();
+    draw_track_descriptor();
 
 }
 
