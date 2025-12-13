@@ -40,28 +40,27 @@ function set_rgb(color, dimming){
 
 var faux_pattern = [];
 
-function make_empty_pattern(descriptor, ntracks){
+function make_empty_pattern(markup, ntracks){
     // ntracks not handled yet, ntracks is to define how many note+params tracks show up
     // this is destinct from globals.
     var pattern = [];
-    const empty_row = descriptor.track.replace(/\S/g, ".");
-    for (var i = 0; i < descriptor.length; i++) {
+
+    var param_track = [];
+    for (var i=0; i < Object.keys(markup.descriptors.track).length; i++){
+        param_track.push(markup.descriptors.track[i][0]);
+    }
+
+    var lexical_descriptor = param_track.join(' ');
+    markup.track = lexical_descriptor;
+    const empty_row = lexical_descriptor.replace(/\S/g, ".");
+    
+    for (var i = 0; i < markup.length; i++) {
         pattern.push(empty_row);
     }
     return pattern;
 }
 
-/*  [
-    'C-5 01 80 0A FFFF 0B FFFF',
-    '... .. 70 .. .... .. ....',
-    '... .. 70 .. .... .. ....',
-    'D#5 01 80 .. .... 0B 20FF',
-    etc...]
-*/
-
 var pattern_markup = {
-    globals: "hh hh hh hh", 
-    track: "nnn hh b hh b hh b hh b hh b hh",
     length: 32,
     descriptors: {
         global: {
@@ -73,16 +72,17 @@ var pattern_markup = {
         track: {
             0: ['nnn', 'Note'],
             1: ['hh', 'Volume'],
-            2: ['b', 'Trigger'],
-            3: ['hh', 'Volume'], 
-            4: ['b', 'Trigger'], 
-            5: ['hh', 'Volume'],
-            6: ['b', 'Trigger'], 
-            7: ['hh', 'Volume'],
-            8: ['b', 'Trigger'], 
-            9: ['hh', 'Volume'],
-            10: ['b', 'Trigger'], 
-            11: ['hh', 'Volume']
+            2: ['hhhh', 'Offset'],
+            3: ['b', 'Trigger'],
+            4: ['hh', 'Volume'], 
+            5: ['b', 'Trigger'], 
+            6: ['hh', 'Volume'],
+            7: ['b', 'Trigger'], 
+            8: ['hh', 'Volume'],
+            9: ['b', 'Trigger'], 
+            10: ['hh', 'Volume'],
+            11: ['b', 'Trigger'], 
+            12: ['hh', 'Volume']
         }
     },
     data: []
@@ -104,6 +104,7 @@ var cols = pattern_markup.track.length;
 // ggg  = signed (-20 .. +20)
 
 // untested.
+
 function find_idx_after_space(str) {
     const indices = [];
   
@@ -128,6 +129,7 @@ function replaceAt(str, index, replacement, count) {
 }
 
 function pattern_input_handler(key, caret, desciptor, pattern){
+    const NoteClearList = {46: "...", 127: "...", 96: "^^^", 49: "==="};
     if ([0, 1, 2].indexOf(caret.col) !== -1){
         if (caret.col === 0){
             //   a   b   c   d    e    f   // lowercase input only.
@@ -165,10 +167,14 @@ function pattern_input_handler(key, caret, desciptor, pattern){
                 const current_row = pattern[caret.row];
                 const note = String(key_info[0]) + String(key_info[1] + g_pattern_octave);
                 pattern[caret.row] = replaceAt(current_row, caret.col, note, 3);
+            } else if (key in NoteClearList ){
+                const NoteReplacement = NoteClearList[key];
+                const current_row1 = pattern[caret.row];
+                pattern[caret.row] = replaceAt(current_row1, caret.col, NoteReplacement, 3);
             }
         }
     }
-    if (found_in([7, 12, 17, 22], caret.col)){
+    if (found_in([12, 17, 22, 27], caret.col)){
         var keybangs = {49: "1", 46: ".", 127: "."};
         if (key in keybangs){
             const key_infoB = keybangs[key];
@@ -268,6 +274,8 @@ function dictionary(dictName) {
 }
 
 function clear(){
+    faux_pattern = make_empty_pattern(pattern_markup, 1);
+    pattern_markup.data = faux_pattern;    
     mgraphics.redraw();
 }
 
