@@ -384,6 +384,14 @@ function key_handler(){
         }
 
         if (direction_input){
+
+            /* if just_ctrl or shift_and_control
+                . find your position in the pattern row. move to the nearest start of a parameter
+                . move to starts only
+
+            */
+
+            // else
             switch(g_key_codes[0]) {
                 case 28: moveCaret(0, -1); break;  // left
                 case 29: moveCaret(0,  1); break;  // right
