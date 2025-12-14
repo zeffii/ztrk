@@ -129,16 +129,10 @@ function replaceAt(str, index, replacement, count) {
 }
 
 function pattern_input_handler(key, caret, desciptor, pattern){
+
     const NoteClearList = {46: "...", 127: "...", 96: "^^^", 49: "==="};
     if ([0, 1, 2].indexOf(caret.col) !== -1){
         if (caret.col === 0){
-            //   a   b   c   d    e    f   // lowercase input only.
-            // if ([97, 98, 99, 100, 101, 102].indexOf(key) !== -1) {
-            //     const current_row = pattern[caret.row];
-            //     const key_char = {97: 'A', 98: 'B', 99: 'C', 100: 'D', 101: 'E', 102: 'F'}[key];
-            //     pattern[caret.row] = replaceAt(current_row, caret.col, key_char, 1);
-            // }
-
             /*
 
                         +1                   +2
@@ -182,15 +176,16 @@ function pattern_input_handler(key, caret, desciptor, pattern){
             pattern[caret.row] = replaceAt(current_rowB, caret.col, key_infoB, 1);
         }
     }
+
+    var hex_deletes = [46, 127];
     if (found_in([34, 35], caret.col)){
-        //post('heeey' +  key);
+        // hardcoding, before generalization.
         var charfound = String.fromCharCode(key).toUpperCase();
         var HEXALPHNUM = '0123456789ABCDEF';
         var listed = HEXALPHNUM.split('');
         if (found_in(listed, charfound)){
             var replacement_hex = '';
-            post('>>>', charfound, '\n');
-
+            // post('>>>', charfound, '\n');
             // first char of 2 character hex input
             if (caret.col === 34){
                 replacement_hex += charfound;
@@ -201,6 +196,17 @@ function pattern_input_handler(key, caret, desciptor, pattern){
                 }
                 pattern[caret.row] = replaceAt(pattern[caret.row], caret.col, replacement_hex, 2);
             }
+            else if (caret.col === 35){
+                if (pattern[caret.row][34] === '.'){
+                    replacement_hex += '0';
+                } else {
+                    replacement_hex += pattern[caret.row][34];
+                }
+                replacement_hex += charfound;
+                pattern[caret.row] = replaceAt(pattern[caret.row], caret.col-1, replacement_hex, 2);
+            }
+        } else if (found_in(hex_deletes, key)) {
+            pattern[caret.row] = replaceAt(pattern[caret.row], 34, '..', 2);
         }
         
     }
@@ -347,6 +353,12 @@ function draw_track_descriptor(){
 }
 
 function key_handler(){
+
+    if (g_mouse_on_rect !== true){
+        // you don't want any data interaction if the mouse is not on the rectangle
+        return;  
+    };
+
     if (g_in_edit_mode){
 
         var just_shift = 512;
