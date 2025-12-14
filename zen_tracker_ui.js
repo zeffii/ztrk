@@ -174,7 +174,7 @@ function pattern_input_handler(key, caret, desciptor, pattern){
             }
         }
     }
-    if (found_in([12, 17, 22, 27], caret.col)){
+    if (found_in([12, 17, 22, 27, 32], caret.col)){
         var keybangs = {49: "1", 46: ".", 127: "."};
         if (key in keybangs){
             const key_infoB = keybangs[key];
@@ -182,6 +182,29 @@ function pattern_input_handler(key, caret, desciptor, pattern){
             pattern[caret.row] = replaceAt(current_rowB, caret.col, key_infoB, 1);
         }
     }
+    if (found_in([34, 35], caret.col)){
+        //post('heeey' +  key);
+        var charfound = String.fromCharCode(key).toUpperCase();
+        var HEXALPHNUM = '0123456789ABCDEF';
+        var listed = HEXALPHNUM.split('');
+        if (found_in(listed, charfound)){
+            var replacement_hex = '';
+            post('>>>', charfound, '\n');
+
+            // first char of 2 character hex input
+            if (caret.col === 34){
+                replacement_hex += charfound;
+                if (pattern[caret.row][35] === '.'){
+                    replacement_hex += '0';
+                } else {
+                    replacement_hex += pattern[caret.row][35];
+                }
+                pattern[caret.row] = replaceAt(pattern[caret.row], caret.col, replacement_hex, 2);
+            }
+        }
+        
+    }
+
 }
 
 function clamp(v, lo, hi) {
@@ -279,6 +302,10 @@ function clear(){
     mgraphics.redraw();
 }
 
+function refresh(){
+    mgraphics.redraw();
+}
+
 function command(instruction){
     if (instruction === 'export_pattern'){
         post('Exporting Pattern\n');
@@ -304,6 +331,8 @@ function wheres_the_caret(){
 
 function draw_track_descriptor(){
 
+    const caret_string = '[' + caret.row + ', ' + caret.col + ']';
+
     var idx = wheres_the_caret();
     if (idx[0] >= 0) {
         const vidx = idx + 4;
@@ -312,6 +341,8 @@ function draw_track_descriptor(){
         // mgraphics.fill();   
         mgraphics.move_to(start_x + ((idx[0] + 4) * charwidth), start_y - (0.9 * charheight));
         mgraphics.show_text(pattern_markup.descriptors.track[idx[1]][1]);
+        mgraphics.move_to(0, start_y - (1.6 * charheight));
+        mgraphics.show_text( caret_string);
     }
 }
 
@@ -385,7 +416,7 @@ function paint(){
     text_h = tx_wh[1];
 
     // --- dark background ---
-    mgraphics.set_source_rgba(0.1, 0.2, 0.4, 1);  // almost black
+    mgraphics.set_source_rgba(0.1, 0.2, 0.4, 1);
     mgraphics.rectangle(0, 0, w, h);
     mgraphics.fill();
 
