@@ -16,7 +16,13 @@ Some milestones i will need to tackle, in no particular order
 - [x] selection rectangle
 - [x] note to midinote
 - [ ] input error handling
+    this is per parameter type
+    - [x] two hexvalues
+    - [x] note
+    - [x] trigger ( 1 or . )
+    - [ ] 4 hex
 - [ ] util functions(hex to int, etc)
+    these to be used for interpolation functions, multiply, addition
 - [ ] sequencing patterns
 - [ ] general pattern editor functions (reverse, spread, interpolate, transpose, shift, uzi, splay)
 - [ ] trigger from tick
