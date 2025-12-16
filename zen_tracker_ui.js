@@ -117,6 +117,17 @@ function find_idx_after_space(str) {
     return indices;
 }
 
+function find_2hex_indices(str) {
+    var regex = /\bh{2}\b/g;
+    var indices = [];
+    var match;
+
+    while ((match = regex.exec(str)) !== null) {
+        indices.push(match.index);
+    }
+
+    return indices;
+}
 
 function found_in(iterable, number){
     return iterable.indexOf(number) !== -1;
@@ -178,6 +189,13 @@ function pattern_input_handler(key, caret, desciptor, pattern){
     }
 
     var hex_deletes = [46, 127];
+    const two_hex_indices = find_2hex_indices(pattern_markup.track);
+    for (var i=0; i < two_hex_indices.length; i++){
+        var [lower_index, upper_index] = [two_hex_indices[i], two_hex_indices[i] + 1];
+        // post('[' + lower_index + ', ' + upper_index + ']');
+        // iterate over this list the following function
+    }
+
     if (found_in([34, 35], caret.col)){
         // hardcoding, before generalization.
         var charfound = String.fromCharCode(key).toUpperCase();
@@ -343,8 +361,6 @@ function draw_track_descriptor(){
     if (idx[0] >= 0) {
         const vidx = idx + 4;
         set_rgb({r: 0.9, g: 0.9, b:0.7}, 1.3);
-        // mgraphics.rectangle(start_x + (idx * charwidth) , start_y - (1.9 * charheight), charwidth, charheight);
-        // mgraphics.fill();   
         mgraphics.move_to(start_x + ((idx[0] + 4) * charwidth), start_y - (0.9 * charheight));
         mgraphics.show_text(pattern_markup.descriptors.track[idx[1]][1]);
         mgraphics.move_to(0, start_y - (1.6 * charheight));
