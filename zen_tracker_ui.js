@@ -129,6 +129,15 @@ function find_2hex_indices(str) {
     return indices;
 }
 
+function findSublistContaining(value, indices) {
+    for (var i = 0; i < indices.length; i++) {
+        if (indices[i].indexOf(value) !== -1) {
+            return indices[i]; // or return i if you only want the index
+        }
+    }
+    return null;
+}
+
 function found_in(iterable, number){
     return iterable.indexOf(number) !== -1;
 }
@@ -190,43 +199,43 @@ function pattern_input_handler(key, caret, desciptor, pattern){
 
     var hex_deletes = [46, 127];
     const two_hex_indices = find_2hex_indices(pattern_markup.track);
+    const two_hex_index_pairs = [];
     for (var i=0; i < two_hex_indices.length; i++){
-        var [lower_index, upper_index] = [two_hex_indices[i], two_hex_indices[i] + 1];
-        // post('[' + lower_index + ', ' + upper_index + ']');
-        // iterate over this list the following function
+        two_hex_index_pairs.push([two_hex_indices[i], two_hex_indices[i] + 1]);
     }
 
-    if (found_in([34, 35], caret.col)){
-        // hardcoding, before generalization.
+    var two_hex_indices_found = findSublistContaining(caret.col, two_hex_index_pairs);
+    if (two_hex_indices_found !== null){
+        post('here!');
+        var [lower_index, higher_index] = two_hex_indices_found;
+
         var charfound = String.fromCharCode(key).toUpperCase();
         var HEXALPHNUM = '0123456789ABCDEF';
         var listed = HEXALPHNUM.split('');
         if (found_in(listed, charfound)){
             var replacement_hex = '';
-            // post('>>>', charfound, '\n');
-            // first char of 2 character hex input
-            if (caret.col === 34){
+
+            if (caret.col === lower_index){
                 replacement_hex += charfound;
-                if (pattern[caret.row][35] === '.'){
+                if (pattern[caret.row][higher_index] === '.'){
                     replacement_hex += '0';
                 } else {
-                    replacement_hex += pattern[caret.row][35];
+                    replacement_hex += pattern[caret.row][higher_index];
                 }
                 pattern[caret.row] = replaceAt(pattern[caret.row], caret.col, replacement_hex, 2);
             }
-            else if (caret.col === 35){
-                if (pattern[caret.row][34] === '.'){
+            else if (caret.col === higher_index){
+                if (pattern[caret.row][lower_index] === '.'){
                     replacement_hex += '0';
                 } else {
-                    replacement_hex += pattern[caret.row][34];
+                    replacement_hex += pattern[caret.row][lower_index];
                 }
                 replacement_hex += charfound;
                 pattern[caret.row] = replaceAt(pattern[caret.row], caret.col-1, replacement_hex, 2);
             }
         } else if (found_in(hex_deletes, key)) {
-            pattern[caret.row] = replaceAt(pattern[caret.row], 34, '..', 2);
+            pattern[caret.row] = replaceAt(pattern[caret.row], lower_index, '..', 2);
         }
-        
     }
 
 }
@@ -382,7 +391,7 @@ function key_handler(){
         var directions = [28, 29, 30, 31];
         var direction_input = (directions.indexOf(g_key_codes[0]) !== -1);
 
-        post(g_key_codes);
+        // <------ post(g_key_codes);
 
         if ((g_key_codes[2] === just_shift) && direction_input){
             if (started_selection_mode){
