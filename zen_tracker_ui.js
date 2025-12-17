@@ -129,6 +129,27 @@ function find_2hex_indices(str) {
     return indices;
 }
 
+function find_trigger_indices(str) {
+    var regex = /\bb{1}\b/g;
+    var indices = [];
+    var match;
+
+    while ((match = regex.exec(str)) !== null) {
+        indices.push(match.index);
+    }
+
+    return indices;
+}
+
+function find_regexed_indices(str, regex) {
+    var indices = [];
+    var match;
+    while ((match = regex.exec(str)) !== null) {
+        indices.push(match.index);
+    }
+    return indices;
+}
+
 function findSublistContaining(value, indices) {
     for (var i = 0; i < indices.length; i++) {
         if (indices[i].indexOf(value) !== -1) {
@@ -148,55 +169,7 @@ function replaceAt(str, index, replacement, count) {
          + str.substr(index + count);
 }
 
-function pattern_input_handler(key, caret, desciptor, pattern){
-
-    const NoteClearList = {46: "...", 127: "...", 96: "^^^", 49: "==="};
-    if ([0, 1, 2].indexOf(caret.col) !== -1){
-        if (caret.col === 0){
-            /*
-
-                        +1                   +2
-            |  C#  D#      F#  G#  A#   |  C#  D#
-            | |_2_|_3_| | |_5_|_6_|_7_| | |_9_|_0_| |
-            |_Q_|_W_|_E_|_R_|_T_|_Y_|_U_|_I_|_O_|_P_|
-            | C   D   E   F   G   A   B | C   D   E 
-
-                        +0               
-            |  C#  D#      F#  G#  A#   |
-            | |_S_|_D_| | |_G_|_H_|_J_| |
-            |_Z_|_X_|_C_|_V_|_B_|_N_|_M_|
-            | C   D   E   F   G   A   B |
-
-            deal with note data on note params
-            */
-            const g_keyjam_encoding = {
-                122: ['C-', 0], 115: ['C#', 0], 120: ['D-', 0], 100: ['D#', 0], 99: ['E-', 0], 
-                118: ['F-', 0], 103: ['F#', 0], 98: ['G-', 0], 104: ['G#', 0], 110: ['A-', 0], 106: ['A#', 0], 109: ['B-', 0],
-                113: ['C-', 1], 50: ['C#', 1], 119: ['D-', 1], 51: ['D#', 1], 101: ['E-', 1], 
-                114: ['F-', 1], 53: ['F#', 1], 116: ['G-', 1], 54: ['G#', 1], 121: ['A-', 1], 55: ['A#', 1], 117: ['B-', 1],
-                105: ['C-', 2], 57: ['C#', 2], 111: ['D-', 2], 48: ['D#', 2], 112: ['E-', 2], 
-            }
-            if (key in g_keyjam_encoding){
-                const key_info = g_keyjam_encoding[key];
-                const current_row = pattern[caret.row];
-                const note = String(key_info[0]) + String(key_info[1] + g_pattern_octave);
-                pattern[caret.row] = replaceAt(current_row, caret.col, note, 3);
-            } else if (key in NoteClearList ){
-                const NoteReplacement = NoteClearList[key];
-                const current_row1 = pattern[caret.row];
-                pattern[caret.row] = replaceAt(current_row1, caret.col, NoteReplacement, 3);
-            }
-        }
-    }
-    if (found_in([12, 17, 22, 27, 32], caret.col)){
-        var keybangs = {49: "1", 46: ".", 127: "."};
-        if (key in keybangs){
-            const key_infoB = keybangs[key];
-            const current_rowB = pattern[caret.row];
-            pattern[caret.row] = replaceAt(current_rowB, caret.col, key_infoB, 1);
-        }
-    }
-
+function handle_2hex_input(key, caret, desciptor, pattern){
     var hex_deletes = [46, 127];
     const two_hex_indices = find_2hex_indices(pattern_markup.track);
     const two_hex_index_pairs = [];
@@ -206,9 +179,8 @@ function pattern_input_handler(key, caret, desciptor, pattern){
 
     var two_hex_indices_found = findSublistContaining(caret.col, two_hex_index_pairs);
     if (two_hex_indices_found !== null){
-        post('here!');
-        var [lower_index, higher_index] = two_hex_indices_found;
 
+        var [lower_index, higher_index] = two_hex_indices_found;
         var charfound = String.fromCharCode(key).toUpperCase();
         var HEXALPHNUM = '0123456789ABCDEF';
         var listed = HEXALPHNUM.split('');
@@ -236,8 +208,86 @@ function pattern_input_handler(key, caret, desciptor, pattern){
         } else if (found_in(hex_deletes, key)) {
             pattern[caret.row] = replaceAt(pattern[caret.row], lower_index, '..', 2);
         }
-    }
+    }    
+}
 
+function handle_trigger_input(key, caret, desciptor, pattern){
+    const trigger_indices = find_trigger_indices(pattern_markup.track);
+    if (found_in(trigger_indices, caret.col)){
+        var keybangs = {49: "1", 46: ".", 127: "."};
+        if (key in keybangs){
+            const key_infoB = keybangs[key];
+            const current_rowB = pattern[caret.row];
+            pattern[caret.row] = replaceAt(current_rowB, caret.col, key_infoB, 1);
+        }
+    }
+}
+
+function handle_note_input(key, caret, desciptor, pattern){
+    const NoteClearList = {46: "...", 127: "...", 96: "^^^", 49: "==="};
+    const note_indices = find_regexed_indices(pattern_markup.track, /\bn{3}\b/g);
+    if (note_indices.length){
+        post('note_indices :', note_indices, '\n');
+
+        const note_index_pairs = [];
+        for (var i=0; i < note_indices.length; i++){
+            var index_0 = note_indices[i];
+            var index_1 = index_0 + 1;
+            var index_2 = index_0 + 2;
+            note_index_pairs.push([index_0, index_1, index_2]);
+        }
+        post('note_index_pairs :', note_index_pairs);
+
+        var notefield_indices_found = findSublistContaining(caret.col, note_index_pairs);
+        if (notefield_indices_found === null){
+            return;  // caret is not in a notefield
+        }
+
+        // only allow full note input on first element of note field
+        var notefield_first_index = notefield_indices_found[0];
+        if (caret.col === notefield_first_index){
+            /*
+                        +1                   +2
+            |  C#  D#      F#  G#  A#   |  C#  D#
+            | |_2_|_3_| | |_5_|_6_|_7_| | |_9_|_0_| |
+            |_Q_|_W_|_E_|_R_|_T_|_Y_|_U_|_I_|_O_|_P_|
+            | C   D   E   F   G   A   B | C   D   E 
+
+                        +0               
+            |  C#  D#      F#  G#  A#   |
+            | |_S_|_D_| | |_G_|_H_|_J_| |
+            |_Z_|_X_|_C_|_V_|_B_|_N_|_M_|
+            | C   D   E   F   G   A   B |
+
+            deal with note data on note params
+            */
+            const g_keyjam_encoding = {
+                122: ['C-', 0], 115: ['C#', 0], 120: ['D-', 0], 100: ['D#', 0], 99: ['E-', 0], 
+                118: ['F-', 0], 103: ['F#', 0], 98: ['G-', 0], 104: ['G#', 0], 110: ['A-', 0], 106: ['A#', 0], 109: ['B-', 0],
+                113: ['C-', 1], 50: ['C#', 1], 119: ['D-', 1], 51: ['D#', 1], 101: ['E-', 1], 
+                114: ['F-', 1], 53: ['F#', 1], 116: ['G-', 1], 54: ['G#', 1], 121: ['A-', 1], 55: ['A#', 1], 117: ['B-', 1],
+                105: ['C-', 2], 57: ['C#', 2], 111: ['D-', 2], 48: ['D#', 2], 112: ['E-', 2], 
+            }
+            if (key in g_keyjam_encoding){
+                const key_info = g_keyjam_encoding[key];
+                const current_row = pattern[caret.row];
+                const note = String(key_info[0]) + String(key_info[1] + g_pattern_octave);
+                pattern[caret.row] = replaceAt(current_row, caret.col, note, 3);
+            } else if (key in NoteClearList){
+                // this can be moved into a loop over the 3 indices, so input can be handle in all three
+                const NoteReplacement = NoteClearList[key];
+                const current_row1 = pattern[caret.row];
+                pattern[caret.row] = replaceAt(current_row1, caret.col, NoteReplacement, 3);
+            }
+        }
+    }
+}
+
+
+function pattern_input_handler(key, caret, desciptor, pattern){
+    handle_note_input(key, caret, desciptor, pattern);
+    handle_trigger_input(key, caret, desciptor, pattern);
+    handle_2hex_input(key, caret, desciptor, pattern);
 }
 
 function clamp(v, lo, hi) {
