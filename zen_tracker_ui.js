@@ -3,9 +3,19 @@ outlets = 3;
 inlets = 4;
 
 mgraphics.init();
-
 mgraphics.relative_coords = 0;
 mgraphics.autofill = 0;
+
+/*  todo
+[x] refactor input-type lookups into a single regexer
+[ ] refactor input-handler to narrow down where the cursor is and only pass controlflow through one handler
+[x] mouse click to position cursor
+    - some upper boundar tests to be done
+[ ] skip empty cells when caret moves vertically
+[ ] investigate + fix the double tap caret move ( maybe initial ms needs to be increased )
+[ ] copy paste selection
+*/
+
 
 var g_Mouse = [-1, -1];
 var g_pattern_playhead = 0;
@@ -117,31 +127,8 @@ function find_idx_after_space(str) {
     return indices;
 }
 
-function find_2hex_indices(str) {
-    var regex = /\bh{2}\b/g;
-    var indices = [];
-    var match;
-
-    while ((match = regex.exec(str)) !== null) {
-        indices.push(match.index);
-    }
-
-    return indices;
-}
-
-function find_trigger_indices(str) {
-    var regex = /\bb{1}\b/g;
-    var indices = [];
-    var match;
-
-    while ((match = regex.exec(str)) !== null) {
-        indices.push(match.index);
-    }
-
-    return indices;
-}
-
 function find_regexed_indices(str, regex) {
+    // this may be a little counter inuitive
     var indices = [];
     var match;
     while ((match = regex.exec(str)) !== null) {
@@ -171,7 +158,7 @@ function replaceAt(str, index, replacement, count) {
 
 function handle_2hex_input(key, caret, desciptor, pattern){
     var hex_deletes = [46, 127];
-    const two_hex_indices = find_2hex_indices(pattern_markup.track);
+    const two_hex_indices = find_regexed_indices(pattern_markup.track, /\bh{2}\b/g);  // hh
     const two_hex_index_pairs = [];
     for (var i=0; i < two_hex_indices.length; i++){
         two_hex_index_pairs.push([two_hex_indices[i], two_hex_indices[i] + 1]);
@@ -211,8 +198,9 @@ function handle_2hex_input(key, caret, desciptor, pattern){
     }    
 }
 
+
 function handle_trigger_input(key, caret, desciptor, pattern){
-    const trigger_indices = find_trigger_indices(pattern_markup.track);
+    const trigger_indices = find_regexed_indices(pattern_markup.track, /\bb{1}\b/g);  // b
     if (found_in(trigger_indices, caret.col)){
         var keybangs = {49: "1", 46: ".", 127: "."};
         if (key in keybangs){
@@ -225,7 +213,7 @@ function handle_trigger_input(key, caret, desciptor, pattern){
 
 function handle_note_input(key, caret, desciptor, pattern){
     const NoteClearList = {46: "...", 127: "...", 96: "^^^", 49: "==="};
-    const note_indices = find_regexed_indices(pattern_markup.track, /\bn{3}\b/g);
+    const note_indices = find_regexed_indices(pattern_markup.track, /\bn{3}\b/g);   // nnn
     if (note_indices.length){
         post('note_indices :', note_indices, '\n');
 
@@ -283,8 +271,26 @@ function handle_note_input(key, caret, desciptor, pattern){
     }
 }
 
-
 function pattern_input_handler(key, caret, desciptor, pattern){
+    /*
+    switch (find_parameter_type_under_caret(caret, descrptor)) {
+      case 'NOTE':
+        handle_note_input(key, caret, desciptor, pattern);
+        break;
+      case '2HEX':
+        handle_2hex_input(key, caret, desciptor, pattern);
+        break;
+      case 'TRIGGER':
+        handle_trigger_input(key, caret, desciptor, pattern);
+        break;
+      case '4HEX':
+        handle_4hex_input(key, caret, desciptor, pattern);
+        break;
+      default:
+        break;
+    }    
+    */
+
     handle_note_input(key, caret, desciptor, pattern);
     handle_trigger_input(key, caret, desciptor, pattern);
     handle_2hex_input(key, caret, desciptor, pattern);
@@ -423,7 +429,7 @@ function draw_track_descriptor(){
         mgraphics.move_to(start_x + ((idx[0] + 4) * charwidth), start_y - (0.9 * charheight));
         mgraphics.show_text(pattern_markup.descriptors.track[idx[1]][1]);
         mgraphics.move_to(0, start_y - (1.6 * charheight));
-        mgraphics.show_text( caret_string);
+        mgraphics.show_text(caret_string);
     }
 }
 
@@ -538,12 +544,27 @@ function paint(){
 
 }
 
-function onclick(x, y, button){
-    g_Mouse = [x, y];
-    g_in_edit_mode = !g_in_edit_mode;
-    mgraphics.redraw();
+
+function find_cell_under_cursor(x, y){
+    var caret_range_x_start = start_x + (4 * charwidth);
+    var caret_range_y_start = start_y - charheight;
+    if ((x >= caret_range_x_start ) && (y >= caret_range_y_start)){
+        var cell_x = Math.floor((x - caret_range_x_start) / charwidth);
+        var cell_y = Math.floor((y - caret_range_y_start) / charheight);
+
+        // TODO test high boundary first..
+        caret.row = cell_y;
+        caret.col = cell_x;
+    }
 }
 
+function onclick(x, y, button){
+    g_Mouse = [x, y];
+    if (g_in_edit_mode){
+        find_cell_under_cursor(x, y);
+    }
+    mgraphics.redraw();
+}
 
 function ondrag(x, y, button){
     return;
