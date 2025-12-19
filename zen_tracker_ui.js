@@ -406,12 +406,12 @@ function key_handler(){
 
         var just_shift = 512;
         var just_ctrl = 4352;
+        var ctrl_shift = 4864;
         var directions = [28, 29, 30, 31];
         var direction_input = (directions.indexOf(g_key_codes[0]) !== -1);
 
-        // <------ post(g_key_codes);
-
-        if ((g_key_codes[2] === just_shift) && direction_input){
+        const shift_or_ctrlshift = found_in([just_shift, ctrl_shift], g_key_codes[2]);
+        if (shift_or_ctrlshift && direction_input){
             if (started_selection_mode){
                 post('modifying');
             } else {
@@ -428,19 +428,53 @@ function key_handler(){
 
         if (direction_input){
 
-            /* if just_ctrl or shift_and_control
-                . find your position in the pattern row. move to the nearest start of a parameter
-                . move to starts only
+            if (found_in([4352, 4864], g_key_codes[2])){   // some form of ctrl is pressed (with or without shift)
 
-            */
+                var param_starts = find_idx_after_space(pattern_markup.track);
+                var [left_distance, right_distance] = [-1, 1];
+                var [low, high] = [1, 1];
 
-            // else
-            switch(g_key_codes[0]) {
-                case 28: moveCaret(0, -1); break;  // left
-                case 29: moveCaret(0,  1); break;  // right
-                case 30: moveCaret(-1, 0); break;  // up
-                case 31: moveCaret(1, 0); break;  // down
-                default: return;
+                for (var i=0; i < param_starts.length; i++){
+                    if (g_key_codes[0] === 28){                     // were going left
+                    
+                        if (caret.col === 0){ 
+                            left_distance = 0;
+                            break;
+                        }
+                        if (param_starts[i] >= caret.col){ break; }
+                        low = param_starts[i];
+                        left_distance = caret.col - low;
+
+                    } else if (g_key_codes[0] === 29){              // were going right
+
+                        if (caret.col === (pattern_markup.track.length - 1)){
+                            right_distance = 0;
+                            break;
+                        }
+                        if (param_starts[i] > caret.col){
+                            high = param_starts[i];
+                            right_distance = high - caret.col;
+                            break
+                        }
+                    }
+                }
+
+                switch(g_key_codes[0]) {
+                    case 28: moveCaret(0, -left_distance); break;  // left
+                    case 29: moveCaret(0,  right_distance); break;  // right
+                    case 30: moveCaret(-2, 0); break;  // up
+                    case 31: moveCaret(2, 0); break;   // down
+                    default: return;
+
+                }
+            } else {
+                switch(g_key_codes[0]) {
+                    case 28: moveCaret(0, -1); break;  // left
+                    case 29: moveCaret(0,  1); break;  // right
+                    case 30: moveCaret(-1, 0); break;  // up
+                    case 31: moveCaret(1, 0); break;   // down
+                    default: return;
+                }
             }
         }
 
