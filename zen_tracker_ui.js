@@ -544,17 +544,16 @@ function paint(){
 
 }
 
-
 function find_cell_under_cursor(x, y){
     var caret_range_x_start = start_x + (4 * charwidth);
     var caret_range_y_start = start_y - charheight;
     if ((x >= caret_range_x_start ) && (y >= caret_range_y_start)){
         var cell_x = Math.floor((x - caret_range_x_start) / charwidth);
         var cell_y = Math.floor((y - caret_range_y_start) / charheight);
-
-        // TODO test high boundary first..
-        caret.row = cell_y;
-        caret.col = cell_x;
+        if ((cell_x < pattern_markup.track.length) && (cell_y < pattern_markup.length)){
+            caret.row = cell_y;
+            caret.col = cell_x;
+        }
     }
 }
 
