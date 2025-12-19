@@ -469,8 +469,16 @@ function key_handler(){
                 }
             } else {
                 switch(g_key_codes[0]) {
-                    case 28: moveCaret(0, -1); break;  // left
-                    case 29: moveCaret(0,  1); break;  // right
+                    case 28: 
+                        moveCaret(0, -1);
+                        var over_a_space = (pattern_markup.track.charAt(caret.col) === ' ');
+                        if (over_a_space){ moveCaret(0, -1); } // move to the next tick
+                        break;  // left
+                    case 29: 
+                        moveCaret(0,  1); 
+                        var over_a_space = (pattern_markup.track.charAt(caret.col) === ' ');
+                        if (over_a_space){ moveCaret(0, 1); }
+                        break;  // right
                     case 30: moveCaret(-1, 0); break;  // up
                     case 31: moveCaret(1, 0); break;   // down
                     default: return;
