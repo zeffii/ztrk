@@ -1830,7 +1830,8 @@
                             "modernui": 1
                         },
                         "classnamespace": "box",
-                        "rect": [ 706.0, 120.0, 714.0, 730.0 ],
+                        "rect": [ 159.0, 104.0, 1023.0, 730.0 ],
+                        "visible": 1,
                         "boxes": [
                             {
                                 "box": {
@@ -1883,7 +1884,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 378.0, 274.0, 50.0, 22.0 ],
-                                    "text": "29"
+                                    "text": "28"
                                 }
                             },
                             {
@@ -1981,7 +1982,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "bang" ],
                                     "patching_rect": [ 459.0, 259.0, 63.0, 22.0 ],
-                                    "text": "metro 105"
+                                    "text": "metro 135"
                                 }
                             },
                             {
@@ -2025,7 +2026,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "124",
+                                    "text": "123",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -2070,7 +2071,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 255.38463020324707, 154.0, 22.0 ],
-                                    "text": "keys 29 124 0 -12",
+                                    "text": "keys 28 123 0 -11",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -5644,14 +5645,6 @@
             "obj-81::obj-9": [ "Width", "Width", 0 ],
             "obj-81::obj-99": [ "Active[1]", "Active", 0 ],
             "obj-85::obj-40": [ "slider[2]", "slider", 0 ],
-            "parameterbanks": {
-                "0": {
-                    "index": 0,
-                    "name": "",
-                    "parameters": [ "-", "-", "-", "-", "-", "-", "-", "-" ],
-                    "buttons": [ "-", "-", "-", "-", "-", "-", "-", "-" ]
-                }
-            },
             "parameter_overrides": {
                 "obj-107::obj-27::obj-16": {
                     "parameter_longname": "Mix[2]"

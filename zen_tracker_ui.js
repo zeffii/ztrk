@@ -115,7 +115,6 @@ var rows = pattern_markup.length;
 var cols = pattern_markup.track.length;
 
 //track: "nnn hh ss hh hhhh hh hhhh"
-// ttt  = ticks
 // nnn  = note
 // hh   = 2hex
 // ss   = short (ints 0..80)
@@ -463,8 +462,6 @@ function keys(a1, a2, a3, a4) {
 
 }
 
-
-
 function paint(){
 
     var w = mgraphics.size[0];
@@ -479,6 +476,7 @@ function paint(){
 
     // --- dark background ---
     mgraphics.set_source_rgba(0.1, 0.2, 0.4, 1);
+    // mgraphics.set_source_rgba(0.14, 0.14, 0.14, 1);
     mgraphics.rectangle(0, 0, w, h);
     mgraphics.fill();
 
