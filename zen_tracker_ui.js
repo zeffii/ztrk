@@ -1,4 +1,5 @@
-// include("ztrk_patternClass.js");
+include("ztrk_pattern_utils.js");
+
 outlets = 3;
 inlets = 4;
 
@@ -8,7 +9,9 @@ mgraphics.autofill = 0;
 
 /*  todo
 [x] refactor input-type lookups into a single regexer
-[ ] refactor input-handler to narrow down where the cursor is and only pass controlflow through one handler
+[x] refactor input-handler to narrow down where the cursor is and only pass controlflow through one handler
+    - having added this, it makes some of the internals of 
+    handle_note_input, handle_2hex_input, handle_trigger_input, handle_4hex_input redundant.
 [x] mouse click to position cursor
     - some upper boundar tests to be done
 [ ] skip empty cells when caret moves vertically
@@ -101,6 +104,13 @@ var pattern_markup = {
 faux_pattern = make_empty_pattern(pattern_markup, 1);
 pattern_markup.data = faux_pattern;
 
+function dictionary(dictName) {
+    var inputDict = new Dict(dictName);
+    var jsObject = JSON.parse(inputDict.stringify());
+    pattern_markup = jsObject;
+    faux_pattern = pattern_markup.data;
+}
+
 var rows = pattern_markup.length;
 var cols = pattern_markup.track.length;
 
@@ -115,46 +125,7 @@ var cols = pattern_markup.track.length;
 
 // untested.
 
-function find_idx_after_space(str) {
-    const indices = [];
-  
-    indices.push(0);
-    for (var i = 1; i < str.length; i++) {
-        if (str[i - 1] === ' ') {
-            indices.push(i);
-        }
-    }
-    return indices;
-}
 
-function find_regexed_indices(str, regex) {
-    // this may be a little counter inuitive
-    var indices = [];
-    var match;
-    while ((match = regex.exec(str)) !== null) {
-        indices.push(match.index);
-    }
-    return indices;
-}
-
-function findSublistContaining(value, indices) {
-    for (var i = 0; i < indices.length; i++) {
-        if (indices[i].indexOf(value) !== -1) {
-            return indices[i]; // or return i if you only want the index
-        }
-    }
-    return null;
-}
-
-function found_in(iterable, number){
-    return iterable.indexOf(number) !== -1;
-}
-
-function replaceAt(str, index, replacement, count) {
-    return str.substr(0, index)
-         + replacement
-         + str.substr(index + count);
-}
 
 function handle_2hex_input(key, caret, desciptor, pattern){
     var hex_deletes = [46, 127];
@@ -210,6 +181,8 @@ function handle_trigger_input(key, caret, desciptor, pattern){
         }
     }
 }
+
+function handle_4hex_input(key, caret, desciptor, pattern){};
 
 function handle_note_input(key, caret, desciptor, pattern){
     const NoteClearList = {46: "...", 127: "...", 96: "^^^", 49: "==="};
@@ -272,33 +245,30 @@ function handle_note_input(key, caret, desciptor, pattern){
 }
 
 function pattern_input_handler(key, caret, desciptor, pattern){
-    /*
-    switch (find_parameter_type_under_caret(caret, descrptor)) {
-      case 'NOTE':
+    
+    const param_at_position = getParameterTypeAtPosition(desciptor.track, caret.col);
+    if (param_at_position == null){
+        return;  // in space column
+    }
+
+    switch (param_at_position.type) {
+      case 'nnn':
         handle_note_input(key, caret, desciptor, pattern);
         break;
-      case '2HEX':
+      case 'hh':
         handle_2hex_input(key, caret, desciptor, pattern);
         break;
-      case 'TRIGGER':
+      case 'b':
         handle_trigger_input(key, caret, desciptor, pattern);
         break;
-      case '4HEX':
+      case 'hhhh':
         handle_4hex_input(key, caret, desciptor, pattern);
         break;
       default:
         break;
     }    
-    */
-
-    handle_note_input(key, caret, desciptor, pattern);
-    handle_trigger_input(key, caret, desciptor, pattern);
-    handle_2hex_input(key, caret, desciptor, pattern);
 }
 
-function clamp(v, lo, hi) {
-    return Math.max(lo, Math.min(hi, v));
-}
 
 function moveCaret(dr, dc) {
     caret.row = clamp(caret.row + dr, 0, rows - 1);
@@ -376,13 +346,6 @@ function bang(){
 
 function msg_int(tick){
     g_pattern_playhead = tick;
-}
-
-function dictionary(dictName) {
-    var inputDict = new Dict(dictName);
-    var jsObject = JSON.parse(inputDict.stringify());
-    pattern_markup = jsObject;
-    faux_pattern = pattern_markup.data;
 }
 
 function clear(){
@@ -500,9 +463,7 @@ function keys(a1, a2, a3, a4) {
 
 }
 
-function fmt(n) {
-    return ('000' + Math.floor(Math.abs(n))).slice(-3) + ' ';
-}
+
 
 function paint(){
 
