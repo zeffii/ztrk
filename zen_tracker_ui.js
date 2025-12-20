@@ -96,7 +96,9 @@ var pattern_markup = {
             9: ['b', 'Trigger'], 
             10: ['hh', 'Volume'],
             11: ['b', 'Trigger'], 
-            12: ['hh', 'Volume']
+            12: ['hh', 'Volume'],
+            13: ['hh', 'LDelay'],
+            14: ['hh', 'RDelay']
         }
     },
     data: []
@@ -264,7 +266,7 @@ function handle_note_input(key, caret, desciptor, pattern){
                 const note = String(key_info[0]) + String(key_info[1] + g_pattern_octave);
                 pattern[caret.row] = replaceAt(current_row, caret.col, note, 3);
             } else if (key in NoteClearList){
-                // this can be moved into a loop over the 3 indices, so input can be handle in all three
+                // this can be moved into a loop over the 3 indices, so input can be handled in all three
                 const NoteReplacement = NoteClearList[key];
                 const current_row1 = pattern[caret.row];
                 pattern[caret.row] = replaceAt(current_row1, caret.col, NoteReplacement, 3);
