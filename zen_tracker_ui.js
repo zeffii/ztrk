@@ -14,9 +14,10 @@ mgraphics.autofill = 0;
     handle_note_input, handle_2hex_input, handle_trigger_input, handle_4hex_input redundant.
 [x] mouse click to position cursor
     - some upper boundar tests to be done
-[ ] skip empty cells when caret moves vertically
+[x] skip empty cells when caret moves vertically
 [ ] investigate + fix the double tap caret move ( maybe initial ms needs to be increased )
 [ ] copy paste selection
+[ ] implement scrolling
 */
 
 
@@ -181,7 +182,36 @@ function handle_trigger_input(key, caret, desciptor, pattern){
     }
 }
 
-function handle_4hex_input(key, caret, desciptor, pattern){};
+function handle_4hex_input(key, caret, desciptor, pattern, param_at_position){
+    var hex_deletes = [46, 127];
+    const four_hex_indices = find_regexed_indices(pattern_markup.track, /\bh{4}\b/g);  // hhhh
+    const four_hex_index_pairs = [];
+    for (var i=0; i < four_hex_indices.length; i++){
+        four_hex_index_pairs.push(
+            [four_hex_indices[i], 
+            four_hex_indices[i] + 1,
+            four_hex_indices[i] + 2,
+            four_hex_indices[i] + 3]);
+    }
+
+    var four_hex_indices_found = findSublistContaining(caret.col, four_hex_index_pairs);
+    if (four_hex_indices_found !== null){
+
+        var [index_0, index_1, index_2, index_3] = four_hex_indices_found;
+        var charfound = String.fromCharCode(key).toUpperCase();
+        var HEXALPHNUM = '0123456789ABCDEF';
+        var listed = HEXALPHNUM.split('');
+
+        if (found_in(listed, charfound)){
+            var current_param_data = pattern[caret.row].substr(index_0, 4);
+            var proposed_param_data = replaceAt(current_param_data, (caret.col - index_0), charfound, 1);
+            proposed_param_data = proposed_param_data.replace(/\./g, "0");
+            pattern[caret.row] = replaceAt(pattern[caret.row], index_0, proposed_param_data, 4);
+        } else if (found_in(hex_deletes, key)) {
+            pattern[caret.row] = replaceAt(pattern[caret.row], index_0, '....', 4);
+        }
+    }    
+};
 
 function handle_note_input(key, caret, desciptor, pattern){
     const NoteClearList = {46: "...", 127: "...", 96: "^^^", 49: "==="};
@@ -261,7 +291,7 @@ function pattern_input_handler(key, caret, desciptor, pattern){
         handle_trigger_input(key, caret, desciptor, pattern);
         break;
       case 'hhhh':
-        handle_4hex_input(key, caret, desciptor, pattern);
+        handle_4hex_input(key, caret, desciptor, pattern, param_at_position);
         break;
       default:
         break;
