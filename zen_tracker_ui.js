@@ -416,16 +416,32 @@ function wheres_the_caret(){
 
 function draw_track_descriptor(){
 
+    // draw at bottom
+    var w = mgraphics.size[0];
+    var h = mgraphics.size[1];
+
+    set_rgb({r: 0.2, g: 0.3, b:0.2}, 2.3);
+    mgraphics.rectangle(0, h-charheight, w, charheight);
+    mgraphics.fill();
+
     const caret_string = '[' + caret.row + ', ' + caret.col + ']';
 
     var idx = wheres_the_caret();
     if (idx[0] >= 0) {
         const vidx = idx + 4;
         set_rgb({r: 0.9, g: 0.9, b:0.7}, 1.3);
-        mgraphics.move_to(start_x + ((idx[0] + 4) * charwidth), start_y - (0.9 * charheight));
+        // mgraphics.move_to(start_x + ((idx[0] + 4) * charwidth), start_y - (0.9 * charheight));
+        var locator_width = mgraphics.text_measure(caret_string + '  ')[0];
+        mgraphics.move_to(locator_width, h - (0.25*charheight));
         mgraphics.show_text(pattern_markup.descriptors.track[idx[1]][1]);
-        mgraphics.move_to(0, start_y - (1.6 * charheight));
+
+        mgraphics.move_to(0, h - (0.25*charheight));
         mgraphics.show_text(caret_string);
+        var version_identifier = 'ztrk v.001';
+        var identifier_width = mgraphics.text_measure(version_identifier + ' ')[0];
+
+        mgraphics.move_to(w - identifier_width, h - (0.25*charheight));
+        mgraphics.show_text(version_identifier);
     }
 }
 
