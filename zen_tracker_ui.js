@@ -446,14 +446,14 @@ function handle_delete_selection(pattern){
             var xx_last_param = getParameterTypeAtPosition(pattern_markup.track, selection.right);
 
             if (xx_first_param !== null){
-                post('start ->', xx_first_param.start, xx_first_param.end);
+                // post('start ->', xx_first_param.start, xx_first_param.end);
                 selection_start = xx_first_param.start;
             } else { 
                 // return false; 
             }
 
             if (xx_last_param !== null){
-                post('end   ->', xx_last_param.start,  xx_last_param.end);
+                // post('end   ->', xx_last_param.start,  xx_last_param.end);
                 selection_length = (xx_last_param.end - xx_first_param.start) + 1;
             } else { 
                 // return false; 

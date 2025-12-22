@@ -26,6 +26,7 @@ function getParameterTypeAtPosition(pattern, position) {
 }
 
 function fmt(n) {
+    // zero pads the tick column.
     return ('000' + Math.floor(Math.abs(n))).slice(-3) + ' ';
 }
 
@@ -34,6 +35,7 @@ function clamp(v, lo, hi) {
 }
 
 function find_idx_after_space(str) {
+    // function finds start indices of parameters.
     const indices = [];
   
     indices.push(0);
@@ -47,6 +49,7 @@ function find_idx_after_space(str) {
 
 function find_regexed_indices(str, regex) {
     // this may be a little counter intuitive
+    // finds start indices of params captured by this regex pattern
     var indices = [];
     var match;
     while ((match = regex.exec(str)) !== null) {
@@ -56,6 +59,8 @@ function find_regexed_indices(str, regex) {
 }
 
 function findSublistContaining(value, indices) {
+    // given a nested list of indices which contain this kind of parameter
+    // return the indices associated with parameter at the caret location
     for (var i = 0; i < indices.length; i++) {
         if (indices[i].indexOf(value) !== -1) {
             return indices[i]; // or return i if you only want the index
