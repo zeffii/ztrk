@@ -15,6 +15,7 @@ mgraphics.autofill = 0;
 [x] mouse click to position cursor
     - some upper boundar tests to be done
 [x] skip empty cells when caret moves vertically
+[x] delete selection = alt + del
 [ ] investigate + fix the double tap caret move ( maybe initial ms needs to be increased )
 [ ] copy paste selection
 [ ] implement scrolling
@@ -130,6 +131,7 @@ var cols = pattern_markup.track.length;
 
 
 function handle_2hex_input(key, caret, desciptor, pattern){
+    // 4hex version of this was written after 2hex, use 4hex as inspiration if you plan to rewrite this function.
     var hex_deletes = [46, 127];
     const two_hex_indices = find_regexed_indices(pattern_markup.track, /\bh{2}\b/g);  // hh
     const two_hex_index_pairs = [];
@@ -427,7 +429,50 @@ function draw_track_descriptor(){
     }
 }
 
+function handle_delete_selection(pattern){
+    if (started_selection_mode){
+        var selection =  getSelectionRect();
+        // this implementation will operate all selected parameters, even if a parameter is only partially
+        // in the selection. This is unlike interpolation, where there is a case to make for partial interpolats.
+        for (var row = selection.top; row <= selection.bottom; row++){
+
+            var selection_start = selection.left;
+            var selection_length = (selection.right - selection.left) + 1;
+
+            // First establish if the selection contains partials. extend if needed.
+            // is selection.left at index0 of the param?
+            // is selection right at indexN of the param?
+            var xx_first_param = getParameterTypeAtPosition(pattern_markup.track, selection_start);
+            var xx_last_param = getParameterTypeAtPosition(pattern_markup.track, selection.right);
+
+            if (xx_first_param !== null){
+                post('start ->', xx_first_param.start, xx_first_param.end);
+                selection_start = xx_first_param.start;
+            } else { 
+                // return false; 
+            }
+
+            if (xx_last_param !== null){
+                post('end   ->', xx_last_param.start,  xx_last_param.end);
+                selection_length = (xx_last_param.end - xx_first_param.start) + 1;
+            } else { 
+                // return false; 
+            }
+
+            var row_substr = pattern[row].substr(selection_start, selection_length);
+            row_substr = row_substr.replace(/[^ ]/g, '.');
+            pattern[row] = replaceAt(pattern[row], selection_start, row_substr, selection_length);
+        }
+        return true;
+    }
+    return false;
+}
+
 function key_handler(){
+
+    if (!faux_pattern){
+        return;
+    }
 
     if (g_mouse_on_rect !== true){
         // you don't want any data interaction if the mouse is not on the rectangle
@@ -436,8 +481,19 @@ function key_handler(){
 
     if (g_in_edit_mode){
 
+        var DELETE = 127;
+        var ALT = 2048;
         var just_shift = 512;
         var just_ctrl = 4352;
+
+        if (g_key_codes[0] === DELETE && g_key_codes[2] === ALT){
+            if (handle_delete_selection(faux_pattern)){ 
+                mgraphics.redraw();
+                return;
+            } // end early.
+        }
+
+
         var ctrl_shift = 4864;
         var directions = [28, 29, 30, 31];
         var direction_input = (directions.indexOf(g_key_codes[0]) !== -1);
@@ -517,10 +573,8 @@ function key_handler(){
                 }
             }
         }
-
-        if (faux_pattern){
-            pattern_input_handler(g_key_codes[0], caret, pattern_markup, faux_pattern);
-        }
+        
+        pattern_input_handler(g_key_codes[0], caret, pattern_markup, faux_pattern);
 
         // we can restrict this to redraw iff there are updates, but for now this is convenient.
         mgraphics.redraw();
