@@ -487,10 +487,14 @@ function handle_interpolate_selection(faux_pattern){
 
 
         // TODO . THIS IS NOT IMPLEMENTED YET.
-        
+
         // if selection row-length < 3: return false
 
         var selection =  getSelectionRect();
+        post('Selection Length', selection.bottom - selection.top);
+        
+        return false;
+        
         var selection_start = selection.left;
         var selection_length = (selection.right - selection.left) + 1;
 
@@ -517,7 +521,7 @@ function handle_interpolate_selection(faux_pattern){
             var num_params = params.length;
             // row_substr = row_substr.replace(/[^ ]/g, '.');
             // pattern[row] = replaceAt(pattern[row], selection_start, row_substr, selection_length);
-
+        }
         return true;
     }
     return false;
@@ -540,11 +544,13 @@ function key_handler(){
 
         var DELETE = 127;
         var ALT = 2048;
-        var I_KEY = 105;
         var just_shift = 512;
         var just_ctrl = 4352;
         var PAGE_UP = 11;
         var PAGE_DOWN = 12;
+
+        // var mt = 'wtf' + String.fromCharCode(g_key_codes[0]).toUpperCase();
+        post(g_key_codes[0]);
 
         if (g_key_codes[2] === ALT){
         
@@ -554,12 +560,13 @@ function key_handler(){
                     return;   // end early.
                 }
             } 
-            else if (g_key_codes[0] === I_KEY){
-                if (handle_interpolate_selection(faux_pattern)){ 
-                    mgraphics.redraw();
-                    return;   // end early.
-                } 
-            }
+            // else if (String.fromCharCode(g_key_codes[0]).toUpperCase() === 'I'){
+            //     post('heereee!');
+            //     if (handle_interpolate_selection(faux_pattern)){ 
+            //         mgraphics.redraw();
+            //         return;   // end early.
+            //     } 
+            // }
         }
 
         var ctrl_shift = 4864;

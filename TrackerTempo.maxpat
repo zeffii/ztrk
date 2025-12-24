@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 59.0, 107.0, 1000.0, 730.0 ],
+        "rect": [ 412.0, 507.0, 742.0, 259.0 ],
         "openinpresentation": 1,
         "boxes": [
             {
@@ -130,6 +130,7 @@
             {
                 "box": {
                     "format": 6,
+                    "hint": "Shuffle amount 0.5 .. 0.9",
                     "id": "obj-30",
                     "maxclass": "flonum",
                     "maximum": 0.75,
@@ -146,6 +147,7 @@
             {
                 "box": {
                     "format": 6,
+                    "hint": "Base Tempo",
                     "id": "obj-33",
                     "maxclass": "flonum",
                     "numinlets": 1,
@@ -850,11 +852,11 @@
                 "box": {
                     "comment": "",
                     "id": "obj-12",
-                    "index": 1,
+                    "index": 0,
                     "maxclass": "inlet",
                     "numinlets": 0,
                     "numoutlets": 1,
-                    "outlettype": [ "bang" ],
+                    "outlettype": [ "" ],
                     "patching_rect": [ 208.79517698287964, 40.0, 30.0, 30.0 ]
                 }
             },
@@ -862,7 +864,7 @@
                 "box": {
                     "comment": "",
                     "id": "obj-15",
-                    "index": 1,
+                    "index": 0,
                     "maxclass": "outlet",
                     "numinlets": 1,
                     "numoutlets": 0,
@@ -967,6 +969,7 @@
                     "source": [ "obj-85", 0 ]
                 }
             }
-        ]
+        ],
+        "autosave": 0
     }
 }
