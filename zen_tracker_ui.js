@@ -435,7 +435,7 @@ function draw_track_descriptor(){
         mgraphics.move_to(locator_width, h - (0.25*charheight));
         mgraphics.show_text(pattern_markup.descriptors.track[idx[1]][1]);
 
-        mgraphics.move_to(0, h - (0.25*charheight));
+        mgraphics.move_to(0 + charwidth, h - (0.25*charheight));
         mgraphics.show_text(caret_string);
         var version_identifier = 'ztrk v.001';
         var identifier_width = mgraphics.text_measure(version_identifier + ' ')[0];
@@ -450,31 +450,23 @@ function handle_delete_selection(pattern){
         var selection =  getSelectionRect();
         // this implementation will operate all selected parameters, even if a parameter is only partially
         // in the selection. This is unlike interpolation, where there is a case to make for partial interpolats.
+        var selection_start = selection.left;
+        var selection_length = (selection.right - selection.left) + 1;
+
+        // First establish if the selection contains partials. extend if needed.
+        // is selection.left at index0 of the param?
+        // is selection right at indexN of the param?
+        var xx_first_param = getParameterTypeAtPosition(pattern_markup.track, selection_start);
+        var xx_last_param = getParameterTypeAtPosition(pattern_markup.track, selection.right);
+
+        if (xx_first_param !== null){ 
+            selection_start = xx_first_param.start;
+        }
+        if (xx_last_param !== null){
+            selection_length = (xx_last_param.end - xx_first_param.start) + 1;
+        }
+
         for (var row = selection.top; row <= selection.bottom; row++){
-
-            var selection_start = selection.left;
-            var selection_length = (selection.right - selection.left) + 1;
-
-            // First establish if the selection contains partials. extend if needed.
-            // is selection.left at index0 of the param?
-            // is selection right at indexN of the param?
-            var xx_first_param = getParameterTypeAtPosition(pattern_markup.track, selection_start);
-            var xx_last_param = getParameterTypeAtPosition(pattern_markup.track, selection.right);
-
-            if (xx_first_param !== null){
-                // post('start ->', xx_first_param.start, xx_first_param.end);
-                selection_start = xx_first_param.start;
-            } else { 
-                // return false; 
-            }
-
-            if (xx_last_param !== null){
-                // post('end   ->', xx_last_param.start,  xx_last_param.end);
-                selection_length = (xx_last_param.end - xx_first_param.start) + 1;
-            } else { 
-                // return false; 
-            }
-
             var row_substr = pattern[row].substr(selection_start, selection_length);
             row_substr = row_substr.replace(/[^ ]/g, '.');
             pattern[row] = replaceAt(pattern[row], selection_start, row_substr, selection_length);
@@ -483,6 +475,55 @@ function handle_delete_selection(pattern){
     }
     return false;
 }
+
+function handle_interpolate_selection(faux_pattern){
+    if (started_selection_mode){
+        /*
+            - which parameters of the selection have values at the stard and end of the selection (in rows);
+            - only operate on those parameters.
+            - collect start and end value for each such parameter, create a linear interpolation for now.
+            - i can add a console command to do `> itpl 1`  (linear)  `> itpl 0.3` (accelerating ramp)  1.5 decel
+        */
+
+
+        // TODO . THIS IS NOT IMPLEMENTED YET.
+        
+        // if selection row-length < 3: return false
+
+        var selection =  getSelectionRect();
+        var selection_start = selection.left;
+        var selection_length = (selection.right - selection.left) + 1;
+
+        var xx_first_param = getParameterTypeAtPosition(pattern_markup.track, selection_start);
+        var xx_last_param = getParameterTypeAtPosition(pattern_markup.track, selection.right);
+
+        if (xx_first_param !== null){
+            // post('start ->', xx_first_param.start, xx_first_param.end);
+            selection_start = xx_first_param.start;
+        }
+        if (xx_last_param !== null){
+            // post('end   ->', xx_last_param.start,  xx_last_param.end);
+            selection_length = (xx_last_param.end - xx_first_param.start) + 1;
+        }
+
+        // else:
+
+        for (var row = selection.top; row <= selection.bottom; row++){
+
+            var row_repr = pattern[row].substr(selection_start, selection_length);
+            
+            // how many parameters are in the selection?
+            var params = row_repr.split(' ');
+            var num_params = params.length;
+            // row_substr = row_substr.replace(/[^ ]/g, '.');
+            // pattern[row] = replaceAt(pattern[row], selection_start, row_substr, selection_length);
+
+        return true;
+    }
+    return false;
+}
+
+
 
 function key_handler(){
 
@@ -499,16 +540,27 @@ function key_handler(){
 
         var DELETE = 127;
         var ALT = 2048;
+        var I_KEY = 105;
         var just_shift = 512;
         var just_ctrl = 4352;
+        var PAGE_UP = 11;
+        var PAGE_DOWN = 12;
 
-        if (g_key_codes[0] === DELETE && g_key_codes[2] === ALT){
-            if (handle_delete_selection(faux_pattern)){ 
-                mgraphics.redraw();
-                return;
-            } // end early.
+        if (g_key_codes[2] === ALT){
+        
+            if (g_key_codes[0] === DELETE){
+                if (handle_delete_selection(faux_pattern)){ 
+                    mgraphics.redraw();
+                    return;   // end early.
+                }
+            } 
+            else if (g_key_codes[0] === I_KEY){
+                if (handle_interpolate_selection(faux_pattern)){ 
+                    mgraphics.redraw();
+                    return;   // end early.
+                } 
+            }
         }
-
 
         var ctrl_shift = 4864;
         var directions = [28, 29, 30, 31];
