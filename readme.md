@@ -1,4 +1,4 @@
-![Image](https://github.com/user-attachments/assets/040cda5c-b8b5-41ce-afcf-ba30e3d05e8e)
+![Image](https://github.com/user-attachments/assets/4d2c6438-ea2e-43d8-bc20-0f1901bc7b85)
 
 basic basic for now.
 
@@ -15,16 +15,20 @@ Some milestones i will need to tackle, in no particular order
 - [x] cursor + navigation
 - [x] selection rectangle
 - [x] note to midinote
-- [ ] input error handling
+- [x] input error handling
     this is per parameter type
     - [x] two hexvalues
     - [x] note
     - [x] trigger ( 1 or . )
-    - [ ] 4 hex
+    - [x] 4 hex
 - [ ] util functions(hex to int, etc)
-    these to be used for interpolation functions, multiply, addition
+    these to be used for
+    - [x] interpolation functions,
+    - [ ] multiply,
+    - [ ] addition
 - [ ] sequencing patterns
 - [ ] general pattern editor functions (reverse, spread, interpolate, transpose, shift, uzi, splay)
+    - [ ] delete selection
 - [ ] trigger from tick
 
 
