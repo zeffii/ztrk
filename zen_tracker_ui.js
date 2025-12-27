@@ -504,14 +504,13 @@ function handle_interpolate_selection(pattern){
             var param_length = start_list[param_col].length;
             if (param_length > 1){
                 if ( !isOnlyDots(start_list[param_col]) && !isOnlyDots(end_list[param_col]) ){
-                    post('  items to interpolate: ', start_list[param_col], 'and', end_list[param_col] + '\n');
+                    // post('  items to interpolate: ', start_list[param_col], 'and', end_list[param_col] + '\n');
                     interpolation_dict[param_col] = interpolate(start_list[param_col], end_list[param_col], selected_num_rows);
                 }
             }
         }
 
         // we could (and probably should) skip the first and last row as they should be the same.
-        // but this is only proof of concept.
         for (var row = selection.top; row <= selection.bottom; row++){
 
             var row_repr = pattern[row].substr(selection_start, selection_length);
@@ -528,7 +527,6 @@ function handle_interpolate_selection(pattern){
             var replacement_part = rebuilt_list_of_strings.join(' ');
             pattern[row] = replaceAt(pattern[row], selection_start, replacement_part, selection_length);
         }
-
         return true;
 
     }
