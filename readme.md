@@ -27,8 +27,9 @@ Some milestones i will need to tackle, in no particular order
     - [ ] multiply,
     - [ ] addition
 - [ ] sequencing patterns
-- [ ] general pattern editor functions (reverse, spread, interpolate, transpose, shift, uzi, splay)
-    - [ ] delete selection
+- [ ] general pattern editor functions (reverse, transpose, shift, uzi, splay)
+    - [x] interpolate (hex only)
+    - [x] delete selection
 - [ ] trigger from tick
 
 
