@@ -80,14 +80,32 @@ function replaceAt(str, index, replacement, count) {
 }
 
 function interpolate(val_in, val_out, steps){
-    var start = parseInt(val_in, 16);
-    var end = parseInt(val_out, 16);
-    var result = [];
 
-    var stepSize = (end - start) / (steps - 1); // Calculate the increment per step
-    for (var i = 0; i < steps; i++) {
-        result.push(Math.round((start + (i * stepSize))).toString(16));
+    var result = [];
+    
+    // 2hex or 4 hex
+    if (val_in.length === 2 || val_in.length === 4){
+        var start = parseInt(val_in, 16);
+        var end = parseInt(val_out, 16);
+
+        var stepSize = (end - start) / (steps - 1); // Calculate the increment per step
+        for (var i = 0; i < steps; i++) {
+            result.push(Math.round((start + (i * stepSize))).toString(16).toUpperCase());
+        }
+    } else {
+        post('nope', val_in.length);
     }
 
+
+    // notes?
+
     return result;
+}
+
+function isOnlyDots(str) {
+    return str && /^\.+$/.test(str);
+}
+
+function PostDict(dict){
+     Object.keys(dict).forEach(function(key) { post(key + ": " + dict[key]); });
 }

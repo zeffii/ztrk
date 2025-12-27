@@ -8,15 +8,6 @@ mgraphics.relative_coords = 0;
 mgraphics.autofill = 0;
 
 /*  todo
-[x] refactor input-type lookups into a single regexer
-[x] refactor input-handler to narrow down where the cursor is and only pass controlflow through one handler
-    - having added this, it makes some of the internals of 
-    handle_note_input, handle_2hex_input, handle_trigger_input, handle_4hex_input redundant.
-[x] mouse click to position cursor
-    - some upper boundar tests to be done
-[x] skip empty cells when caret moves vertically
-[x] delete selection = alt + del
-[ ] investigate + fix the double tap caret move ( maybe initial ms needs to be increased )
 [ ] copy paste selection
 [ ] implement scrolling
 */
@@ -476,53 +467,70 @@ function handle_delete_selection(pattern){
     return false;
 }
 
-function handle_interpolate_selection(faux_pattern){
+function handle_interpolate_selection(pattern){
     if (started_selection_mode){
         /*
-            - which parameters of the selection have values at the stard and end of the selection (in rows);
+            - which parameters of the selection have values at the start and end of the selection (in rows);
             - only operate on those parameters.
             - collect start and end value for each such parameter, create a linear interpolation for now.
             - i can add a console command to do `> itpl 1`  (linear)  `> itpl 0.3` (accelerating ramp)  1.5 decel
         */
 
-
-        // TODO . THIS IS NOT IMPLEMENTED YET.
-
-        // if selection row-length < 3: return false
-
         var selection =  getSelectionRect();
-        post('Selection Length', selection.bottom - selection.top);
-        
-        return false;
-        
+        var selected_num_rows = (selection.bottom - selection.top) + 1;
+        if (selected_num_rows < 3){
+            return true;
+        }
+
         var selection_start = selection.left;
         var selection_length = (selection.right - selection.left) + 1;
 
+        // extend selection left + right if some parameters are not fully selected.
         var xx_first_param = getParameterTypeAtPosition(pattern_markup.track, selection_start);
         var xx_last_param = getParameterTypeAtPosition(pattern_markup.track, selection.right);
+        if (xx_first_param !== null){ selection_start = xx_first_param.start; }
+        if (xx_last_param !== null){ selection_length = (xx_last_param.end - xx_first_param.start) + 1; }
 
-        if (xx_first_param !== null){
-            // post('start ->', xx_first_param.start, xx_first_param.end);
-            selection_start = xx_first_param.start;
+        // get content of the first and last selected row, to prepare interpolation attempt
+        var substr_start = pattern[selection.top].substr(selection_start, selection_length);
+        var substr_end = pattern[selection.bottom].substr(selection_start, selection_length);
+        var start_list = substr_start.split(' ');
+        var end_list = substr_end.split(' ');
+
+        var interpolation_dict = {};
+        // we will only interpolate a parameter if it is in the first and last row of the selection
+        // we skip trigger interpolations. so.. 2hex and 2hex and notes only..for now.
+        for (var param_col = 0; param_col < start_list.length; param_col++){
+            var param_length = start_list[param_col].length;
+            if (param_length > 1){
+                if ( !isOnlyDots(start_list[param_col]) && !isOnlyDots(end_list[param_col]) ){
+                    post('  items to interpolate: ', start_list[param_col], 'and', end_list[param_col] + '\n');
+                    interpolation_dict[param_col] = interpolate(start_list[param_col], end_list[param_col], selected_num_rows);
+                }
+            }
         }
-        if (xx_last_param !== null){
-            // post('end   ->', xx_last_param.start,  xx_last_param.end);
-            selection_length = (xx_last_param.end - xx_first_param.start) + 1;
-        }
 
-        // else:
-
+        // we could (and probably should) skip the first and last row as they should be the same.
+        // but this is only proof of concept.
         for (var row = selection.top; row <= selection.bottom; row++){
 
             var row_repr = pattern[row].substr(selection_start, selection_length);
-            
-            // how many parameters are in the selection?
-            var params = row_repr.split(' ');
-            var num_params = params.length;
-            // row_substr = row_substr.replace(/[^ ]/g, '.');
-            // pattern[row] = replaceAt(pattern[row], selection_start, row_substr, selection_length);
+            var splitted_row = row_repr.split(' ');
+            var rebuilt_list_of_strings = []
+
+            for (var param_idx = 0; param_idx < splitted_row.length; param_idx++){
+                if (interpolation_dict.hasOwnProperty(param_idx)){
+                    rebuilt_list_of_strings.push(interpolation_dict[param_idx].shift());
+                } else {
+                    rebuilt_list_of_strings.push(splitted_row[param_idx]);
+                }
+            }
+            var replacement_part = rebuilt_list_of_strings.join(' ');
+            pattern[row] = replaceAt(pattern[row], selection_start, replacement_part, selection_length);
         }
+
         return true;
+
     }
     return false;
 }
@@ -548,9 +556,11 @@ function key_handler(){
         var just_ctrl = 4352;
         var PAGE_UP = 11;
         var PAGE_DOWN = 12;
+        var C_KEY = 3;
+        var V_KEY = 22;
 
         // var mt = 'wtf' + String.fromCharCode(g_key_codes[0]).toUpperCase();
-        post(g_key_codes[0]);
+        //post(g_key_codes[0]);
 
         if (g_key_codes[2] === ALT){
         
@@ -559,14 +569,16 @@ function key_handler(){
                     mgraphics.redraw();
                     return;   // end early.
                 }
-            } 
-            // else if (String.fromCharCode(g_key_codes[0]).toUpperCase() === 'I'){
-            //     post('heereee!');
-            //     if (handle_interpolate_selection(faux_pattern)){ 
-            //         mgraphics.redraw();
-            //         return;   // end early.
-            //     } 
-            // }
+            }
+        }
+        if (g_key_codes[2] === just_shift){
+            if (String.fromCharCode(g_key_codes[0]).toUpperCase() === 'I'){
+                post('Interpolating:');
+                if (handle_interpolate_selection(faux_pattern)){ 
+                    mgraphics.redraw();
+                    return;   // end early.
+                } 
+            }
         }
 
         var ctrl_shift = 4864;
@@ -696,7 +708,7 @@ function paint(){
     mgraphics.set_source_rgba(0.4, 0.9, 1.0, 1);
     for (idx in faux_pattern){
         mgraphics.move_to(start_x, start_y + (idx * settings_font_size));
-        var pattern_row = fmt(idx) + faux_pattern[idx]
+        var pattern_row = fmt(idx) + faux_pattern[idx];
         mgraphics.show_text(pattern_row);
     }
     
