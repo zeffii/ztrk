@@ -12,6 +12,8 @@ mgraphics.autofill = 0;
 [ ] implement scrolling
 */
 
+var ztrk_clipboard = [];
+var faux_pattern = [];
 
 var g_Mouse = [-1, -1];
 var g_pattern_playhead = 0;
@@ -31,20 +33,13 @@ var text_h = settings_font_size;
 var started_selection_mode = false;
 var g_updating_selection = true;
 
-var sel_x_start = 30; 
-var sel_y_start = 30;
-
 var caret = { row: 0, col: 0 };
 var anchor = null;
-
 var g_pattern_octave = 4;
 
 function set_rgb(color, dimming){
     mgraphics.set_source_rgba(color.r / dimming, color.g / dimming, color.b / dimming, 1);
 }
-
-
-var faux_pattern = [];
 
 function make_empty_pattern(markup, ntracks){
     // ntracks not handled yet, ntracks is to define how many note+params tracks show up
@@ -117,10 +112,6 @@ var cols = pattern_markup.track.length;
 // b    = bang/trigger  ( 1 or .)
 // ggg  = signed (-20 .. +20)
 
-// untested.
-
-
-
 function handle_2hex_input(key, caret, desciptor, pattern){
     // 4hex version of this was written after 2hex, use 4hex as inspiration if you plan to rewrite this function.
     var hex_deletes = [46, 127];
@@ -163,7 +154,6 @@ function handle_2hex_input(key, caret, desciptor, pattern){
         }
     }    
 }
-
 
 function handle_trigger_input(key, caret, desciptor, pattern){
     const trigger_indices = find_regexed_indices(pattern_markup.track, /\bb{1}\b/g);  // b
@@ -293,7 +283,6 @@ function pattern_input_handler(key, caret, desciptor, pattern){
     }    
 }
 
-
 function moveCaret(dr, dc) {
     caret.row = clamp(caret.row + dr, 0, rows - 1);
     caret.col = clamp(caret.col + dc, 0, cols - 1);
@@ -404,7 +393,6 @@ function wheres_the_caret(){
     return [-1, -1];
 }
 
-
 function draw_track_descriptor(){
 
     // draw at bottom
@@ -465,6 +453,27 @@ function handle_delete_selection(pattern){
         return true;
     }
     return false;
+}
+
+function get_adjusted_selection_rect(){
+    var selection =  getSelectionRect();
+    var selected_num_rows = (selection.bottom - selection.top) + 1;
+    var selection_start = selection.left;
+    var selection_length = (selection.right - selection.left) + 1;
+
+    // extend selection left + right if some parameters are not fully selected.
+    var xx_first_param = getParameterTypeAtPosition(pattern_markup.track, selection_start);
+    var xx_last_param = getParameterTypeAtPosition(pattern_markup.track, selection.right);
+    if (xx_first_param !== null){ selection_start = xx_first_param.start; }
+    if (xx_last_param !== null){ selection_length = (xx_last_param.end - xx_first_param.start) + 1; }
+
+    return {
+        'start_index': selection_start,
+        'selection_length': selection_length,
+        'top': selection.top,
+        'bottom': selection.bottom,
+        'num_rows': selected_num_rows
+    }
 }
 
 function handle_interpolate_selection(pattern){
@@ -528,11 +537,23 @@ function handle_interpolate_selection(pattern){
             pattern[row] = replaceAt(pattern[row], selection_start, replacement_part, selection_length);
         }
         return true;
-
     }
     return false;
 }
 
+function handle_copy_selection(pattern){
+    post('initiating copy function');
+    var sel_rect = get_adjusted_selection_rect();
+    PostDict(sel_rect);
+    post('\n');
+    for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
+        post(pattern[row].substr(sel_rect.start_index, sel_rect.selection_length) + '\n');
+    }
+}
+
+function handle_paste_selection(pattern){
+    post('initiating paste function');
+}
 
 
 function key_handler(){
@@ -550,8 +571,8 @@ function key_handler(){
 
         var DELETE = 127;
         var ALT = 2048;
-        var just_shift = 512;
-        var just_ctrl = 4352;
+        var SHIFT = 512;
+        var CTRL = 4352;
         var PAGE_UP = 11;
         var PAGE_DOWN = 12;
         var C_KEY = 3;
@@ -569,7 +590,8 @@ function key_handler(){
                 }
             }
         }
-        if (g_key_codes[2] === just_shift){
+
+        if (g_key_codes[2] === SHIFT){
             if (String.fromCharCode(g_key_codes[0]).toUpperCase() === 'I'){
                 post('Interpolating:');
                 if (handle_interpolate_selection(faux_pattern)){ 
@@ -579,11 +601,22 @@ function key_handler(){
             }
         }
 
+        if (g_key_codes[2] === CTRL){
+            if (g_key_codes[0] === C_KEY){ 
+                handle_copy_selection(faux_pattern);
+                return; 
+            }
+            if (g_key_codes[0] === V_KEY){ 
+                handle_paste_selection(faux_pattern);
+                return; 
+            }
+        }
+
         var ctrl_shift = 4864;
         var directions = [28, 29, 30, 31];
         var direction_input = (directions.indexOf(g_key_codes[0]) !== -1);
 
-        const shift_or_ctrlshift = found_in([just_shift, ctrl_shift], g_key_codes[2]);
+        const shift_or_ctrlshift = found_in([SHIFT, ctrl_shift], g_key_codes[2]);
         if (shift_or_ctrlshift && direction_input){
             if (started_selection_mode){
                 post('modifying');
