@@ -558,19 +558,34 @@ function handle_copy_selection(pattern){
 
 function handle_paste_selection(pattern){
     post('initiating paste function');
-    /*
-        ...how complex do i want to this be, will i allow mixing selections origins. 
-        (mix paste is a different functions)
-        (ie allow paste as long as the pasteover makes sense)
+    /*  
+        a few thoughts here.
+        - how complex do i want to this be, will i allow mixing selection origins. 
+            (ie do i allow pasting as long as the destination is compatible with the current clipboard data)
+        - mix paste/overwrite/inject is a different function
+        
         for now i will force a start_index to override the cursor location, only row index of caret
         will be used. It's just a choice.
     */
     if (ztrk_clipboard.selection_info && ztrk_clipboard.selection_data.length){
-        post('\n --------selection start----------\n');
-        for (row_idx in ztrk_clipboard.selection_data){
-            post(ztrk_clipboard.selection_data[row_idx] + '\n');
+        // post('\n --------selection start----------\n');
+        // for (row_idx in ztrk_clipboard.selection_data){
+        //     post(ztrk_clipboard.selection_data[row_idx] + '\n');
+        // }
+        // post(' --------selection end----------\n');
+
+        var selection_start = ztrk_clipboard.selection_info.start_index; // in X axis, column
+        var selection_length = ztrk_clipboard.selection_info.selection_length;
+        var idx = caret.row;
+        for (paste_row_idx in ztrk_clipboard.selection_data){
+            var replacement_part = ztrk_clipboard.selection_data[paste_row_idx];
+            pattern[idx] = replaceAt(pattern[idx], selection_start, replacement_part, selection_length);
+            idx++;
+
+            if (idx >= pattern.length){
+                break;
+            }
         }
-        post(' --------selection end----------\n');
     }
 }
 

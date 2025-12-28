@@ -9,9 +9,170 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 412.0, 507.0, 742.0, 259.0 ],
+        "rect": [ 412.0, 187.0, 907.0, 580.0 ],
         "openinpresentation": 1,
         "boxes": [
+            {
+                "box": {
+                    "id": "obj-19",
+                    "maxclass": "newobj",
+                    "numinlets": 1,
+                    "numoutlets": 3,
+                    "outlettype": [ "signal", "signal", "int" ],
+                    "patching_rect": [ 413.25302731990814, 224.09639012813568, 60.0, 22.0 ],
+                    "text": "subdiv~ 2"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-2",
+                    "maxclass": "newobj",
+                    "numinlets": 1,
+                    "numoutlets": 2,
+                    "outlettype": [ "signal", "int" ],
+                    "patching_rect": [ 467.4698967933655, 259.03615045547485, 41.0, 22.0 ],
+                    "text": "what~"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-17",
+                    "maxclass": "message",
+                    "numinlets": 2,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 413.25302731990814, 149.3975921869278, 56.0, 22.0 ],
+                    "text": "swing $1"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-4",
+                    "maxclass": "live.scope~",
+                    "numinlets": 2,
+                    "numoutlets": 1,
+                    "outlettype": [ "bang" ],
+                    "patching_rect": [ 462.65061950683594, 381.92772126197815, 184.0, 68.0 ]
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-5",
+                    "maxclass": "newobj",
+                    "numinlets": 1,
+                    "numoutlets": 3,
+                    "outlettype": [ "signal", "signal", "int" ],
+                    "patching_rect": [ 413.25302731990814, 189.1566298007965, 46.0, 22.0 ],
+                    "text": "swing~"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-21",
+                    "maxclass": "newobj",
+                    "numinlets": 1,
+                    "numoutlets": 2,
+                    "outlettype": [ "bang", "int" ],
+                    "patching_rect": [ 610.8433960676193, 71.08433628082275, 29.5, 22.0 ],
+                    "text": "t b i"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-6",
+                    "maxclass": "message",
+                    "numinlets": 2,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 704.8193031549454, 119.27710914611816, 29.5, 22.0 ],
+                    "text": "0."
+                }
+            },
+            {
+                "box": {
+                    "focusbordercolor": [ 0.917647058823529, 0.235294117647059, 0.235294117647059, 1.0 ],
+                    "id": "obj-14",
+                    "maxclass": "live.slider",
+                    "numinlets": 1,
+                    "numoutlets": 2,
+                    "orientation": 1,
+                    "outlettype": [ "", "float" ],
+                    "parameter_enable": 1,
+                    "patching_rect": [ 413.25302731990814, 100.0, 164.0, 41.0 ],
+                    "saved_attribute_attributes": {
+                        "focusbordercolor": {
+                            "expression": "themecolor.live_active_automation"
+                        },
+                        "valueof": {
+                            "parameter_initial": [ 0.5 ],
+                            "parameter_initial_enable": 1,
+                            "parameter_longname": "live.slider",
+                            "parameter_mmax": 0.95,
+                            "parameter_mmin": 0.5,
+                            "parameter_modmode": 3,
+                            "parameter_shortname": "live.slider",
+                            "parameter_type": 0,
+                            "parameter_unitstyle": 5
+                        }
+                    },
+                    "varname": "live.slider"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-8",
+                    "maxclass": "live.scope~",
+                    "numinlets": 2,
+                    "numoutlets": 1,
+                    "outlettype": [ "bang" ],
+                    "patching_rect": [ 467.4698967933655, 295.1807301044464, 184.0, 68.0 ]
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-7",
+                    "maxclass": "newobj",
+                    "numinlets": 2,
+                    "numoutlets": 1,
+                    "outlettype": [ "signal" ],
+                    "patching_rect": [ 489.1566445827484, 149.3975921869278, 116.0, 22.0 ],
+                    "text": "phasor~ 1n @lock 1"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-9",
+                    "maxclass": "toggle",
+                    "numinlets": 1,
+                    "numoutlets": 1,
+                    "outlettype": [ "int" ],
+                    "parameter_enable": 0,
+                    "patching_rect": [ 585.5421903133392, 31.32529866695404, 24.0, 24.0 ]
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-10",
+                    "maxclass": "newobj",
+                    "numinlets": 2,
+                    "numoutlets": 9,
+                    "outlettype": [ "int", "int", "float", "float", "float", "", "int", "float", "" ],
+                    "patching_rect": [ 620.4819506406784, 149.3975921869278, 103.0, 22.0 ],
+                    "text": "transport"
+                }
+            },
+            {
+                "box": {
+                    "attr": "tempo",
+                    "id": "obj-11",
+                    "maxclass": "attrui",
+                    "numinlets": 1,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "parameter_enable": 0,
+                    "patching_rect": [ 649.3976143598557, 71.08433628082275, 150.0, 22.0 ]
+                }
+            },
             {
                 "box": {
                     "id": "obj-3",
@@ -881,14 +1042,32 @@
             },
             {
                 "patchline": {
+                    "destination": [ "obj-10", 0 ],
+                    "source": [ "obj-11", 0 ]
+                }
+            },
+            {
+                "patchline": {
                     "destination": [ "obj-16", 0 ],
                     "source": [ "obj-12", 0 ]
                 }
             },
             {
                 "patchline": {
+                    "destination": [ "obj-17", 0 ],
+                    "source": [ "obj-14", 0 ]
+                }
+            },
+            {
+                "patchline": {
                     "destination": [ "obj-18", 0 ],
                     "source": [ "obj-16", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-5", 0 ],
+                    "source": [ "obj-17", 0 ]
                 }
             },
             {
@@ -901,6 +1080,39 @@
                 "patchline": {
                     "destination": [ "obj-75", 0 ],
                     "source": [ "obj-18", 1 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-2", 0 ],
+                    "order": 0,
+                    "source": [ "obj-19", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-4", 0 ],
+                    "midpoints": [ 422.75302731990814, 370.1566298007965, 472.15061950683594, 370.1566298007965 ],
+                    "order": 1,
+                    "source": [ "obj-19", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-8", 0 ],
+                    "source": [ "obj-2", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-10", 0 ],
+                    "source": [ "obj-21", 1 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-6", 0 ],
+                    "source": [ "obj-21", 0 ]
                 }
             },
             {
@@ -941,8 +1153,26 @@
             },
             {
                 "patchline": {
+                    "destination": [ "obj-19", 0 ],
+                    "source": [ "obj-5", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-10", 1 ],
+                    "source": [ "obj-6", 0 ]
+                }
+            },
+            {
+                "patchline": {
                     "destination": [ "obj-83", 0 ],
                     "source": [ "obj-68", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-5", 0 ],
+                    "source": [ "obj-7", 0 ]
                 }
             },
             {
@@ -968,8 +1198,34 @@
                     "destination": [ "obj-45", 0 ],
                     "source": [ "obj-85", 0 ]
                 }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-21", 0 ],
+                    "order": 0,
+                    "source": [ "obj-9", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-7", 1 ],
+                    "order": 1,
+                    "source": [ "obj-9", 0 ]
+                }
             }
         ],
+        "parameters": {
+            "obj-14": [ "live.slider", "live.slider", 0 ],
+            "parameterbanks": {
+                "0": {
+                    "index": 0,
+                    "name": "",
+                    "parameters": [ "-", "-", "-", "-", "-", "-", "-", "-" ],
+                    "buttons": [ "-", "-", "-", "-", "-", "-", "-", "-" ]
+                }
+            },
+            "inherited_shortname": 1
+        },
         "autosave": 0
     }
 }

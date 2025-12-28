@@ -1,49 +1,72 @@
 // ES5 compatible function to generate chord progressions based on circle of fifths
-// with optional dissonance (percent chance to alter chord to a dissonant type)
-function generateChordProgression(startKey, numChords, dissonancePercent) {
-    // Note names (using sharps)
+// Returns a list of chords, where each chord is an array of note names (e.g., ["C4", "E4", "G4"])
+// with optional dissonance (percent chance to use dissonant voicings)
+function generateChordProgressionNotes(startKey, numChords, dissonancePercent) {
+    // Note names (sharps) – we'll add octave later
     var notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
     
-    // Chord types: normal (major/minor) and dissonant options
-    var normalTypes = ['maj', 'min'];
-    var dissonantTypes = ['dim', 'aug', '7', 'min7', 'maj7', 'sus4'];
+    // Basic chord voicings (intervals above root)
+    var majorTriad   = [0, 4, 7];     // root, maj3, perf5
+    var minorTriad   = [0, 3, 7];     // root, min3, perf5
+    var dimTriad     = [0, 3, 6];     // root, min3, dim5
+    var augTriad     = [0, 4, 8];     // root, maj3, aug5
+    var dominant7    = [0, 4, 7, 10]; // root, maj3, perf5, min7
+    var maj7         = [0, 4, 7, 11]; // root, maj3, perf5, maj7
+    var min7         = [0, 3, 7, 10]; // root, min3, perf5, min7
+    var sus4         = [0, 5, 7];     // root, 4th, perf5
     
-    // Find index of starting key
+    var chordVoicings = {
+        'maj':   majorTriad,
+        'min':   minorTriad,
+        'dim':   dimTriad,
+        'aug':   augTriad,
+        '7':     dominant7,
+        'maj7':  maj7,
+        'min7':  min7,
+        'sus4':  sus4
+    };
+    
+    // Dissonant voicings (more colorful choices)
+    var dissonantVoicings = [dimTriad, augTriad, dominant7, maj7, min7, sus4];
+    
+    // Find starting key index
     var startIndex = notes.indexOf(startKey.toUpperCase());
     if (startIndex === -1) {
-        return []; // Invalid start key
+        return [];
     }
     
     var progression = [];
     var currentIndex = startIndex;
+    var baseOctave = 4;  // Start in octave 4 (middle C region)
     
     for (var i = 0; i < numChords; i++) {
-        // Get root note based on circle of fifths (move +7 semitones, mod 12)
         var root = notes[currentIndex];
+        var rootNote = root + baseOctave;
         
-        // Decide chord type: major for I,IV,V; minor for ii,iii,vi; diminished for vii
-        // But simplify: alternate major/minor for emotive feel
-        var isMinor = (i % 4 === 1 || i % 4 === 3); // e.g., I - v - II - vi pattern vibe
-        var baseType = isMinor ? 'min' : 'maj';
+        // Decide if major or minor (simple alternating pattern for emotive feel)
+        var isMinor = (i % 4 === 1 || i % 4 === 3);
+        var voicing = isMinor ? minorTriad : majorTriad;
         
-        // With dissonancePercent chance, make it dissonant
-        var rand = Math.random() * 100;
-        if (rand < dissonancePercent) {
-            // Pick random dissonant type
-            var dissIndex = Math.floor(Math.random() * dissonantTypes.length);
-            baseType = dissonantTypes[dissIndex];
+        // Apply dissonance with given probability
+        if (Math.random() * 100 < dissonancePercent) {
+            var dissIndex = Math.floor(Math.random() * dissonantVoicings.length);
+            voicing = dissonantVoicings[dissIndex];
         }
         
-        // Add to progression (e.g., 'C maj' or 'G min7')
-        progression.push(root + ' ' + baseType);
+        // Build chord notes
+        var chord = [];
+        for (var j = 0; j < voicing.length; j++) {
+            var semitones = voicing[j];
+            var noteIndex = (currentIndex + semitones) % 12;
+            var octave = baseOctave + Math.floor((currentIndex + semitones) / 12);
+            chord.push(notes[noteIndex] + octave);
+        }
         
-        // Move to next fifth (+7 mod 12)
+        progression.push(chord);
+        
+        // Move to next fifth (+7 semitones)
         currentIndex = (currentIndex + 7) % 12;
     }
     
     return progression;
 }
-
-// Example usage:
-// var prog = generateChordProgression('C', 8, 30); // Start in C, 8 chords, 30% dissonance chance
-// console.log(prog); // e.g., ['C maj', 'G min', 'D maj', 'A min7', 'E maj', 'B min', 'F# maj', 'C# dim']
