@@ -12,7 +12,7 @@ mgraphics.autofill = 0;
 [ ] implement scrolling
 */
 
-var ztrk_clipboard = [];
+var ztrk_clipboard = {};
 var faux_pattern = [];
 
 var g_Mouse = [-1, -1];
@@ -544,15 +544,34 @@ function handle_interpolate_selection(pattern){
 function handle_copy_selection(pattern){
     post('initiating copy function');
     var sel_rect = get_adjusted_selection_rect();
-    PostDict(sel_rect);
-    post('\n');
+    //  selection_info: {start_index: 7  selection_length: 29  top: 2  bottom: 8  num_rows: 7}
+    //  selection_data: [rows,....]
+    ztrk_clipboard = {
+        'selection_info': sel_rect,
+        'selection_data': []
+    }
     for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
-        post(pattern[row].substr(sel_rect.start_index, sel_rect.selection_length) + '\n');
+        var this_row_data = pattern[row].substr(sel_rect.start_index, sel_rect.selection_length);
+        ztrk_clipboard.selection_data.push(this_row_data);
     }
 }
 
 function handle_paste_selection(pattern){
     post('initiating paste function');
+    /*
+        ...how complex do i want to this be, will i allow mixing selections origins. 
+        (mix paste is a different functions)
+        (ie allow paste as long as the pasteover makes sense)
+        for now i will force a start_index to override the cursor location, only row index of caret
+        will be used. It's just a choice.
+    */
+    if (ztrk_clipboard.selection_info && ztrk_clipboard.selection_data.length){
+        post('\n --------selection start----------\n');
+        for (row_idx in ztrk_clipboard.selection_data){
+            post(ztrk_clipboard.selection_data[row_idx] + '\n');
+        }
+        post(' --------selection end----------\n');
+    }
 }
 
 
