@@ -8,8 +8,8 @@ mgraphics.relative_coords = 0;
 mgraphics.autofill = 0;
 
 /*  todo
-[ ] copy paste selection
 [ ] implement scrolling
+[ ] transpose
 */
 
 var ztrk_clipboard = {};
@@ -320,7 +320,7 @@ function draw_caret(){
 function draw_selection(){
     var selection = getSelectionRect();
     if (!started_selection_mode && !selection){ return; }
-    post('selection:', selection.top, selection.bottom, selection.left, selection.right, '\n');
+    // post('selection:', selection.top, selection.bottom, selection.left, selection.right, '\n');
 
     const [cx, cy] = corner_to_location(selection.left, selection.top);
     var rect_width = Math.abs((selection.right - selection.left)) * charwidth;
@@ -450,6 +450,7 @@ function handle_delete_selection(pattern){
             row_substr = row_substr.replace(/[^ ]/g, '.');
             pattern[row] = replaceAt(pattern[row], selection_start, row_substr, selection_length);
         }
+        refresh();
         return true;
     }
     return false;
@@ -536,13 +537,14 @@ function handle_interpolate_selection(pattern){
             var replacement_part = rebuilt_list_of_strings.join(' ');
             pattern[row] = replaceAt(pattern[row], selection_start, replacement_part, selection_length);
         }
+        refresh();
         return true;
     }
     return false;
 }
 
 function handle_copy_selection(pattern){
-    post('initiating copy function');
+    post('initiating copy function\n');
     var sel_rect = get_adjusted_selection_rect();
     //  selection_info: {start_index: 7  selection_length: 29  top: 2  bottom: 8  num_rows: 7}
     //  selection_data: [rows,....]
@@ -556,8 +558,48 @@ function handle_copy_selection(pattern){
     }
 }
 
+function handle_shift_selection(pattern, direction){
+    if (started_selection_mode){
+        var remap_main = {30: 'UP', 31: 'DOWN'};
+
+        post('----> initiating shift function', remap_main[direction], '\n');
+        var sel_rect = get_adjusted_selection_rect();
+        //  selection_info: {start_index: 7  selection_length: 29  top: 2  bottom: 8  num_rows: 7}
+        //  selection_data: [rows,....]
+        ztrk_clipboard = {
+            'selection_info': sel_rect,
+            'selection_data': []
+        }
+        for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
+           var this_row_data = pattern[row].substr(sel_rect.start_index, sel_rect.selection_length);
+           ztrk_clipboard.selection_data.push(this_row_data);
+        }
+
+        if (remap_main[direction] === 'UP'){
+            var first_element = ztrk_clipboard.selection_data.shift();
+            ztrk_clipboard.selection_data.push(first_element);
+        }
+        else if (remap_main[direction] === 'DOWN'){
+            var last_element = ztrk_clipboard.selection_data.pop();
+            ztrk_clipboard.selection_data.unshift(last_element);
+        }
+
+        var idx = sel_rect.top;
+        for (paste_row_idx in ztrk_clipboard.selection_data){
+            var replacement_part = ztrk_clipboard.selection_data[paste_row_idx];
+            pattern[idx] = replaceAt(pattern[idx], sel_rect.start_index, replacement_part, sel_rect.selection_length);
+            idx++;
+        }
+
+        refresh();
+        return true;
+    }
+    return false;
+}
+
+
 function handle_paste_selection(pattern){
-    post('initiating paste function');
+    post('initiating paste function\n');
     /*  
         a few thoughts here.
         - how complex do i want to this be, will i allow mixing selection origins. 
@@ -611,15 +653,16 @@ function key_handler(){
         var PAGE_DOWN = 12;
         var C_KEY = 3;
         var V_KEY = 22;
+        var X_KEY = 24;
+        var [UP_KEY, DOWN_KEY] = [30, 31];
 
         // var mt = 'wtf' + String.fromCharCode(g_key_codes[0]).toUpperCase();
         //post(g_key_codes[0]);
 
         if (g_key_codes[2] === ALT){
-        
-            if (g_key_codes[0] === DELETE){
-                if (handle_delete_selection(faux_pattern)){ 
-                    mgraphics.redraw();
+            if (found_in([UP_KEY, DOWN_KEY], g_key_codes[0])){
+                post('Shifting:\n');
+                if (handle_shift_selection(faux_pattern, g_key_codes[0])){ 
                     return;   // end early.
                 }
             }
@@ -627,9 +670,8 @@ function key_handler(){
 
         if (g_key_codes[2] === SHIFT){
             if (String.fromCharCode(g_key_codes[0]).toUpperCase() === 'I'){
-                post('Interpolating:');
+                post('Interpolating:\n');
                 if (handle_interpolate_selection(faux_pattern)){ 
-                    mgraphics.redraw();
                     return;   // end early.
                 } 
             }
@@ -644,6 +686,10 @@ function key_handler(){
                 handle_paste_selection(faux_pattern);
                 return; 
             }
+            if (g_key_codes[0] === X_KEY){ 
+                handle_delete_selection(faux_pattern);
+                return; 
+            }
         }
 
         var ctrl_shift = 4864;
@@ -653,11 +699,11 @@ function key_handler(){
         const shift_or_ctrlshift = found_in([SHIFT, ctrl_shift], g_key_codes[2]);
         if (shift_or_ctrlshift && direction_input){
             if (started_selection_mode){
-                post('modifying');
+                post('modifying selection rectangle\n');
             } else {
                 // means the section is going to start at cursor index x, y, w, h where w and h are 1.
                 anchor = { row: caret.row, col: caret.col };
-                post('starting');
+                post('starting selection mode\n');
                 started_selection_mode = true;
             }
 
