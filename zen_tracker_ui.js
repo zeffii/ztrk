@@ -426,6 +426,7 @@ function draw_track_descriptor(){
 
 function handle_delete_selection(pattern){
     if (started_selection_mode){
+        handle_copy_selection(pattern);
         var selection =  getSelectionRect();
         // this implementation will operate all selected parameters, even if a parameter is only partially
         // in the selection. This is unlike interpolation, where there is a case to make for partial interpolats.
@@ -628,6 +629,7 @@ function handle_paste_selection(pattern){
                 break;
             }
         }
+        refresh();
     }
 }
 
@@ -645,31 +647,33 @@ function key_handler(){
 
     if (g_in_edit_mode){
 
-        var DELETE = 127;
-        var ALT = 2048;
         var SHIFT = 512;
+        var ALT = 2048;
         var CTRL = 4352;
+        var CTRL_SHIFT = 4864;
+
+        var DELETE = 127;
         var PAGE_UP = 11;
         var PAGE_DOWN = 12;
         var C_KEY = 3;
         var V_KEY = 22;
         var X_KEY = 24;
         var [UP_KEY, DOWN_KEY] = [30, 31];
+        var [LEFT_KEY, RIGHT_KEY] = [28, 29];
+        var SELECTOR = g_key_codes[2];
+        var USER_KEY = g_key_codes[0];
 
-        // var mt = 'wtf' + String.fromCharCode(g_key_codes[0]).toUpperCase();
-        //post(g_key_codes[0]);
-
-        if (g_key_codes[2] === ALT){
-            if (found_in([UP_KEY, DOWN_KEY], g_key_codes[0])){
+        if (SELECTOR === ALT){
+            if (found_in([UP_KEY, DOWN_KEY], USER_KEY)){
                 post('Shifting:\n');
-                if (handle_shift_selection(faux_pattern, g_key_codes[0])){ 
+                if (handle_shift_selection(faux_pattern, USER_KEY)){ 
                     return;   // end early.
                 }
             }
         }
 
-        if (g_key_codes[2] === SHIFT){
-            if (String.fromCharCode(g_key_codes[0]).toUpperCase() === 'I'){
+        if (SELECTOR === SHIFT){
+            if (String.fromCharCode(USER_KEY).toUpperCase() === 'I'){
                 post('Interpolating:\n');
                 if (handle_interpolate_selection(faux_pattern)){ 
                     return;   // end early.
@@ -677,26 +681,19 @@ function key_handler(){
             }
         }
 
-        if (g_key_codes[2] === CTRL){
-            if (g_key_codes[0] === C_KEY){ 
-                handle_copy_selection(faux_pattern);
-                return; 
-            }
-            if (g_key_codes[0] === V_KEY){ 
-                handle_paste_selection(faux_pattern);
-                return; 
-            }
-            if (g_key_codes[0] === X_KEY){ 
-                handle_delete_selection(faux_pattern);
-                return; 
+        if (SELECTOR === CTRL){
+            switch(USER_KEY) {
+                case C_KEY: handle_copy_selection(faux_pattern); return;
+                case V_KEY: handle_paste_selection(faux_pattern); return;
+                case X_KEY: handle_delete_selection(faux_pattern); return;
+                default: return;
             }
         }
 
-        var ctrl_shift = 4864;
-        var directions = [28, 29, 30, 31];
-        var direction_input = (directions.indexOf(g_key_codes[0]) !== -1);
+        var directions = [LEFT_KEY, RIGHT_KEY, UP_KEY, DOWN_KEY];
+        var direction_input = (directions.indexOf(USER_KEY) !== -1);
 
-        const shift_or_ctrlshift = found_in([SHIFT, ctrl_shift], g_key_codes[2]);
+        const shift_or_ctrlshift = found_in([SHIFT, CTRL_SHIFT], SELECTOR);
         if (shift_or_ctrlshift && direction_input){
             if (started_selection_mode){
                 post('modifying selection rectangle\n');
@@ -714,14 +711,14 @@ function key_handler(){
 
         if (direction_input){
 
-            if (found_in([4352, 4864], g_key_codes[2])){   // some form of ctrl is pressed (with or without shift)
+            if (found_in([CTRL, CTRL_SHIFT], SELECTOR)){
 
                 var param_starts = find_idx_after_space(pattern_markup.track);
                 var [left_distance, right_distance] = [-1, 1];
                 var [low, high] = [1, 1];
 
                 for (var i=0; i < param_starts.length; i++){
-                    if (g_key_codes[0] === 28){                     // were going left
+                    if (USER_KEY === LEFT_KEY){
                     
                         if (caret.col === 0){ 
                             left_distance = 0;
@@ -731,7 +728,7 @@ function key_handler(){
                         low = param_starts[i];
                         left_distance = caret.col - low;
 
-                    } else if (g_key_codes[0] === 29){              // were going right
+                    } else if (USER_KEY === RIGHT_KEY){
 
                         if (caret.col === (pattern_markup.track.length - 1)){
                             right_distance = 0;
@@ -745,34 +742,35 @@ function key_handler(){
                     }
                 }
 
-                switch(g_key_codes[0]) {
-                    case 28: moveCaret(0, -left_distance); break;  // left
-                    case 29: moveCaret(0,  right_distance); break;  // right
-                    case 30: moveCaret(-2, 0); break;  // up
-                    case 31: moveCaret(2, 0); break;   // down
+                switch(USER_KEY) {
+                    case LEFT_KEY: moveCaret(0, -left_distance); break;
+                    case RIGHT_KEY: moveCaret(0,  right_distance); break;
+                    case UP_KEY: moveCaret(-2, 0); break;
+                    case DOWN_KEY: moveCaret(2, 0); break;
                     default: return;
-
                 }
+
             } else {
-                switch(g_key_codes[0]) {
-                    case 28: 
+
+                switch(USER_KEY) {
+                    case LEFT_KEY: 
                         moveCaret(0, -1);
                         var over_a_space = (pattern_markup.track.charAt(caret.col) === ' ');
                         if (over_a_space){ moveCaret(0, -1); } // move to the next tick
-                        break;  // left
-                    case 29: 
+                        break;
+                    case RIGHT_KEY: 
                         moveCaret(0,  1); 
                         var over_a_space = (pattern_markup.track.charAt(caret.col) === ' ');
                         if (over_a_space){ moveCaret(0, 1); }
-                        break;  // right
-                    case 30: moveCaret(-1, 0); break;  // up
-                    case 31: moveCaret(1, 0); break;   // down
+                        break;
+                    case UP_KEY: moveCaret(-1, 0); break;
+                    case DOWN_KEY: moveCaret(1, 0); break;
                     default: return;
                 }
             }
         }
         
-        pattern_input_handler(g_key_codes[0], caret, pattern_markup, faux_pattern);
+        pattern_input_handler(USER_KEY, caret, pattern_markup, faux_pattern);
 
         // we can restrict this to redraw iff there are updates, but for now this is convenient.
         mgraphics.redraw();
