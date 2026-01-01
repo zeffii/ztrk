@@ -118,27 +118,31 @@ function interpolate(val_in, val_out, steps){
         var start = parseInt(val_in, 16);
         var end = parseInt(val_out, 16);
 
-        var stepSize = (end - start) / (steps - 1); // Calculate the increment per step
+        var stepSize = (end - start) / (steps - 1); // increment per step
         for (var i = 0; i < steps; i++) {
             result.push(toPaddedHex(Math.round((start + (i * stepSize))), val_in.length));
         }
-    } else if (val_in.length === 3){ // and is type nnn , i should expand interpolate function to pass param types
+    } else if (val_in.length === 3){ // and is type nnn
 
         var start_int = note_to_int(val_in);
         var end_int = note_to_int(val_out);
 
-        var stepSize = (end_int - start_int) / (steps - 1); // Calculate the increment per step
+        var stepSize = (end_int - start_int) / (steps - 1); // increment per step
         for (var i = 0; i < steps; i++) {
             // even if this passes floats to the int_to_note routine, it will convert to ints inside it.
             result.push(int_to_note(Math.round((start_int + (i * stepSize)))));
         }
-
+    } else if (val_in.length === 6){
+        // very similar to 4hex version.. with some subtle differences (command is stripped and stuck back on later)
+        var start = parseInt(val_in.slice(2), 16);
+        var end = parseInt(val_out.slice(2), 16);
+        var stepSize = (end - start) / (steps - 1); // increment per step
+        for (var i = 0; i < steps; i++) {
+            result.push(toPaddedHex(Math.round((start + (i * stepSize))), 4));
+        }
     } else {
         post('nope', val_in.length);
     }
-
-
-    // notes?
 
     return result;
 }
@@ -188,6 +192,7 @@ function transpose_value(found_param_value, direction){
                 var new_value = Math.max(0, found_note - 1);
                 return int_to_note(new_value);
             }
+        // case 6: 
         default: break;
     }
     return replacement_param_value;

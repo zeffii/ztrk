@@ -1,3 +1,9 @@
+/*
+
+You will always move in the direction of your strongest thought -- so make it a good one.
+
+*/
+
 include("ztrk_pattern_utils.js");
 
 outlets = 3;
@@ -568,6 +574,7 @@ function handle_interpolate_selection(pattern){
             if (param_length > 1){
                 if ( !isOnlyDots(start_list[param_col]) && !isOnlyDots(end_list[param_col]) ){
                     // post('  items to interpolate: ', start_list[param_col], 'and', end_list[param_col] + '\n');
+                    // if paramtype ===== 6 :   cmdfx.slice(0, 2)   join it onto it.
                     interpolation_dict[param_col] = interpolate(start_list[param_col], end_list[param_col], selected_num_rows);
                 }
             }
@@ -582,7 +589,16 @@ function handle_interpolate_selection(pattern){
 
             for (var param_idx = 0; param_idx < splitted_row.length; param_idx++){
                 if (interpolation_dict.hasOwnProperty(param_idx)){
-                    rebuilt_list_of_strings.push(interpolation_dict[param_idx].shift());
+                    if (splitted_row[param_idx].length === 6){
+                        // this needs to inject the existing command back into the interpolation parameter
+                        var argmnt = interpolation_dict[param_idx].shift();
+                        var command = splitted_row[param_idx].slice(0, 2);
+                        var new_parameter = command + argmnt;
+                        rebuilt_list_of_strings.push(new_parameter);
+                    } else {
+                        rebuilt_list_of_strings.push(interpolation_dict[param_idx].shift());
+                    }
+
                 } else {
                     rebuilt_list_of_strings.push(splitted_row[param_idx]);
                 }
