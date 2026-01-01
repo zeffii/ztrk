@@ -85,7 +85,11 @@ var pattern_markup = {
             11: ['b', 'Trigger'], 
             12: ['hh', 'Volume'],
             13: ['hh', 'LDelay'],
-            14: ['hh', 'RDelay']
+            14: ['hh', 'RDelay'],
+            15: ['ffxxyy', 'Effect 1'],
+            16: ['ffxxyy', 'Effect 2'],
+            17: ['b', 'Trigger'], 
+            18: ['hh', 'Volume']
         }
     },
     data: []
@@ -165,6 +169,56 @@ function handle_trigger_input(key, caret, desciptor, pattern){
             pattern[caret.row] = replaceAt(current_rowB, caret.col, key_infoB, 1);
         }
     }
+}
+
+function handle_ffxxyy_input(key, caret, desciptor, pattern, param_at_position){
+    var hex_deletes = [46, 127];
+    var p = param_at_position;
+    post('ffxxyy ---> start:', p.start, ' end: ', p.end, 'current idx in param', p.indexInParam);
+    /*
+        important to note that ff and xxyy are two separate components of the parameter, (command vs argument)
+        where FF and XXYY are 2hex and 4hex respectively. 
+                FF0000
+                FFXXYY
+                ..XXYY
+                ..XXYY
+        if FF has a value, then XXYY must also,
+        but if XXYY has a value, FF does not automatically need to be input, traditionally this means
+        the command in this column is receiving parameter changes.
+
+        interpolation and transposing should be on the XXYY only.
+    */
+    var charfound = String.fromCharCode(key).toUpperCase();
+    var HEXALPHNUM = '0123456789ABCDEF';
+    var listed = HEXALPHNUM.split('');
+
+    if (found_in([0, 1], p.indexInParam)){
+
+        var [index_0, index_1] = [p.start, p.start + 1];
+        if (found_in(listed, charfound)){
+            var current_param_data = pattern[caret.row].substr(index_0, 2);
+            var proposed_param_data = replaceAt(current_param_data, (caret.col - index_0), charfound, 1);
+            proposed_param_data = proposed_param_data.replace(/\./g, "0");
+            pattern[caret.row] = replaceAt(pattern[caret.row], index_0, proposed_param_data, 2);
+        } else if (found_in(hex_deletes, key)) {
+            pattern[caret.row] = replaceAt(pattern[caret.row], index_0, '..', 2);
+        }
+
+
+    } else if (found_in([2, 3, 4, 5], p.indexInParam)){
+
+        var [index_0, index_1, index_2, index_3] = [p.start + 2, p.start + 3, p.start + 4, p.start + 5];
+        if (found_in(listed, charfound)){
+            var current_param_data = pattern[caret.row].substr(index_0, 4);
+            var proposed_param_data = replaceAt(current_param_data, (caret.col - index_0), charfound, 1);
+            proposed_param_data = proposed_param_data.replace(/\./g, "0");
+            pattern[caret.row] = replaceAt(pattern[caret.row], index_0, proposed_param_data, 4);
+        } else if (found_in(hex_deletes, key)) {
+            pattern[caret.row] = replaceAt(pattern[caret.row], index_0, '....', 4);
+        }
+    }
+
+
 }
 
 function handle_4hex_input(key, caret, desciptor, pattern, param_at_position){
@@ -267,17 +321,15 @@ function pattern_input_handler(key, caret, desciptor, pattern){
 
     switch (param_at_position.type) {
       case 'nnn':
-        handle_note_input(key, caret, desciptor, pattern);
-        break;
+        handle_note_input(key, caret, desciptor, pattern); break;
       case 'hh':
-        handle_2hex_input(key, caret, desciptor, pattern);
-        break;
+        handle_2hex_input(key, caret, desciptor, pattern); break;
       case 'b':
-        handle_trigger_input(key, caret, desciptor, pattern);
-        break;
+        handle_trigger_input(key, caret, desciptor, pattern); break;
       case 'hhhh':
-        handle_4hex_input(key, caret, desciptor, pattern, param_at_position);
-        break;
+        handle_4hex_input(key, caret, desciptor, pattern, param_at_position); break;
+      case 'ffxxyy':
+        handle_ffxxyy_input(key, caret, desciptor, pattern, param_at_position); break;        
       default:
         break;
     }    
@@ -416,7 +468,7 @@ function draw_track_descriptor(){
 
         mgraphics.move_to(0 + charwidth, h - (0.25*charheight));
         mgraphics.show_text(caret_string);
-        var version_identifier = 'ztrk v.001';
+        var version_identifier = 'ztrk v.002';
         var identifier_width = mgraphics.text_measure(version_identifier + ' ')[0];
 
         mgraphics.move_to(w - identifier_width, h - (0.25*charheight));
@@ -814,6 +866,36 @@ function keys(a1, a2, a3, a4) {
 
 }
 
+function draw_FF_background(markup){
+    var param_indices = find_regexed_indices(markup.track, /\bffxxyy\b/g);
+    var xx_start = start_x + (4 * charwidth); // where to start from
+    var rect_length = charheight * markup.length;
+    var rect_y_start = (start_y - (0.9 * charheight));
+    for (idx in param_indices){
+        mgraphics.set_source_rgba(0.1, 0.1, 0.3, 0.42);
+        mgraphics.rectangle(xx_start + (param_indices[idx] * charwidth), rect_y_start, charwidth*2, rect_length);
+        mgraphics.fill();
+    }
+}
+
+function draw_command_overlay(markup){
+    var param_indices = find_regexed_indices(markup.track, /\bffxxyy\b/g);
+    var xx_start = start_x + (4 * charwidth); // where to start from
+    for (idx in param_indices){
+        var start_idx = param_indices[idx];
+        mgraphics.set_source_rgba(0.1, 0.5, 0.8, 1.);
+        for (var pidx = 0; pidx < markup.length; pidx++){
+            var tx = xx_start + (start_idx * charwidth);
+
+            var command = faux_pattern[pidx].slice(start_idx, start_idx+2);
+            if (command !== '..'){
+                mgraphics.move_to(tx, start_y + (pidx * settings_font_size));
+                mgraphics.show_text(command);
+            }
+        }
+    }
+}
+
 function paint(){
 
     var w = mgraphics.size[0];
@@ -840,6 +922,7 @@ function paint(){
     mgraphics.rectangle(start_x, tick_y, text_w, settings_font_size);
     mgraphics.fill();
 
+    draw_FF_background(pattern_markup);
     draw_caret();
 
     mgraphics.set_source_rgba(0.4, 0.9, 1.0, 1);
@@ -848,7 +931,8 @@ function paint(){
         var pattern_row = fmt(idx) + faux_pattern[idx];
         mgraphics.show_text(pattern_row);
     }
-    
+
+    draw_command_overlay(pattern_markup);  // if this is slowing stuff down, comment it out.
     draw_edit_mode_indicator();
     draw_selection();
     draw_track_descriptor();

@@ -120,7 +120,7 @@ function interpolate(val_in, val_out, steps){
 
         var stepSize = (end - start) / (steps - 1); // Calculate the increment per step
         for (var i = 0; i < steps; i++) {
-            result.push(Math.round((start + (i * stepSize))).toString(16).toUpperCase());
+            result.push(toPaddedHex(Math.round((start + (i * stepSize))), val_in.length));
         }
     } else if (val_in.length === 3){ // and is type nnn , i should expand interpolate function to pass param types
 
@@ -141,6 +141,56 @@ function interpolate(val_in, val_out, steps){
     // notes?
 
     return result;
+}
+
+
+function toPaddedHex(number, digits) {
+    digits = digits || 2;  // Default to 2 digits if not specified
+    var hex = number.toString(16).toUpperCase();
+    return ('00000' + hex).slice(-digits);  // Prepend enough zeros, take last 'digits'
+}
+
+function transpose_value(found_param_value, direction){
+    // LOL, this is so ugly :)
+    var INT_MAX_2HEX = parseInt('FF', 16);
+    var INT_MAX_4HEX = parseInt('FFFF', 16);
+    var NOTE_MAX = 127;
+    var plen = found_param_value.length;
+    var replacement_param_value = found_param_value;
+
+    if (found_in(['===', '^^^', '.', '..', '...', '....', '......', '1'], found_param_value)){
+        return replacement_param_value;
+    }
+
+    switch (plen) {
+        case 2:
+            var initial_value = parseInt(found_param_value, 16);
+            if (direction === 'UP'){
+                var new_value = Math.min(INT_MAX_2HEX, initial_value + 1);
+            } else if (direction === 'DOWN'){
+                var new_value = Math.max(0, initial_value - 1);
+            }
+            return toPaddedHex(new_value, plen);
+        case 4:
+            var initial_value = parseInt(found_param_value, 16);
+            if (direction === 'UP'){
+                var new_value = Math.min(INT_MAX_4HEX, initial_value + 1);
+            } else if (direction === 'DOWN'){
+                var new_value = Math.max(0, initial_value - 1);
+            } 
+            return toPaddedHex(new_value, plen);
+        case 3: 
+            var found_note = note_to_int(found_param_value);
+            if (direction === 'UP'){
+                var new_value = Math.min(NOTE_MAX, found_note + 1);
+                return int_to_note(new_value);
+            } else if (direction === 'DOWN'){
+                var new_value = Math.max(0, found_note - 1);
+                return int_to_note(new_value);
+            }
+        default: break;
+    }
+    return replacement_param_value;
 }
 
 function isOnlyDots(str) {
