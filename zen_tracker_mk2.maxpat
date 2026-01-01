@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ -1351.0, 110.0, 1338.0, 787.0 ],
+        "rect": [ -1687.0, 97.0, 1338.0, 787.0 ],
         "toolbars_unpinned_last_save": 4,
         "boxes": [
             {
@@ -3080,7 +3080,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 173.0, 533.8462047576904, 145.12195467948914, 22.0 ],
-                                    "text": "A::Freq 1273."
+                                    "text": "recall 3"
                                 }
                             },
                             {
@@ -3874,7 +3874,7 @@
                             "modernui": 1
                         },
                         "classnamespace": "box",
-                        "rect": [ 293.0, 93.0, 1094.0, 644.0 ],
+                        "rect": [ -1087.0, 129.0, 860.0, 649.0 ],
                         "boxes": [
                             {
                                 "box": {
@@ -3949,7 +3949,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 50.0, 22.0 ],
-                                    "text": "31"
+                                    "text": "43"
                                 }
                             },
                             {
@@ -4037,7 +4037,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "125",
+                                    "text": "24",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -4082,7 +4082,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 31 125 4864 -10",
+                                    "text": "keys 43 24 512 61",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -5315,14 +5315,6 @@
             "obj-87::obj-34::obj-99": [ "Active[7]", "Active", 0 ],
             "obj-87::obj-55::obj-40": [ "slider[1]", "slider", 0 ],
             "obj-88": [ "live.gain~[2]", "live.gain~", 0 ],
-            "parameterbanks": {
-                "0": {
-                    "index": 0,
-                    "name": "",
-                    "parameters": [ "-", "-", "-", "-", "-", "-", "-", "-" ],
-                    "buttons": [ "-", "-", "-", "-", "-", "-", "-", "-" ]
-                }
-            },
             "parameter_overrides": {
                 "obj-118::obj-107::obj-27::obj-16": {
                     "parameter_longname": "Mix[5]"

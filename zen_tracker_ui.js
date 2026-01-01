@@ -486,7 +486,7 @@ function handle_interpolate_selection(pattern){
             - collect start and end value for each such parameter, create a linear interpolation for now.
             - i can add a console command to do `> itpl 1`  (linear)  `> itpl 0.3` (accelerating ramp)  1.5 decel
         */
-
+        post('Interpolating:\n');
         var selection =  getSelectionRect();
         var selected_num_rows = (selection.bottom - selection.top) + 1;
         if (selected_num_rows < 3){
@@ -598,6 +598,34 @@ function handle_shift_selection(pattern, direction){
     return false;
 }
 
+function handle_transpose_selection(pattern, direction){
+    post('initiating transpose function: ' + direction + '\n');
+    if (started_selection_mode){
+        var sel_rect = get_adjusted_selection_rect();
+        //  selection_info: {start_index: 7  selection_length: 29  top: 2  bottom: 8  num_rows: 7}
+        //  selection_data: [rows,....]
+        ztrk_clipboard = {
+            'selection_info': sel_rect,
+            'selection_data': []
+        }
+        for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
+            var this_row_data = pattern[row].substr(sel_rect.start_index, sel_rect.selection_length);
+            var row_data = this_row_data.split(' ');
+            var new_row_data = [];
+            for (param_idx in row_data){
+                var adjusted_value = transpose_value(row_data[param_idx], direction);
+                post(row_data[param_idx], 'vs', adjusted_value);
+                new_row_data.push(adjusted_value);
+            }
+            var replacement_part = new_row_data.join(' ');
+            pattern[row] = replaceAt(pattern[row], sel_rect.start_index, replacement_part, sel_rect.selection_length);
+
+        }
+        refresh();
+        return true;
+    }
+    return false;
+}
 
 function handle_paste_selection(pattern){
     post('initiating paste function\n');
@@ -662,22 +690,22 @@ function key_handler(){
         var [LEFT_KEY, RIGHT_KEY] = [28, 29];
         var SELECTOR = g_key_codes[2];
         var USER_KEY = g_key_codes[0];
+        var [MINUS, PLUS] = [95, 43];
 
         if (SELECTOR === ALT){
             if (found_in([UP_KEY, DOWN_KEY], USER_KEY)){
-                post('Shifting:\n');
-                if (handle_shift_selection(faux_pattern, USER_KEY)){ 
-                    return;   // end early.
-                }
+                if (handle_shift_selection(faux_pattern, USER_KEY)){ return; }
             }
         }
 
         if (SELECTOR === SHIFT){
             if (String.fromCharCode(USER_KEY).toUpperCase() === 'I'){
-                post('Interpolating:\n');
-                if (handle_interpolate_selection(faux_pattern)){ 
-                    return;   // end early.
-                } 
+                if (handle_interpolate_selection(faux_pattern)){ return; } 
+            }
+            switch(USER_KEY){
+                case MINUS: handle_transpose_selection(faux_pattern, 'DOWN'); return;
+                case PLUS: handle_transpose_selection(faux_pattern, 'UP'); return;
+                default: break;
             }
         }
 
@@ -686,7 +714,7 @@ function key_handler(){
                 case C_KEY: handle_copy_selection(faux_pattern); return;
                 case V_KEY: handle_paste_selection(faux_pattern); return;
                 case X_KEY: handle_delete_selection(faux_pattern); return;
-                default: return;
+                default: break;
             }
         }
 
