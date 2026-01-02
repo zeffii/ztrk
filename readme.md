@@ -21,11 +21,12 @@ Some milestones i will need to tackle, in no particular order
     - [x] note
     - [x] trigger ( 1 or . )
     - [x] 4 hex
+    - [x] FFXXYY (this will set you free)
 - [ ] util functions(hex to int, etc)
     these to be used for
     - [x] interpolation functions,
-    - [ ] multiply,
-    - [ ] addition
+    - [x] addition/subtract/transpose
+    - [ ] multiply
 - [ ] sequencing patterns
 - [ ] general pattern editor functions (reverse, transpose)
     - [x] interpolate (hex and notes)
