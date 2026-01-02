@@ -573,8 +573,6 @@ function handle_interpolate_selection(pattern){
             var param_length = start_list[param_col].length;
             if (param_length > 1){
                 if ( !isOnlyDots(start_list[param_col]) && !isOnlyDots(end_list[param_col]) ){
-                    // post('  items to interpolate: ', start_list[param_col], 'and', end_list[param_col] + '\n');
-                    // if paramtype ===== 6 :   cmdfx.slice(0, 2)   join it onto it.
                     interpolation_dict[param_col] = interpolate(start_list[param_col], end_list[param_col], selected_num_rows);
                 }
             }
@@ -760,6 +758,16 @@ function key_handler(){
         var USER_KEY = g_key_codes[0];
         var [MINUS, PLUS] = [95, 43];
 
+        /*
+        maxmsp captures some of the kb shortcuts for its own purposes:
+        - ctrl+I = inspector
+        - f5 = magnifying glass
+        - ..and a few others i'm forgetting right now
+        This means i'm substituting occupied ones for similar but available ones. 
+        Not ideal but it does tempt me to implement some input hardware for interaction.
+
+        */
+
         if (SELECTOR === ALT){
             if (found_in([UP_KEY, DOWN_KEY], USER_KEY)){
                 if (handle_shift_selection(faux_pattern, USER_KEY)){ return; }
@@ -882,7 +890,11 @@ function keys(a1, a2, a3, a4) {
 
 }
 
-function draw_FF_background(markup){
+function draw_command_background(markup){
+    /*
+    draws rectangles under the command part of the ffxxyy parameter tracks/columns
+    This is not essential but adds UI contrast.
+    */
     var param_indices = find_regexed_indices(markup.track, /\bffxxyy\b/g);
     var xx_start = start_x + (4 * charwidth); // where to start from
     var rect_length = charheight * markup.length;
@@ -895,6 +907,10 @@ function draw_FF_background(markup){
 }
 
 function draw_command_overlay(markup){
+    /*
+    if the ff column of the ffxxyy track has a value other than two dots (..) then this draws 
+    the command value using a slightly different colour for UI contrast. 
+    */
     var param_indices = find_regexed_indices(markup.track, /\bffxxyy\b/g);
     var xx_start = start_x + (4 * charwidth); // where to start from
     for (idx in param_indices){
@@ -938,7 +954,7 @@ function paint(){
     mgraphics.rectangle(start_x, tick_y, text_w, settings_font_size);
     mgraphics.fill();
 
-    draw_FF_background(pattern_markup);
+    draw_command_background(pattern_markup);
     draw_caret();
 
     mgraphics.set_source_rgba(0.4, 0.9, 1.0, 1);

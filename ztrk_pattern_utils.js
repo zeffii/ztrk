@@ -192,7 +192,18 @@ function transpose_value(found_param_value, direction){
                 var new_value = Math.max(0, found_note - 1);
                 return int_to_note(new_value);
             }
-        // case 6: 
+        case 6: 
+            var command = found_param_value.slice(0, 2);
+            var argmnt = found_param_value.slice(2);
+            var initial_value = parseInt(argmnt, 16);
+            
+            if (direction === 'UP'){
+                var new_value = Math.min(INT_MAX_4HEX, initial_value + 1);
+            } else if (direction === 'DOWN'){
+                var new_value = Math.max(0, initial_value - 1);
+            } 
+            return command + toPaddedHex(new_value, 4);
+
         default: break;
     }
     return replacement_param_value;
