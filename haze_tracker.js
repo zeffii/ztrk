@@ -47,6 +47,7 @@ var pattern_markup = {
 
 var my_tracker = new Tracker(outlet, pattern_markup, mgraphics);
 
+key_handler = my_tracker.key_handler.bind(my_tracker);
 dictionary = my_tracker.dictionary.bind(my_tracker);
 onclick = my_tracker.onclick.bind(my_tracker);
 ondrag = my_tracker.ondrag.bind(my_tracker);
@@ -58,3 +59,4 @@ bang = my_tracker.bang.bind(my_tracker);
 msg_int = my_tracker.msg_int.bind(my_tracker);
 clear = my_tracker.clear.bind(my_tracker);
 refresh = my_tracker.refresh.bind(my_tracker);
+keys = my_tracker.keys.bind(my_tracker);

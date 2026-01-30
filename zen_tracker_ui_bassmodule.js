@@ -11,6 +11,8 @@ var Tracker = function (outlet, pattern_markup, mgraphics) {
     // outlets = 3;
     // inlets = 4;
 
+    this.outlet = outlet;
+
     mgraphics.init();
     mgraphics.relative_coords = 0;
     mgraphics.autofill = 0;
@@ -322,15 +324,15 @@ var Tracker = function (outlet, pattern_markup, mgraphics) {
 
         switch (param_at_position.type) {
           case 'nnn':
-            handle_note_input(key, caret, desciptor, pattern); break;
+            this.handle_note_input(key, caret, desciptor, pattern); break;
           case 'hh':
-            handle_2hex_input(key, caret, desciptor, pattern); break;
+            this.handle_2hex_input(key, caret, desciptor, pattern); break;
           case 'b':
-            handle_trigger_input(key, caret, desciptor, pattern); break;
+            this.handle_trigger_input(key, caret, desciptor, pattern); break;
           case 'hhhh':
-            handle_4hex_input(key, caret, desciptor, pattern, param_at_position); break;
+            this.handle_4hex_input(key, caret, desciptor, pattern, param_at_position); break;
           case 'ffxxyy':
-            handle_ffxxyy_input(key, caret, desciptor, pattern, param_at_position); break;        
+            this.handle_ffxxyy_input(key, caret, desciptor, pattern, param_at_position); break;        
           default:
             break;
         }    
@@ -591,8 +593,8 @@ var Tracker = function (outlet, pattern_markup, mgraphics) {
                 pattern[row] = replaceAt(pattern[row], selection_start, replacement_part, selection_length);
             }
 
-            push_to_live();
-            refresh();
+            this.push_to_live();
+            this.refresh();
             return true;
         }
         return false;
@@ -715,8 +717,8 @@ var Tracker = function (outlet, pattern_markup, mgraphics) {
                 }
             }
 
-            push_to_live();
-            refresh();
+            this.push_to_live();
+            this.refresh();
         }
     }
 
@@ -763,26 +765,26 @@ var Tracker = function (outlet, pattern_markup, mgraphics) {
 
             if (SELECTOR === ALT){
                 if (found_in([UP_KEY, DOWN_KEY], USER_KEY)){
-                    if (handle_shift_selection(faux_pattern, USER_KEY)){ return; }
+                    if (this.handle_shift_selection(faux_pattern, USER_KEY)){ return; }
                 }
             }
 
             if (SELECTOR === SHIFT){
                 if (String.fromCharCode(USER_KEY).toUpperCase() === 'I'){
-                    if (handle_interpolate_selection(faux_pattern)){ return; } 
+                    if (this.handle_interpolate_selection(faux_pattern)){ return; } 
                 }
                 switch(USER_KEY){
-                    case MINUS: handle_transpose_selection(faux_pattern, 'DOWN'); return;
-                    case PLUS: handle_transpose_selection(faux_pattern, 'UP'); return;
+                    case MINUS: this.handle_transpose_selection(faux_pattern, 'DOWN'); return;
+                    case PLUS: this.handle_transpose_selection(faux_pattern, 'UP'); return;
                     default: break;
                 }
             }
 
             if (SELECTOR === CTRL){
                 switch(USER_KEY) {
-                    case C_KEY: handle_copy_selection(faux_pattern); return;
-                    case V_KEY: handle_paste_selection(faux_pattern); return;
-                    case X_KEY: handle_delete_selection(faux_pattern); return;
+                    case C_KEY: this.handle_copy_selection(faux_pattern); return;
+                    case V_KEY: this.handle_paste_selection(faux_pattern); return;
+                    case X_KEY: this.handle_delete_selection(faux_pattern); return;
                     default: break;
                 }
             }
@@ -840,10 +842,10 @@ var Tracker = function (outlet, pattern_markup, mgraphics) {
                     }
 
                     switch(USER_KEY) {
-                        case LEFT_KEY: moveCaret(0, -left_distance); break;
-                        case RIGHT_KEY: moveCaret(0,  right_distance); break;
-                        case UP_KEY: moveCaret(-2, 0); break;
-                        case DOWN_KEY: moveCaret(2, 0); break;
+                        case LEFT_KEY: this.moveCaret(0, -left_distance); break;
+                        case RIGHT_KEY: this.moveCaret(0,  right_distance); break;
+                        case UP_KEY: this.moveCaret(-2, 0); break;
+                        case DOWN_KEY: this.moveCaret(2, 0); break;
                         default: return;
                     }
 
@@ -851,23 +853,23 @@ var Tracker = function (outlet, pattern_markup, mgraphics) {
 
                     switch(USER_KEY) {
                         case LEFT_KEY: 
-                            moveCaret(0, -1);
+                            this.moveCaret(0, -1);
                             var over_a_space = (pattern_markup.track.charAt(caret.col) === ' ');
-                            if (over_a_space){ moveCaret(0, -1); } // move to the next tick
+                            if (over_a_space){ this.moveCaret(0, -1); } // move to the next tick
                             break;
                         case RIGHT_KEY: 
-                            moveCaret(0,  1); 
+                            this.moveCaret(0,  1); 
                             var over_a_space = (pattern_markup.track.charAt(caret.col) === ' ');
-                            if (over_a_space){ moveCaret(0, 1); }
+                            if (over_a_space){ this.moveCaret(0, 1); }
                             break;
-                        case UP_KEY: moveCaret(-1, 0); break;
-                        case DOWN_KEY: moveCaret(1, 0); break;
+                        case UP_KEY: this.moveCaret(-1, 0); break;
+                        case DOWN_KEY: this.moveCaret(1, 0); break;
                         default: return;
                     }
                 }
             }
             
-            pattern_input_handler(USER_KEY, caret, pattern_markup, faux_pattern);
+            this.pattern_input_handler(USER_KEY, caret, pattern_markup, faux_pattern);
 
             // we can restrict this to redraw iff there are updates, but for now this is convenient.
             mgraphics.redraw();
@@ -984,7 +986,7 @@ var Tracker = function (outlet, pattern_markup, mgraphics) {
     this.onclick = function(x, y, button){
         g_Mouse = [x, y];
         if (g_in_edit_mode){
-            self.find_cell_under_cursor(x, y);
+            this.find_cell_under_cursor(x, y);
         }
         mgraphics.redraw();
     }
