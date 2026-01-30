@@ -15,9 +15,10 @@ mgraphics.autofill = 0;
 
 /*  todo
 [ ] implement scrolling
-[ ] transpose
 */
 
+var AbletonMode = true;
+var MatrixMode = false;
 var ztrk_clipboard = {};
 var faux_pattern = [];
 
@@ -42,6 +43,31 @@ var g_updating_selection = true;
 var caret = { row: 0, col: 0 };
 var anchor = null;
 var g_pattern_octave = 4;
+
+function command(instruction){
+    post('really here');
+    if (instruction === 'export_pattern'){
+        post('Exporting Pattern\n');
+        var outputDict = new Dict('pattern_data');
+        
+        pattern_markup.data = faux_pattern;
+        outputDict.parse(JSON.stringify(pattern_markup));
+        outlet(2, "dictionary", outputDict.name);
+    }
+    switch (instruction) {
+        case 'push_to_clip':
+            push_to_live();
+            post('here!');
+            return;
+        case 'matrixmode=0':
+            post('setting matrixmode to False data');
+            return;
+        case 'matrixmode=1':
+            post('setting matrixmode to True data');
+            return;
+        default: break;
+    }
+}
 
 function set_rgb(color, dimming){
     mgraphics.set_source_rgba(color.r / dimming, color.g / dimming, color.b / dimming, 1);
@@ -77,25 +103,28 @@ var pattern_markup = {
             3: ['hh', 'Crispyness']
         },
         track: {
-            0: ['nnn', 'Note'],
-            1: ['hh', 'Volume'],
-            2: ['hhhh', 'Offset'],
-            3: ['b', 'Trigger'],
-            4: ['hh', 'Volume'], 
-            5: ['b', 'Trigger'], 
-            6: ['hh', 'Volume'],
-            7: ['b', 'Trigger'], 
-            8: ['hh', 'Volume'],
-            9: ['b', 'Trigger'], 
-            10: ['hh', 'Volume'],
-            11: ['b', 'Trigger'], 
-            12: ['hh', 'Volume'],
-            13: ['hh', 'LDelay'],
-            14: ['hh', 'RDelay'],
-            15: ['ffxxyy', 'Effect 1'],
-            16: ['ffxxyy', 'Effect 2'],
-            17: ['b', 'Trigger'], 
-            18: ['hh', 'Volume']
+            0: ['nnn', 'Note 0'],
+            1: ['hh', 'Volume 0'],
+            2: ['hh', 'Duration 0'],
+            3: ['hhhh', 'Offset 0'],
+            4: ['nnn', 'Note 1'],
+            5: ['hh', 'Volume 1'],
+            6: ['hh', 'Duration 1'],
+            7: ['hhhh', 'Offset 1'],
+            8: ['nnn', 'Note 2'],
+            9: ['hh', 'Volume 2'],
+            10: ['hh', 'Duration 2'],
+            11: ['hhhh', 'Offset 3'],
+            12: ['nnn', 'Note 3'],
+            13: ['hh', 'Volume 3'],
+            14: ['hh', 'Duration 3'],
+            15: ['hhhh', 'Offset 3'],
+            16: ['b', 'Trigger'], 
+            17: ['hh', 'Volume'],
+            18: ['hh', 'LDelay'],
+            19: ['hh', 'RDelay'],
+            20: ['ffxxyy', 'Effect 1'],
+            21: ['ffxxyy', 'Effect 2']
         }
     },
     data: []
@@ -120,7 +149,8 @@ var cols = pattern_markup.track.length;
 // ss   = short (ints 0..80)
 // hhhh = 4hex
 // b    = bang/trigger  ( 1 or .)
-// ggg  = signed (-20 .. +20)
+// FFXXYY = COMMAND+ARG
+// ggg  = signed (-20 .. +20)  NOT IMPLEMENTED
 
 function handle_2hex_input(key, caret, desciptor, pattern){
     // 4hex version of this was written after 2hex, use 4hex as inspiration if you plan to rewrite this function.
@@ -180,7 +210,7 @@ function handle_trigger_input(key, caret, desciptor, pattern){
 function handle_ffxxyy_input(key, caret, desciptor, pattern, param_at_position){
     var hex_deletes = [46, 127];
     var p = param_at_position;
-    post('ffxxyy ---> start:', p.start, ' end: ', p.end, 'current idx in param', p.indexInParam);
+    // post('ffxxyy ---> start:', p.start, ' end: ', p.end, 'current idx in param', p.indexInParam);
     /*
         important to note that ff and xxyy are two separate components of the parameter, (command vs argument)
         where FF and XXYY are 2hex and 4hex respectively. 
@@ -262,7 +292,7 @@ function handle_note_input(key, caret, desciptor, pattern){
     const NoteClearList = {46: "...", 127: "...", 96: "^^^", 49: "==="};
     const note_indices = find_regexed_indices(pattern_markup.track, /\bn{3}\b/g);   // nnn
     if (note_indices.length){
-        post('note_indices :', note_indices, '\n');
+        // post('note_indices :', note_indices, '\n');
 
         const note_index_pairs = [];
         for (var i=0; i < note_indices.length; i++){
@@ -271,7 +301,7 @@ function handle_note_input(key, caret, desciptor, pattern){
             var index_2 = index_0 + 2;
             note_index_pairs.push([index_0, index_1, index_2]);
         }
-        post('note_index_pairs :', note_index_pairs);
+        // post('note_index_pairs :', note_index_pairs);
 
         var notefield_indices_found = findSublistContaining(caret.col, note_index_pairs);
         if (notefield_indices_found === null){
@@ -429,16 +459,6 @@ function refresh(){
     mgraphics.redraw();
 }
 
-function command(instruction){
-    if (instruction === 'export_pattern'){
-        post('Exporting Pattern\n');
-        var outputDict = new Dict('pattern_data');
-        
-        pattern_markup.data = faux_pattern;
-        outputDict.parse(JSON.stringify(pattern_markup));
-        outlet(2, "dictionary", outputDict.name);
-    }
-}
 
 function wheres_the_caret(){
     // dont do this frequently
@@ -509,6 +529,8 @@ function handle_delete_selection(pattern){
             row_substr = row_substr.replace(/[^ ]/g, '.');
             pattern[row] = replaceAt(pattern[row], selection_start, row_substr, selection_length);
         }
+
+        push_to_live();
         refresh();
         return true;
     }
@@ -544,7 +566,7 @@ function handle_interpolate_selection(pattern){
             - collect start and end value for each such parameter, create a linear interpolation for now.
             - i can add a console command to do `> itpl 1`  (linear)  `> itpl 0.3` (accelerating ramp)  1.5 decel
         */
-        post('Interpolating:\n');
+        // post('Interpolating:\n');
         var selection =  getSelectionRect();
         var selected_num_rows = (selection.bottom - selection.top) + 1;
         if (selected_num_rows < 3){
@@ -604,6 +626,8 @@ function handle_interpolate_selection(pattern){
             var replacement_part = rebuilt_list_of_strings.join(' ');
             pattern[row] = replaceAt(pattern[row], selection_start, replacement_part, selection_length);
         }
+
+        push_to_live();
         refresh();
         return true;
     }
@@ -611,7 +635,7 @@ function handle_interpolate_selection(pattern){
 }
 
 function handle_copy_selection(pattern){
-    post('initiating copy function\n');
+    // post('initiating copy function\n');
     var sel_rect = get_adjusted_selection_rect();
     //  selection_info: {start_index: 7  selection_length: 29  top: 2  bottom: 8  num_rows: 7}
     //  selection_data: [rows,....]
@@ -629,7 +653,7 @@ function handle_shift_selection(pattern, direction){
     if (started_selection_mode){
         var remap_main = {30: 'UP', 31: 'DOWN'};
 
-        post('----> initiating shift function', remap_main[direction], '\n');
+        // post('----> initiating shift function', remap_main[direction], '\n');
         var sel_rect = get_adjusted_selection_rect();
         //  selection_info: {start_index: 7  selection_length: 29  top: 2  bottom: 8  num_rows: 7}
         //  selection_data: [rows,....]
@@ -658,6 +682,7 @@ function handle_shift_selection(pattern, direction){
             idx++;
         }
 
+        push_to_live();
         refresh();
         return true;
     }
@@ -665,7 +690,7 @@ function handle_shift_selection(pattern, direction){
 }
 
 function handle_transpose_selection(pattern, direction){
-    post('initiating transpose function: ' + direction + '\n');
+    // post('initiating transpose function: ' + direction + '\n');
     if (started_selection_mode){
         var sel_rect = get_adjusted_selection_rect();
         //  selection_info: {start_index: 7  selection_length: 29  top: 2  bottom: 8  num_rows: 7}
@@ -680,13 +705,15 @@ function handle_transpose_selection(pattern, direction){
             var new_row_data = [];
             for (param_idx in row_data){
                 var adjusted_value = transpose_value(row_data[param_idx], direction);
-                post(row_data[param_idx], 'vs', adjusted_value);
+                // post(row_data[param_idx], 'vs', adjusted_value);
                 new_row_data.push(adjusted_value);
             }
             var replacement_part = new_row_data.join(' ');
             pattern[row] = replaceAt(pattern[row], sel_rect.start_index, replacement_part, sel_rect.selection_length);
 
         }
+
+        push_to_live();
         refresh();
         return true;
     }
@@ -723,6 +750,8 @@ function handle_paste_selection(pattern){
                 break;
             }
         }
+
+        push_to_live();
         refresh();
     }
 }
@@ -908,8 +937,8 @@ function draw_command_background(markup){
 
 function draw_command_overlay(markup){
     /*
-    if the ff column of the ffxxyy track has a value other than two dots (..) then this draws 
-    the command value using a slightly different colour for UI contrast. 
+    if the ff column of the ffxxyy track has a value other than two dots (..) 
+    this draws the cmd value using a different colour for UI contrast. 
     */
     var param_indices = find_regexed_indices(markup.track, /\bffxxyy\b/g);
     var xx_start = start_x + (4 * charwidth); // where to start from
@@ -928,6 +957,10 @@ function draw_command_overlay(markup){
     }
 }
 
+function push_to_live(){
+    if (AbletonMode === 1){ MakeSimpleNoteDictFromArrays(pattern_markup); }
+}
+
 function paint(){
 
     var w = mgraphics.size[0];
@@ -942,7 +975,6 @@ function paint(){
 
     // --- dark background ---
     mgraphics.set_source_rgba(0.1, 0.2, 0.4, 1);
-    // mgraphics.set_source_rgba(0.14, 0.14, 0.14, 1);
     mgraphics.rectangle(0, 0, w, h);
     mgraphics.fill();
 

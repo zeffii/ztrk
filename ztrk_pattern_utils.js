@@ -216,3 +216,58 @@ function isOnlyDots(str) {
 function PostDict(dict){
      Object.keys(dict).forEach(function(key) { post(key + ": " + dict[key]); });
 }
+
+function MakeSimpleNoteDictFromArrays(pattern_markup){
+    /*
+    this is only a super early attempt at patterndata to clipdata
+
+    */
+
+    function MakeNote(pitch, midi_vol, ntime, duration){
+        return { 
+          "pitch": pitch,        // midi note
+          "start_time": ntime,    //
+          "duration": duration,  // 0.25
+          "velocity": midi_vol,  // 100
+          "mute": 0, 
+          "probability": 1, 
+          "velocity_deviation": 0, 
+          "release_velocity": 64 
+        };
+    }
+
+    // Duplicate notes at the same time are not allowed yet..
+    var notes_obj = {"notes": []};
+
+    var note_indices = find_regexed_indices(pattern_markup.track, /\bn{3}\b/g);   // nnn
+    var note_time_multiplier = 0.25;
+    for (row_idx in pattern_markup.data){
+        var pattern_row_data = pattern_markup.data[row_idx];
+        for (param_idx in note_indices){
+            var note_idx_start = note_indices[param_idx];
+            var note_str = pattern_row_data.substr(note_idx_start, 3);
+            if (!found_in(['...', '===', '^^^'], note_str)) {
+                var note_pitch = note_to_int(note_str);
+                // force rigid time.
+                // var ntime = Math.round(((row_idx * note_time_multiplier) + Number.EPSILON) * 100) / 100;
+                var ntime = Math.round((row_idx * note_time_multiplier) * 100) / 100;
+                var new_note = MakeNote(note_pitch, 100, ntime, 0.25);
+                notes_obj.notes.push(new_note);
+            }
+        }
+    }
+
+    // const jsonString = JSON.stringify(note_obj, null, 2); // Pretty-printed JSON
+    // post(jsonString);    
+
+    // live_api = new LiveAPI("live_set view detail_clip");
+    // var notes_obj = remove_node_ids(note_obj)
+    if (!notes_obj.notes.length){
+        return;
+    }
+
+
+    live_api = new LiveAPI("live_set tracks 0 clip_slots 0 clip");
+    live_api.call("remove_notes_extended", 0, 127, 0, 9999);
+    live_api.call("add_new_notes", notes_obj);
+}

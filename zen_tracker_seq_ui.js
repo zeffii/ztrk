@@ -16,7 +16,7 @@ var g_loop_end = 128;
 
 // display patterns ..start with a placeholder structure
 var sequence_data = [
-    {pname: "01", trk: 0, start: 0, length: 16, color: [0.2, 0.4, 0.5], kind: "gen"},
+    {pname: "01", trk: 0, start: 0, length: 30, color: [0.2, 0.4, 0.5], kind: "gen"},
     {pname: "02", trk: 1, start: 16, length: 48, color: [0.2, 0.4, 0.5], kind: "gen"},
     {pname: "03", trk: 2, start: 64, length: 64, color: [0.2, 0.4, 0.5], kind: "fx"},
     {pname: "04", trk: 0, start: 128, length: 64, color: [0.2, 0.4, 0.5], kind: "gen"},
@@ -53,6 +53,10 @@ function command(instruction){
         }
         outputDict.parse(JSON.stringify(sequence_data_dict));
         outlet(1, "dictionary", outputDict.name);
+    }
+    if (instruction === 'get_pmarkup'){
+        // var markup = this.patcher.getnamed("TrackerView").getnamed("pattern_markup").getvalueof
+        // post(markup.length);
     }
 }
  
