@@ -46,7 +46,16 @@ var pattern_markup = {
 };
 
 
-var my_tracker = new Tracker(pattern_markup, mgraphics);
+function sendOutlet(port, ...args) {
+  try {
+    outlet(port, ...args);
+  } catch (e) {
+    post("SAFE OUTLET ERROR: " + e + "\n");
+    post("Args were: " + args.join(", ") + "\n");
+  }
+}
+
+var my_tracker = new Tracker(pattern_markup, mgraphics, {send: sendOutlet});
 
 key_handler = my_tracker.key_handler.bind(my_tracker);
 dictionary = my_tracker.dictionary.bind(my_tracker);
@@ -54,13 +63,13 @@ onclick = my_tracker.onclick.bind(my_tracker);
 ondrag = my_tracker.ondrag.bind(my_tracker);
 onidle = my_tracker.onidle.bind(my_tracker);
 onidleout = my_tracker.onidleout.bind(my_tracker);
-// command = my_tracker.command.bind(my_tracker);
 paint = my_tracker.paint.bind(my_tracker);
-// bang = my_tracker.bang.bind(my_tracker);
+bang = my_tracker.bang.bind(my_tracker);
 msg_int = my_tracker.msg_int.bind(my_tracker);
 clear = my_tracker.clear.bind(my_tracker);
 refresh = my_tracker.refresh.bind(my_tracker);
 keys = my_tracker.keys.bind(my_tracker);
+// command = my_tracker.command.bind(my_tracker);
 
 /*
 you could also use this....instead of that ugly list above .
@@ -72,17 +81,6 @@ you could also use this....instead of that ugly list above .
 here i'm explicitly redefining the bang and command function, as they use outlet
 */
 
-
-function bang(){
-    
-    outlet(0, my_tracker.g_pattern_playhead);
-    if (my_tracker.faux_pattern){
-         outlet(1, my_tracker.faux_pattern[my_tracker.g_pattern_playhead]);
-    }
-    post('wtf', my_tracker.g_pattern_playhead, '\n');
-    // my_tracker.mgraphics.redraw();
-    mgraphics.redraw();
-}
 
 function command(instruction){
 

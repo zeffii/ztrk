@@ -8,9 +8,6 @@ include("ztrk_pattern_utils.js");
 
 class Tracker  {
 
-    // outlets = 3;
-    // inlets = 4;
-
     #AbletonMode = true;
     #MatrixMode = false;
     #ztrk_clipboard = {};
@@ -29,8 +26,9 @@ class Tracker  {
     #anchor = null;
     #g_pattern_octave = 4;           // [ todo, implement current octave for input ]
 
+    constructor(pattern_markup, mgraphics, options = {} ){
 
-    constructor(pattern_markup, mgraphics){
+        this.send = options.send || function() { post("No send function provided"); };
 
         // make local params
         this.mgraphics = mgraphics;
@@ -66,13 +64,14 @@ class Tracker  {
 
     }
 
-    // bang(){
-    //     this.mgraphics.redraw();
-    //     // this.outlet(0, this.g_pattern_playhead);
-    //     // if (this.faux_pattern){
-    //     //     this.outlet(1, this.faux_pattern[this.g_pattern_playhead]);
-    //     // }
-    // }
+    bang(){
+        this.send(0, this.g_pattern_playhead);
+        if (this.faux_pattern){
+             this.send(1, this.faux_pattern[this.g_pattern_playhead]);
+        }
+        this.mgraphics.redraw();
+        post('latest', this.g_pattern_playhead);
+    }
 
     msg_int(tick){
         this.g_pattern_playhead = tick;
@@ -787,7 +786,7 @@ class Tracker  {
             var [LEFT_KEY, RIGHT_KEY] = [28, 29];
             var SELECTOR = this.#g_key_codes[2];
             var USER_KEY = this.#g_key_codes[0];
-            var [MINUS, PLUS] = [95, 43];
+            var [MINUS, PLUS] = [95, 43];   // not the numkey ones at the moment.
 
             /*
             maxmsp captures some of the kb shortcuts for its own purposes:
@@ -922,7 +921,7 @@ class Tracker  {
         var xx_start = this.start_x + (4 * this.charwidth); // where to start from
         var rect_length = this.charheight * markup.length;
         var rect_y_start = (this.start_y - (0.9 * this.charheight));
-        post(this.faux_pattern.length);
+        // post(this.faux_pattern.length);
         for (const idx in param_indices){
             this.mgraphics.set_source_rgba(0.1, 0.1, 0.3, 0.42);
             this.mgraphics.rectangle(xx_start + (param_indices[idx] * this.charwidth), rect_y_start, (this.charwidth * 2), rect_length);
