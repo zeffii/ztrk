@@ -2,10 +2,11 @@
 all 'on_xxxx' functions must be mapped from your js.
 */
 
-include("zen_tracker_ui_bassmodule");
+include("zen_tracker_ui_bassmodule_v8");
 
 outlets = 3;
 inlets = 4;
+mgraphics.init();
 
 var pattern_markup = {
     length: 32,
@@ -45,7 +46,7 @@ var pattern_markup = {
 };
 
 
-var my_tracker = new Tracker(outlet, pattern_markup, mgraphics);
+var my_tracker = new Tracker(pattern_markup, mgraphics);
 
 key_handler = my_tracker.key_handler.bind(my_tracker);
 dictionary = my_tracker.dictionary.bind(my_tracker);
@@ -53,10 +54,58 @@ onclick = my_tracker.onclick.bind(my_tracker);
 ondrag = my_tracker.ondrag.bind(my_tracker);
 onidle = my_tracker.onidle.bind(my_tracker);
 onidleout = my_tracker.onidleout.bind(my_tracker);
-command = my_tracker.command.bind(my_tracker);
+// command = my_tracker.command.bind(my_tracker);
 paint = my_tracker.paint.bind(my_tracker);
-bang = my_tracker.bang.bind(my_tracker);
+// bang = my_tracker.bang.bind(my_tracker);
 msg_int = my_tracker.msg_int.bind(my_tracker);
 clear = my_tracker.clear.bind(my_tracker);
 refresh = my_tracker.refresh.bind(my_tracker);
 keys = my_tracker.keys.bind(my_tracker);
+
+/*
+you could also use this....instead of that ugly list above .
+
+['key_handler','dictionary','onclick','ondrag','onidle','onidleout',
+  'command','paint','bang','msg_int','clear','refresh','keys']
+    .forEach(k => globalThis[k] = my_tracker[k].bind(my_tracker));
+
+here i'm explicitly redefining the bang and command function, as they use outlet
+*/
+
+
+function bang(){
+    
+    outlet(0, my_tracker.g_pattern_playhead);
+    if (my_tracker.faux_pattern){
+         outlet(1, my_tracker.faux_pattern[my_tracker.g_pattern_playhead]);
+    }
+    post('wtf', my_tracker.g_pattern_playhead, '\n');
+    // my_tracker.mgraphics.redraw();
+    mgraphics.redraw();
+}
+
+function command(instruction){
+
+    if (instruction === 'export_pattern'){
+        post('Exporting Pattern\n');
+        var outputDict = new Dict('pattern_data');
+        
+        my_tracker.pattern_markup.data = this.faux_pattern;
+        outputDict.parse(JSON.stringify(this.pattern_markup));
+        outlet(2, "dictionary", outputDict.name);
+    }
+    switch (instruction) {
+        case 'push_to_clip':
+            my_tracker.push_to_live();
+            post('here!');
+            return;
+        case 'matrixmode=0':
+            post('setting matrixmode to False data');
+            return;
+        case 'matrixmode=1':
+            post('setting matrixmode to True data');
+            return;
+        default: break;
+    }
+
+}
