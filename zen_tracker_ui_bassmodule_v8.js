@@ -11,7 +11,6 @@ class Tracker  {
     #AbletonMode = true;
     #MatrixMode = false;
     #ztrk_clipboard = {};
-    // #faux_pattern = [];
     
     #g_Mouse = [-1, -1];
     #g_in_edit_mode = false;
@@ -159,6 +158,326 @@ class Tracker  {
         this.faux_pattern = this.pattern_markup.data;
 
     }
+
+
+    moveCaret(dr, dc) {
+        this.#caret.row = clamp(this.#caret.row + dr, 0, this.rows - 1);
+        this.#caret.col = clamp(this.#caret.col + dc, 0, this.cols - 1);
+    }
+
+    getSelectionRect() {
+        if (!this.#anchor) return null;
+        return {
+            top:    Math.min(this.#anchor.row, this.#caret.row),
+            left:   Math.min(this.#anchor.col, this.#caret.col),
+            bottom: Math.max(this.#anchor.row, this.#caret.row),
+            right:  Math.max(this.#anchor.col, this.#caret.col)
+        };
+
+    }
+
+    caret_to_location(){
+        var caret_x = this.start_x + ((4 + this.#caret.col) * this.charwidth);
+        var caret_y = this.start_y + (this.#caret.row * this.charheight);
+        return [caret_x, caret_y];
+
+    }
+
+    corner_to_location(x, y){
+        var _x = this.start_x + ((4 + x) * this.charwidth);
+        var _y = this.start_y + (y * this.charheight);
+        return [_x, _y];   
+
+    }
+
+
+    get_adjusted_selection_rect(){
+
+        var selection = this.getSelectionRect();
+        var selected_num_rows = (selection.bottom - selection.top) + 1;
+        var selection_start = selection.left;
+        var selection_length = (selection.right - selection.left) + 1;
+
+        // extend selection left + right if some parameters are not fully selected.
+        var xx_first_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection_start);
+        var xx_last_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection.right);
+        if (xx_first_param !== null){ selection_start = xx_first_param.start; }
+        if (xx_last_param !== null){ selection_length = (xx_last_param.end - xx_first_param.start) + 1; }
+
+        return {
+            'start_index': selection_start,
+            'selection_length': selection_length,
+            'top': selection.top,
+            'bottom': selection.bottom,
+            'num_rows': selected_num_rows
+        }
+
+    }
+
+    wheres_the_caret(){
+        // dont do this frequently
+        var indices = find_idx_after_space(this.pattern_markup.lexical_track);
+        for (var idx = indices.length - 1; idx >= 0; idx--) {
+            if (this.#caret.col >= indices[idx]) {
+                return [indices[idx], idx];
+            }
+        }
+        return [-1, -1];
+    }
+
+    /* ----------- Pattern Data Handlers --------------- */
+
+    push_to_live(){
+        if (this.#AbletonMode === 1){ MakeSimpleNoteDictFromArrays(this.pattern_markup); }
+    }
+
+
+    handle_delete_selection(pattern){
+
+        if (this.#started_selection_mode){
+            this.handle_copy_selection(pattern);
+            var selection = this.getSelectionRect();
+            // this implementation will operate all selected parameters, even if a parameter is only partially
+            // in the selection. This is unlike interpolation, where there is a case to make for partial interpolats.
+            var selection_start = selection.left;
+            var selection_length = (selection.right - selection.left) + 1;
+
+            // First establish if the selection contains partials. extend if needed.
+            // is selection.left at index0 of the param?
+            // is selection right at indexN of the param?
+            var xx_first_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection_start);
+            var xx_last_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection.right);
+
+            if (xx_first_param !== null){ 
+                selection_start = xx_first_param.start;
+            }
+            if (xx_last_param !== null){
+                selection_length = (xx_last_param.end - xx_first_param.start) + 1;
+            }
+
+            for (var row = selection.top; row <= selection.bottom; row++){
+                var row_substr = pattern[row].substr(selection_start, selection_length);
+                row_substr = row_substr.replace(/[^ ]/g, '.');
+                pattern[row] = replaceAt(pattern[row], selection_start, row_substr, selection_length);
+            }
+
+            this.push_to_live();
+            this.refresh();
+            return true;
+        }
+        return false;
+
+    }
+
+
+    handle_interpolate_selection(pattern){
+
+        if (this.#started_selection_mode){
+            /*
+                - which parameters of the selection have values at the start and end of the selection (in rows);
+                - only operate on those parameters.
+                - collect start and end value for each such parameter, create a linear interpolation for now.
+                - i can add a console command to do `> itpl 1`  (linear)  `> itpl 0.3` (accelerating ramp)  1.5 decel
+            */
+            // post('Interpolating:\n');
+            var selection = this.getSelectionRect();
+            var selected_num_rows = (selection.bottom - selection.top) + 1;
+            if (selected_num_rows < 3){
+                return true;
+            }
+
+            var selection_start = selection.left;
+            var selection_length = (selection.right - selection.left) + 1;
+
+            // extend selection left + right if some parameters are not fully selected.
+            var xx_first_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection_start);
+            var xx_last_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection.right);
+            if (xx_first_param !== null){ selection_start = xx_first_param.start; }
+            if (xx_last_param !== null){ selection_length = (xx_last_param.end - xx_first_param.start) + 1; }
+
+            // get content of the first and last selected row, to prepare interpolation attempt
+            var substr_start = pattern[selection.top].substr(selection_start, selection_length);
+            var substr_end = pattern[selection.bottom].substr(selection_start, selection_length);
+            var start_list = substr_start.split(' ');
+            var end_list = substr_end.split(' ');
+
+            var interpolation_dict = {};
+            // we will only interpolate a parameter if it is in the first and last row of the selection
+            // we skip trigger interpolations. so.. 2hex and 2hex and notes only..for now.
+            for (var param_col = 0; param_col < start_list.length; param_col++){
+                var param_length = start_list[param_col].length;
+                if (param_length > 1){
+                    if ( !isOnlyDots(start_list[param_col]) && !isOnlyDots(end_list[param_col]) ){
+                        interpolation_dict[param_col] = interpolate(start_list[param_col], end_list[param_col], selected_num_rows);
+                    }
+                }
+            }
+
+            // we could (and probably should) skip the first and last row as they should be the same.
+            for (var row = selection.top; row <= selection.bottom; row++){
+
+                var row_repr = pattern[row].substr(selection_start, selection_length);
+                var splitted_row = row_repr.split(' ');
+                var rebuilt_list_of_strings = []
+
+                for (var param_idx = 0; param_idx < splitted_row.length; param_idx++){
+                    if (interpolation_dict.hasOwnProperty(param_idx)){
+                        if (splitted_row[param_idx].length === 6){
+                            // this needs to inject the existing command back into the interpolation parameter
+                            var argmnt = interpolation_dict[param_idx].shift();
+                            var command = splitted_row[param_idx].slice(0, 2);
+                            var new_parameter = command + argmnt;
+                            rebuilt_list_of_strings.push(new_parameter);
+                        } else {
+                            rebuilt_list_of_strings.push(interpolation_dict[param_idx].shift());
+                        }
+
+                    } else {
+                        rebuilt_list_of_strings.push(splitted_row[param_idx]);
+                    }
+                }
+                var replacement_part = rebuilt_list_of_strings.join(' ');
+                pattern[row] = replaceAt(pattern[row], selection_start, replacement_part, selection_length);
+            }
+
+            this.push_to_live();
+            this.refresh();
+            return true;
+        }
+        return false;
+
+    }
+
+
+    handle_copy_selection(pattern){
+
+        // post('initiating copy function\n');
+        var sel_rect = this.get_adjusted_selection_rect();
+        //  selection_info: {start_index: 7  selection_length: 29  top: 2  bottom: 8  num_rows: 7}
+        //  selection_data: [rows,....]
+        this.#ztrk_clipboard = {
+            'selection_info': sel_rect,
+            'selection_data': []
+        }
+        for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
+            var this_row_data = pattern[row].substr(sel_rect.start_index, sel_rect.selection_length);
+            this.#ztrk_clipboard.selection_data.push(this_row_data);
+        }
+    }
+
+
+    handle_shift_selection(pattern, direction){
+
+        if (this.#started_selection_mode){
+            var remap_main = {30: 'UP', 31: 'DOWN'};
+
+            // post('----> initiating shift function', remap_main[direction], '\n');
+            var sel_rect = this.get_adjusted_selection_rect();
+            //  selection_info: {start_index: 7  selection_length: 29  top: 2  bottom: 8  num_rows: 7}
+            //  selection_data: [rows,....]
+            this.#ztrk_clipboard = {
+                'selection_info': sel_rect,
+                'selection_data': []
+            }
+            for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
+               var this_row_data = pattern[row].substr(sel_rect.start_index, sel_rect.selection_length);
+               this.#ztrk_clipboard.selection_data.push(this_row_data);
+            }
+
+            if (remap_main[direction] === 'UP'){
+                var first_element = this.#ztrk_clipboard.selection_data.shift();
+                this.#ztrk_clipboard.selection_data.push(first_element);
+            }
+            else if (remap_main[direction] === 'DOWN'){
+                var last_element = this.#ztrk_clipboard.selection_data.pop();
+                this.#ztrk_clipboard.selection_data.unshift(last_element);
+            }
+
+            var idx = sel_rect.top;
+            for (const paste_row_idx in this.#ztrk_clipboard.selection_data){
+                var replacement_part = this.#ztrk_clipboard.selection_data[paste_row_idx];
+                pattern[idx] = replaceAt(pattern[idx], sel_rect.start_index, replacement_part, sel_rect.selection_length);
+                idx++;
+            }
+
+            this.push_to_live();
+            this.refresh();
+            return true;
+        }
+        return false;
+    }
+
+    handle_transpose_selection(pattern, direction){
+
+        // post('initiating transpose function: ' + direction + '\n');
+        if (this.#started_selection_mode){
+
+            var sel_rect = this.get_adjusted_selection_rect();
+            //  selection_info: {start_index: 7  selection_length: 29  top: 2  bottom: 8  num_rows: 7}
+            //  selection_data: [rows,....]
+            this.#ztrk_clipboard = {
+                'selection_info': sel_rect,
+                'selection_data': []
+            }
+            for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
+                var this_row_data = pattern[row].substr(sel_rect.start_index, sel_rect.selection_length);
+                var row_data = this_row_data.split(' ');
+                var new_row_data = [];
+                for (const param_idx in row_data){
+                    var adjusted_value = transpose_value(row_data[param_idx], direction);
+                    // post(row_data[param_idx], 'vs', adjusted_value);
+                    new_row_data.push(adjusted_value);
+                }
+                var replacement_part = new_row_data.join(' ');
+                pattern[row] = replaceAt(pattern[row], sel_rect.start_index, replacement_part, sel_rect.selection_length);
+
+            }
+
+            this.push_to_live();
+            this.refresh();
+            return true;
+        }
+        return false;
+    }
+
+    handle_paste_selection(pattern){
+
+        post('initiating paste function\n');
+        /*  
+            a few thoughts here.
+            - how complex do i want to this be, will i allow mixing selection origins. 
+                (ie do i allow pasting as long as the destination is compatible with the current clipboard data)
+            - mix paste/overwrite/inject is a different function
+            
+            for now i will force a start_index to override the cursor location, only row index of caret
+            will be used. It's just a choice.
+        */
+        if (this.#ztrk_clipboard.selection_info && this.#ztrk_clipboard.selection_data.length){
+            // post('\n --------selection start----------\n');
+            // for (row_idx in ztrk_clipboard.selection_data){
+            //     post(ztrk_clipboard.selection_data[row_idx] + '\n');
+            // }
+            // post(' --------selection end----------\n');
+
+            var selection_start = this.#ztrk_clipboard.selection_info.start_index; // in X axis, column
+            var selection_length = this.#ztrk_clipboard.selection_info.selection_length;
+            var idx = this.#caret.row;
+            for (const paste_row_idx in this.#ztrk_clipboard.selection_data){
+                var replacement_part = this.#ztrk_clipboard.selection_data[paste_row_idx];
+                pattern[idx] = replaceAt(pattern[idx], selection_start, replacement_part, selection_length);
+                idx++;
+
+                if (idx >= pattern.length){
+                    break;
+                }
+            }
+
+            this.push_to_live();
+            this.refresh();
+        }
+    }
+
+    /* ---------- Keyboard Input Handler ------------*/
 
 
     handle_2hex_input(key, caret, desciptor, pattern){
@@ -400,313 +719,17 @@ class Tracker  {
 
     }
 
+    find_cell_under_cursor(x, y){
 
-    moveCaret(dr, dc) {
-        this.#caret.row = clamp(this.#caret.row + dr, 0, this.rows - 1);
-        this.#caret.col = clamp(this.#caret.col + dc, 0, this.cols - 1);
-    }
-
-    getSelectionRect() {
-        if (!this.#anchor) return null;
-        return {
-            top:    Math.min(this.#anchor.row, this.#caret.row),
-            left:   Math.min(this.#anchor.col, this.#caret.col),
-            bottom: Math.max(this.#anchor.row, this.#caret.row),
-            right:  Math.max(this.#anchor.col, this.#caret.col)
-        };
-
-    }
-
-    caret_to_location(){
-        var caret_x = this.start_x + ((4 + this.#caret.col) * this.charwidth);
-        var caret_y = this.start_y + (this.#caret.row * this.charheight);
-        return [caret_x, caret_y];
-
-    }
-
-    corner_to_location(x, y){
-        var _x = this.start_x + ((4 + x) * this.charwidth);
-        var _y = this.start_y + (y * this.charheight);
-        return [_x, _y];   
-
-    }
-
-
-    wheres_the_caret(){
-        // dont do this frequently
-        var indices = find_idx_after_space(this.pattern_markup.lexical_track);
-        for (var idx = indices.length - 1; idx >= 0; idx--) {
-            if (this.#caret.col >= indices[idx]) {
-                return [indices[idx], idx];
+        var caret_range_x_start = this.start_x + (4 * this.charwidth);
+        var caret_range_y_start = this.start_y - this.charheight;
+        if ((x >= caret_range_x_start ) && (y >= caret_range_y_start)){
+            var cell_x = Math.floor((x - caret_range_x_start) / this.charwidth);
+            var cell_y = Math.floor((y - caret_range_y_start) / this.charheight);
+            if ((cell_x < this.pattern_markup.lexical_track.length) && (cell_y < this.pattern_markup.length)){
+                this.#caret.row = cell_y;
+                this.#caret.col = cell_x;
             }
-        }
-        return [-1, -1];
-    }
-
-    handle_delete_selection(pattern){
-
-        if (this.#started_selection_mode){
-            this.handle_copy_selection(pattern);
-            var selection = this.getSelectionRect();
-            // this implementation will operate all selected parameters, even if a parameter is only partially
-            // in the selection. This is unlike interpolation, where there is a case to make for partial interpolats.
-            var selection_start = selection.left;
-            var selection_length = (selection.right - selection.left) + 1;
-
-            // First establish if the selection contains partials. extend if needed.
-            // is selection.left at index0 of the param?
-            // is selection right at indexN of the param?
-            var xx_first_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection_start);
-            var xx_last_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection.right);
-
-            if (xx_first_param !== null){ 
-                selection_start = xx_first_param.start;
-            }
-            if (xx_last_param !== null){
-                selection_length = (xx_last_param.end - xx_first_param.start) + 1;
-            }
-
-            for (var row = selection.top; row <= selection.bottom; row++){
-                var row_substr = pattern[row].substr(selection_start, selection_length);
-                row_substr = row_substr.replace(/[^ ]/g, '.');
-                pattern[row] = replaceAt(pattern[row], selection_start, row_substr, selection_length);
-            }
-
-            this.push_to_live();
-            this.refresh();
-            return true;
-        }
-        return false;
-
-    }
-
-    get_adjusted_selection_rect(){
-
-        var selection = this.getSelectionRect();
-        var selected_num_rows = (selection.bottom - selection.top) + 1;
-        var selection_start = selection.left;
-        var selection_length = (selection.right - selection.left) + 1;
-
-        // extend selection left + right if some parameters are not fully selected.
-        var xx_first_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection_start);
-        var xx_last_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection.right);
-        if (xx_first_param !== null){ selection_start = xx_first_param.start; }
-        if (xx_last_param !== null){ selection_length = (xx_last_param.end - xx_first_param.start) + 1; }
-
-        return {
-            'start_index': selection_start,
-            'selection_length': selection_length,
-            'top': selection.top,
-            'bottom': selection.bottom,
-            'num_rows': selected_num_rows
-        }
-
-    }
-
-    handle_interpolate_selection(pattern){
-
-        if (this.#started_selection_mode){
-            /*
-                - which parameters of the selection have values at the start and end of the selection (in rows);
-                - only operate on those parameters.
-                - collect start and end value for each such parameter, create a linear interpolation for now.
-                - i can add a console command to do `> itpl 1`  (linear)  `> itpl 0.3` (accelerating ramp)  1.5 decel
-            */
-            // post('Interpolating:\n');
-            var selection = this.getSelectionRect();
-            var selected_num_rows = (selection.bottom - selection.top) + 1;
-            if (selected_num_rows < 3){
-                return true;
-            }
-
-            var selection_start = selection.left;
-            var selection_length = (selection.right - selection.left) + 1;
-
-            // extend selection left + right if some parameters are not fully selected.
-            var xx_first_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection_start);
-            var xx_last_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection.right);
-            if (xx_first_param !== null){ selection_start = xx_first_param.start; }
-            if (xx_last_param !== null){ selection_length = (xx_last_param.end - xx_first_param.start) + 1; }
-
-            // get content of the first and last selected row, to prepare interpolation attempt
-            var substr_start = pattern[selection.top].substr(selection_start, selection_length);
-            var substr_end = pattern[selection.bottom].substr(selection_start, selection_length);
-            var start_list = substr_start.split(' ');
-            var end_list = substr_end.split(' ');
-
-            var interpolation_dict = {};
-            // we will only interpolate a parameter if it is in the first and last row of the selection
-            // we skip trigger interpolations. so.. 2hex and 2hex and notes only..for now.
-            for (var param_col = 0; param_col < start_list.length; param_col++){
-                var param_length = start_list[param_col].length;
-                if (param_length > 1){
-                    if ( !isOnlyDots(start_list[param_col]) && !isOnlyDots(end_list[param_col]) ){
-                        interpolation_dict[param_col] = interpolate(start_list[param_col], end_list[param_col], selected_num_rows);
-                    }
-                }
-            }
-
-            // we could (and probably should) skip the first and last row as they should be the same.
-            for (var row = selection.top; row <= selection.bottom; row++){
-
-                var row_repr = pattern[row].substr(selection_start, selection_length);
-                var splitted_row = row_repr.split(' ');
-                var rebuilt_list_of_strings = []
-
-                for (var param_idx = 0; param_idx < splitted_row.length; param_idx++){
-                    if (interpolation_dict.hasOwnProperty(param_idx)){
-                        if (splitted_row[param_idx].length === 6){
-                            // this needs to inject the existing command back into the interpolation parameter
-                            var argmnt = interpolation_dict[param_idx].shift();
-                            var command = splitted_row[param_idx].slice(0, 2);
-                            var new_parameter = command + argmnt;
-                            rebuilt_list_of_strings.push(new_parameter);
-                        } else {
-                            rebuilt_list_of_strings.push(interpolation_dict[param_idx].shift());
-                        }
-
-                    } else {
-                        rebuilt_list_of_strings.push(splitted_row[param_idx]);
-                    }
-                }
-                var replacement_part = rebuilt_list_of_strings.join(' ');
-                pattern[row] = replaceAt(pattern[row], selection_start, replacement_part, selection_length);
-            }
-
-            this.push_to_live();
-            this.refresh();
-            return true;
-        }
-        return false;
-
-    }
-
-
-    handle_copy_selection(pattern){
-
-        // post('initiating copy function\n');
-        var sel_rect = this.get_adjusted_selection_rect();
-        //  selection_info: {start_index: 7  selection_length: 29  top: 2  bottom: 8  num_rows: 7}
-        //  selection_data: [rows,....]
-        this.#ztrk_clipboard = {
-            'selection_info': sel_rect,
-            'selection_data': []
-        }
-        for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
-            var this_row_data = pattern[row].substr(sel_rect.start_index, sel_rect.selection_length);
-            this.#ztrk_clipboard.selection_data.push(this_row_data);
-        }
-    }
-
-
-    handle_shift_selection(pattern, direction){
-
-        if (this.#started_selection_mode){
-            var remap_main = {30: 'UP', 31: 'DOWN'};
-
-            // post('----> initiating shift function', remap_main[direction], '\n');
-            var sel_rect = this.get_adjusted_selection_rect();
-            //  selection_info: {start_index: 7  selection_length: 29  top: 2  bottom: 8  num_rows: 7}
-            //  selection_data: [rows,....]
-            this.#ztrk_clipboard = {
-                'selection_info': sel_rect,
-                'selection_data': []
-            }
-            for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
-               var this_row_data = pattern[row].substr(sel_rect.start_index, sel_rect.selection_length);
-               this.#ztrk_clipboard.selection_data.push(this_row_data);
-            }
-
-            if (remap_main[direction] === 'UP'){
-                var first_element = this.#ztrk_clipboard.selection_data.shift();
-                this.#ztrk_clipboard.selection_data.push(first_element);
-            }
-            else if (remap_main[direction] === 'DOWN'){
-                var last_element = this.#ztrk_clipboard.selection_data.pop();
-                this.#ztrk_clipboard.selection_data.unshift(last_element);
-            }
-
-            var idx = sel_rect.top;
-            for (const paste_row_idx in this.#ztrk_clipboard.selection_data){
-                var replacement_part = this.#ztrk_clipboard.selection_data[paste_row_idx];
-                pattern[idx] = replaceAt(pattern[idx], sel_rect.start_index, replacement_part, sel_rect.selection_length);
-                idx++;
-            }
-
-            this.push_to_live();
-            this.refresh();
-            return true;
-        }
-        return false;
-    }
-
-    handle_transpose_selection(pattern, direction){
-
-        // post('initiating transpose function: ' + direction + '\n');
-        if (this.#started_selection_mode){
-
-            var sel_rect = this.get_adjusted_selection_rect();
-            //  selection_info: {start_index: 7  selection_length: 29  top: 2  bottom: 8  num_rows: 7}
-            //  selection_data: [rows,....]
-            this.#ztrk_clipboard = {
-                'selection_info': sel_rect,
-                'selection_data': []
-            }
-            for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
-                var this_row_data = pattern[row].substr(sel_rect.start_index, sel_rect.selection_length);
-                var row_data = this_row_data.split(' ');
-                var new_row_data = [];
-                for (const param_idx in row_data){
-                    var adjusted_value = transpose_value(row_data[param_idx], direction);
-                    // post(row_data[param_idx], 'vs', adjusted_value);
-                    new_row_data.push(adjusted_value);
-                }
-                var replacement_part = new_row_data.join(' ');
-                pattern[row] = replaceAt(pattern[row], sel_rect.start_index, replacement_part, sel_rect.selection_length);
-
-            }
-
-            this.push_to_live();
-            this.refresh();
-            return true;
-        }
-        return false;
-    }
-
-    handle_paste_selection(pattern){
-
-        post('initiating paste function\n');
-        /*  
-            a few thoughts here.
-            - how complex do i want to this be, will i allow mixing selection origins. 
-                (ie do i allow pasting as long as the destination is compatible with the current clipboard data)
-            - mix paste/overwrite/inject is a different function
-            
-            for now i will force a start_index to override the cursor location, only row index of caret
-            will be used. It's just a choice.
-        */
-        if (this.#ztrk_clipboard.selection_info && this.#ztrk_clipboard.selection_data.length){
-            // post('\n --------selection start----------\n');
-            // for (row_idx in ztrk_clipboard.selection_data){
-            //     post(ztrk_clipboard.selection_data[row_idx] + '\n');
-            // }
-            // post(' --------selection end----------\n');
-
-            var selection_start = this.#ztrk_clipboard.selection_info.start_index; // in X axis, column
-            var selection_length = this.#ztrk_clipboard.selection_info.selection_length;
-            var idx = this.#caret.row;
-            for (const paste_row_idx in this.#ztrk_clipboard.selection_data){
-                var replacement_part = this.#ztrk_clipboard.selection_data[paste_row_idx];
-                pattern[idx] = replaceAt(pattern[idx], selection_start, replacement_part, selection_length);
-                idx++;
-
-                if (idx >= pattern.length){
-                    break;
-                }
-            }
-
-            this.push_to_live();
-            this.refresh();
         }
     }
 
@@ -864,6 +887,24 @@ class Tracker  {
         }
     }
 
+    /*  ------------- UI Drawing -------------------- */
+
+
+    get_text_width_and_height(){
+        var gfx = this.mgraphics;
+        var w = gfx.size[0];
+        var h = gfx.size[1];
+
+        gfx.set_font_size(this.settings_font_size);
+        gfx.select_font_face("Consolas", "normal", "normal");
+        this.charwidth = gfx.text_measure('_')[0];
+        
+        var tx_wh = gfx.text_measure('000 ' + this.pattern_markup.lexical_track);  // returns width and height
+        this.text_w = tx_wh[0];
+        this.text_h = tx_wh[1];        
+
+    }
+
 
     draw_caret(){
 
@@ -977,25 +1018,6 @@ class Tracker  {
         gfx.fill();
     }
 
-    push_to_live(){
-        if (this.#AbletonMode === 1){ MakeSimpleNoteDictFromArrays(this.pattern_markup); }
-    }
-
-    get_text_width_and_height(){
-        var gfx = this.mgraphics;
-        var w = gfx.size[0];
-        var h = gfx.size[1];
-
-        gfx.set_font_size(this.settings_font_size);
-        gfx.select_font_face("Consolas", "normal", "normal");
-        this.charwidth = gfx.text_measure('_')[0];
-        
-        var tx_wh = gfx.text_measure('000 ' + this.pattern_markup.lexical_track);  // returns width and height
-        this.text_w = tx_wh[0];
-        this.text_h = tx_wh[1];        
-
-    }
-
     draw_track_descriptor(){
 
         // draw at bottom
@@ -1028,7 +1050,11 @@ class Tracker  {
     }
 
     draw_scrollbars(){
-        // these are not interactive
+
+        // these are not interactive, and aren't scaling correctly.
+        // LOL. i'll figure this out at some point.
+        // this will be a major todo at a later date.
+
         var gfx = this.mgraphics;
         var [w, h] = gfx.size;
 
@@ -1050,9 +1076,19 @@ class Tracker  {
 
         var data_height = this.start_y + ((this.pattern_markup.length + 0.2) * this.charheight);
         if (h < data_height ){
-            this.set_rgb({r: 0.1, g: 0.1, b:0.1}, 1.0);
-            gfx.rectangle(0, this.start_y, 10, (h - this.start_y));
+
+            var hidden_height_portion = ((h - this.charheight - this.start_y) / data_height) * h;
+            this.set_rgb({r: 0.2, g: 0.2, b:0.2}, 1.0);
+            gfx.rectangle(0, this.start_y, 10, (h - this.start_y) - this.charheight);
             gfx.fill();
+
+            var hdim = hidden_height_portion - this.charheight;
+            if (hdim > 0){
+                 this.set_rgb({r: 0.1, g: 0.1, b:0.1}, 1.0);
+                 gfx.rectangle(0, this.start_y, 10, hdim);
+                 gfx.fill();                            
+            }
+
         }
 
     }
@@ -1073,20 +1109,6 @@ class Tracker  {
         this.draw_track_descriptor();
         this.draw_scrollbars();
 
-    }
-
-    find_cell_under_cursor(x, y){
-
-        var caret_range_x_start = this.start_x + (4 * this.charwidth);
-        var caret_range_y_start = this.start_y - this.charheight;
-        if ((x >= caret_range_x_start ) && (y >= caret_range_y_start)){
-            var cell_x = Math.floor((x - caret_range_x_start) / this.charwidth);
-            var cell_y = Math.floor((y - caret_range_y_start) / this.charheight);
-            if ((cell_x < this.pattern_markup.lexical_track.length) && (cell_y < this.pattern_markup.length)){
-                this.#caret.row = cell_y;
-                this.#caret.col = cell_x;
-            }
-        }
     }
 
 
