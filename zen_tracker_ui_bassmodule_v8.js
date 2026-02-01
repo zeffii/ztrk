@@ -8,6 +8,13 @@ include("ztrk_pattern_utils.js");
 
 class Tracker  {
 
+    /*
+
+        Some of this is a little clunky, and will remain so until i'm able to trigger sample accurately
+        once that works, then i'll go mental :) trust me.
+
+    */
+
     #AbletonMode = true;
     #MatrixMode = false;
     #ztrk_clipboard = {};
@@ -80,6 +87,8 @@ class Tracker  {
 
     }
 
+    /* -------------- Cord Input Handling ---------------------- */
+
     bang(){
         this.send(0, this.g_pattern_playhead);
         if (this.faux_pattern){
@@ -113,6 +122,16 @@ class Tracker  {
         post(this.#g_key_codes);
     }
 
+    dictionary(dictName) {
+        // this is called when a dictionary is passed into the object, it should probably do some update?
+        // expect error here.
+        var inputDict = new Dict(dictName);
+        var jsObject = JSON.parse(inputDict.stringify());
+        this.pattern_markup = jsObject;
+        this.faux_pattern = this.pattern_markup.data;
+
+    }
+
     // command(instruction){
 
     //     if (instruction === 'export_pattern'){
@@ -139,26 +158,14 @@ class Tracker  {
 
     // }
 
+    /*  ------- Local Util Functions ------------- */
+
 
     set_rgb(color, dimming){
 
         this.mgraphics.set_source_rgba(color.r / dimming, color.g / dimming, color.b / dimming, 1);
 
     }
-
-
-
-
-    dictionary(dictName) {
-        // this is called when a dictionary is passed into the object, it should probably do some update?
-        // expect error here.
-        var inputDict = new Dict(dictName);
-        var jsObject = JSON.parse(inputDict.stringify());
-        this.pattern_markup = jsObject;
-        this.faux_pattern = this.pattern_markup.data;
-
-    }
-
 
     moveCaret(dr, dc) {
         this.#caret.row = clamp(this.#caret.row + dr, 0, this.rows - 1);
@@ -932,7 +939,7 @@ class Tracker  {
 
     draw_highlighted_lines(every_nth){
 
-        this.set_rgb({r: 0.1, g: 0.2, b:0.4}, 1.3);
+        this.set_rgb({r: 0.1, g: 0.2, b: 0.4}, 1.3);
         var total_draw_amount = Math.floor(this.pattern_markup.length / Math.max(every_nth, 1));
         for (var i = 0; i < total_draw_amount; i++){
             var tick_y = this.start_y + (i * every_nth * this.settings_font_size) - (0.75 * this.text_h);
@@ -950,14 +957,14 @@ class Tracker  {
         }
     }
 
-    draw_command_background(markup){
+    draw_command_background(){
         /*
         draws rectangles under the command part of the ffxxyy parameter tracks/columns
         This is not essential but adds UI contrast.
         */
-        var param_indices = find_regexed_indices(markup.lexical_track, /\bffxxyy\b/g);
+        var param_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bffxxyy\b/g);
         var xx_start = this.start_x + (4 * this.charwidth); // where to start from
-        var rect_length = this.charheight * markup.length;
+        var rect_length = this.charheight * this.pattern_markup.length;
         var rect_y_start = (this.start_y - (0.9 * this.charheight));
         // post(this.faux_pattern.length);
         for (const idx in param_indices){
@@ -967,18 +974,18 @@ class Tracker  {
         }
     }
 
-    draw_command_overlay(markup){
+    draw_command_overlay(){
         /*
         if the ff column of the ffxxyy track has a value other than two dots (..) 
         this draws the cmd value using a different colour for UI contrast. 
         */
-        var param_indices = find_regexed_indices(markup.lexical_track, /\bffxxyy\b/g);
+        var param_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bffxxyy\b/g);
         var xx_start = this.start_x + (4 * this.charwidth); // where to start from
         for (const idx in param_indices){
 
             var start_idx = param_indices[idx];
             this.mgraphics.set_source_rgba(0.1, 0.5, 0.8, 1.);
-            for (var pidx = 0; pidx < markup.length; pidx++){
+            for (var pidx = 0; pidx < this.pattern_markup.length; pidx++){
                 var tx = xx_start + (start_idx * this.charwidth);
 
                 var command = this.faux_pattern[pidx].slice(start_idx, start_idx+2);
@@ -992,7 +999,6 @@ class Tracker  {
 
     draw_tick_position(tick){
         var gfx = this.mgraphics;        
-
         var tick_y = this.start_y + (this.g_pattern_playhead * this.settings_font_size) - (0.75 * this.text_h);
         gfx.set_source_rgba(0.1, 0.1, 0.1, 1);  // almost black
         gfx.rectangle(this.start_x, tick_y, this.text_w, this.settings_font_size);
@@ -1001,7 +1007,6 @@ class Tracker  {
 
     draw_pattern_data(){
         var gfx = this.mgraphics;
-
         gfx.set_source_rgba(0.4, 0.9, 1.0, 1);
         for (const idx in this.faux_pattern){
             gfx.move_to(this.start_x, this.start_y + (idx * this.settings_font_size));
@@ -1024,7 +1029,7 @@ class Tracker  {
         var gfx = this.mgraphics;
         var [w, h] = gfx.size;
 
-        this.set_rgb({r: 0.2, g: 0.3, b:0.2}, 2.3);
+        this.set_rgb({r: 0.2, g: 0.3, b: 0.2}, 2.3);
         gfx.rectangle(0, h-this.charheight, w, this.charheight);
         gfx.fill();
 
@@ -1033,7 +1038,7 @@ class Tracker  {
         var idx = this.wheres_the_caret();
         if (idx[0] >= 0) {
             const vidx = idx + 4;
-            this.set_rgb({r: 0.9, g: 0.9, b:0.7}, 1.3);
+            this.set_rgb({r: 0.9, g: 0.9, b: 0.7}, 1.3);
             // mgraphics.move_to(start_x + ((idx[0] + 4) * charwidth), start_y - (0.9 * charheight));
             var locator_width = this.mgraphics.text_measure(caret_string + '  ')[0];
             gfx.move_to(locator_width, h - (0.25 * this.charheight));
@@ -1053,7 +1058,7 @@ class Tracker  {
 
         // these are not interactive, and aren't scaling correctly.
         // LOL. i'll figure this out at some point.
-        // this will be a major todo at a later date.
+        // this will be a todo at a later date.
 
         var gfx = this.mgraphics;
         var [w, h] = gfx.size;
@@ -1062,13 +1067,13 @@ class Tracker  {
         if (w < data_width){
 
             var hidden_portion = (w / data_width) * w;
-            this.set_rgb({r: 0.2, g: 0.2, b:0.2}, 1.0);
+            this.set_rgb({r: 0.2, g: 0.2, b: 0.2}, 1.0);
             gfx.rectangle(this.start_x, 0, w, 10);
             gfx.fill();
             
             var wdim = hidden_portion - this.start_x;
             if (wdim > 0){
-                this.set_rgb({r: 0.1, g: 0.1, b:0.1}, 1.0);
+                this.set_rgb({r: 0.1, g: 0.1, b: 0.1}, 1.0);
                 gfx.rectangle(this.start_x, 0, wdim, 10);
                 gfx.fill();            
             }
@@ -1078,19 +1083,52 @@ class Tracker  {
         if (h < data_height ){
 
             var hidden_height_portion = ((h - this.charheight - this.start_y) / data_height) * h;
-            this.set_rgb({r: 0.2, g: 0.2, b:0.2}, 1.0);
+            this.set_rgb({r: 0.2, g: 0.2, b: 0.2}, 1.0);
             gfx.rectangle(0, this.start_y, 10, (h - this.start_y) - this.charheight);
             gfx.fill();
 
             var hdim = hidden_height_portion - this.charheight;
             if (hdim > 0){
-                 this.set_rgb({r: 0.1, g: 0.1, b:0.1}, 1.0);
-                 gfx.rectangle(0, this.start_y, 10, hdim);
-                 gfx.fill();                            
+                this.set_rgb({r: 0.1, g: 0.1, b: 0.1}, 1.0);
+                gfx.rectangle(0, (this.start_y - this.charheight), 10, hdim);
+                gfx.fill();                            
             }
-
         }
 
+    }
+
+    draw_toprow(){
+        var gfx = this.mgraphics;
+        gfx.set_source_rgba(0.8, 0.2, 0.2, 1);
+        gfx.move_to(this.start_x, this.start_y + (-1 * this.settings_font_size));
+
+        var midline = "═";
+        var divider = "╤";
+
+        var top_row_chars = [];
+        top_row_chars.push('   ');
+
+        var current_group = 0;
+        for (var i = 0; i < Object.keys(this.pattern_markup.descriptors.track).length; i++){
+            var element = this.pattern_markup.descriptors.track[i];
+            var placeholder = element[0];
+            var group = element[2];
+            var vpffset = 1;
+            if (group !== current_group){
+                top_row_chars.push(divider);
+                current_group = group;
+                vpffset = 0;
+            }
+
+            for (var j = 0; j < (element[0].length + vpffset); j++){
+                top_row_chars.push(midline);
+            }
+        }
+        top_row_chars.push('╕')
+        top_row_chars[1] = '╒';
+
+        var final_top_row_dividers = top_row_chars.join('');
+        gfx.show_text(final_top_row_dividers);
     }
 
     paint(){
@@ -1100,17 +1138,19 @@ class Tracker  {
         this.dark_background();
         this.draw_highlighted_lines(4);
         this.draw_tick_position();
-        this.draw_command_background(this.pattern_markup);
+        this.draw_command_background();
         this.draw_caret();
         this.draw_pattern_data();
-        this.draw_command_overlay(this.pattern_markup);  // if this is slowing stuff down, comment it out.
+        this.draw_command_overlay();  // if this is slowing stuff down, comment it out.
         this.draw_edit_mode_indicator();
         this.draw_selection();
         this.draw_track_descriptor();
         this.draw_scrollbars();
+        this.draw_toprow();
 
     }
 
+    /* -------- Mouse Handling ------------ */
 
     onclick(x, y, button){
         this.#g_Mouse = [x, y];
@@ -1121,11 +1161,7 @@ class Tracker  {
     }
 
     ondrag(x, y, button){ return; }
-
     onidle(x, y, button, mod1, shift, caps, opt, mod2) { this.#g_mouse_on_rect = true; }
     onidleout(x, y, button, mod1, shift, caps, opt, mod2) { this.#g_mouse_on_rect = false; }
 
 };
-
-
-
