@@ -11,12 +11,6 @@ mgraphics.init();
 var pattern_markup = {
     length: 32,
     descriptors: {
-        global: {
-            0: ['hh', 'Spatial'],
-            1: ['hh', 'Clarity'],
-            2: ['hh', 'Smoothness'],
-            3: ['hh', 'Crispyness']
-        },
         track: {
             0: ['nnn', 'Note 0'],
             1: ['hh', 'Volume 0'],
@@ -42,7 +36,8 @@ var pattern_markup = {
             21: ['ffxxyy', 'Effect 2']
         }
     },
-    data: []
+    data: [],
+    lexical_track: ""
 };
 
 
@@ -69,16 +64,15 @@ msg_int = my_tracker.msg_int.bind(my_tracker);
 clear = my_tracker.clear.bind(my_tracker);
 refresh = my_tracker.refresh.bind(my_tracker);
 keys = my_tracker.keys.bind(my_tracker);
-// command = my_tracker.command.bind(my_tracker);
 
 /*
 you could also use this....instead of that ugly list above .
 
 ['key_handler','dictionary','onclick','ondrag','onidle','onidleout',
-  'command','paint','bang','msg_int','clear','refresh','keys']
+  ,'paint','bang','msg_int','clear','refresh','keys']
     .forEach(k => globalThis[k] = my_tracker[k].bind(my_tracker));
 
-here i'm explicitly redefining the bang and command function, as they use outlet
+below i'm explicitly redefining the command function, to keep the bassmodule modular
 */
 
 

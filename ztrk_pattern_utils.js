@@ -62,16 +62,6 @@ function find_idx_after_space(str) {
     return indices;
 }
 
-function find_regexed_indices(str, regex) {
-    // this may be a little counter intuitive
-    // finds start indices of params captured by this regex pattern
-    var indices = [];
-    var match;
-    while ((match = regex.exec(str)) !== null) {
-        indices.push(match.index);
-    }
-    return indices;
-}
 
 function findSublistContaining(value, indices) {
     // given a nested list of indices which contain this kind of parameter
@@ -217,6 +207,17 @@ function PostDict(dict){
      Object.keys(dict).forEach(function(key) { post(key + ": " + dict[key]); });
 }
 
+function find_regexed_indices(str, regex) {
+    // this may be a little counter intuitive
+    // finds start indices of params captured by this regex pattern
+    var indices = [];
+    var match;
+    while ((match = regex.exec(str)) !== null) {
+        indices.push(match.index);
+    }
+    return indices;
+}
+
 function MakeSimpleNoteDictFromArrays(pattern_markup){
     /*
     this is only a super early attempt at patterndata to clipdata
@@ -239,7 +240,7 @@ function MakeSimpleNoteDictFromArrays(pattern_markup){
     // Duplicate notes at the same time are not allowed yet..
     var notes_obj = {"notes": []};
 
-    var note_indices = find_regexed_indices(pattern_markup.track, /\bn{3}\b/g);   // nnn
+    var note_indices = find_regexed_indices(pattern_markup.lexical_track, /\bn{3}\b/g);   // nnn
     var note_time_multiplier = 0.25;
     for (row_idx in pattern_markup.data){
         var pattern_row_data = pattern_markup.data[row_idx];

@@ -33,7 +33,7 @@ class Tracker  {
         // make local params
         this.mgraphics = mgraphics;
         this.pattern_markup = pattern_markup;
-        this.faux_pattern = this.make_empty_pattern(pattern_markup, 1);
+        this.faux_pattern = this.make_empty_pattern(this.pattern_markup);
         this.pattern_markup.data = this.faux_pattern;
 
         // set states of local params
@@ -42,7 +42,7 @@ class Tracker  {
         this.mgraphics.autofill = 0;
 
         this.rows = this.pattern_markup.length;
-        this.cols = this.pattern_markup.track.length;
+        this.cols = this.pattern_markup.lexical_track.length;
         this.settings_font_size = 12; //
         this.charwidth = 8;
         this.charheight = this.settings_font_size; 
@@ -51,9 +51,11 @@ class Tracker  {
         this.start_x = 30;
         this.start_y = 30;
 
-        // pattern-globals not supported yet, maybe never.
+    }
 
-        //track: "nnn hh ss hh hhhh hh hhhh"
+    make_empty_pattern(markup){
+
+        // lexical_track: "nnn hh ss hh hhhh hh hhhh"
         // nnn  = note
         // hh   = 2hex
         // ss   = short (ints 0..80)
@@ -61,6 +63,21 @@ class Tracker  {
         // b    = bang/trigger  ( 1 or .)
         // FFXXYY = COMMAND+ARG
         // ggg  = signed (-20 .. +20)  NOT IMPLEMENTED
+
+        var pattern = [];
+        var param_track = [];
+        for (var i=0; i < Object.keys(markup.descriptors.track).length; i++){
+            param_track.push(markup.descriptors.track[i][0]);
+        }
+
+        var lexical_descriptor = param_track.join(' ');
+        markup.lexical_track = lexical_descriptor;
+        const empty_row = lexical_descriptor.replace(/\S/g, ".");
+        
+        for (var i = 0; i < markup.length; i++) {
+            pattern.push(empty_row);
+        }
+        return pattern;
 
     }
 
@@ -70,7 +87,7 @@ class Tracker  {
              this.send(1, this.faux_pattern[this.g_pattern_playhead]);
         }
         this.mgraphics.redraw();
-        post('latest', this.g_pattern_playhead);
+        //post('latest', this.g_pattern_playhead);
     }
 
     msg_int(tick){
@@ -78,7 +95,7 @@ class Tracker  {
     }
 
     clear(){
-        this.faux_pattern = this.make_empty_pattern(this.pattern_markup, 1);
+        this.faux_pattern = this.make_empty_pattern(this.pattern_markup);
         this.pattern_markup.data = this.faux_pattern;    
         this.mgraphics.redraw();
     }
@@ -94,7 +111,7 @@ class Tracker  {
             this.mgraphics.redraw();
         }
         this.#g_key_codes = [a1, a2, a3, a4];
-
+        post(this.#g_key_codes);
     }
 
     // command(instruction){
@@ -131,26 +148,6 @@ class Tracker  {
     }
 
 
-    make_empty_pattern(markup, ntracks){
-        // ntracks not handled yet, ntracks is to define how many note+params tracks show up
-        // this is destinct from globals.
-        var pattern = [];
-
-        var param_track = [];
-        for (var i=0; i < Object.keys(markup.descriptors.track).length; i++){
-            param_track.push(markup.descriptors.track[i][0]);
-        }
-
-        var lexical_descriptor = param_track.join(' ');
-        markup.track = lexical_descriptor;
-        const empty_row = lexical_descriptor.replace(/\S/g, ".");
-        
-        for (var i = 0; i < markup.length; i++) {
-            pattern.push(empty_row);
-        }
-        return pattern;
-
-    }
 
 
     dictionary(dictName) {
@@ -167,7 +164,7 @@ class Tracker  {
     handle_2hex_input(key, caret, desciptor, pattern){
         // 4hex version of this was written after 2hex, use 4hex as inspiration if you plan to rewrite this function.
         var hex_deletes = [46, 127];
-        const two_hex_indices = find_regexed_indices(this.pattern_markup.track, /\bh{2}\b/g);  // hh
+        const two_hex_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bh{2}\b/g);  // hh
         const two_hex_index_pairs = [];
         for (var i=0; i < two_hex_indices.length; i++){
             two_hex_index_pairs.push([two_hex_indices[i], two_hex_indices[i] + 1]);
@@ -211,7 +208,7 @@ class Tracker  {
 
     handle_trigger_input(key, caret, desciptor, pattern){
 
-        const trigger_indices = find_regexed_indices(this.pattern_markup.track, /\bb{1}\b/g);  // b
+        const trigger_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bb{1}\b/g);  // b
         if (found_in(trigger_indices, caret.col)){
             var keybangs = {49: "1", 46: ".", 127: "."};
             if (key in keybangs){
@@ -280,7 +277,7 @@ class Tracker  {
     handle_4hex_input(key, caret, desciptor, pattern, param_at_position){
 
         var hex_deletes = [46, 127];
-        const four_hex_indices = find_regexed_indices(this.pattern_markup.track, /\bh{4}\b/g);  // hhhh
+        const four_hex_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bh{4}\b/g);  // hhhh
         const four_hex_index_pairs = [];
         for (var i=0; i < four_hex_indices.length; i++){
             four_hex_index_pairs.push(
@@ -314,7 +311,7 @@ class Tracker  {
     handle_note_input(key, caret, desciptor, pattern){
 
         const NoteClearList = {46: "...", 127: "...", 96: "^^^", 49: "==="};
-        const note_indices = find_regexed_indices(this.pattern_markup.track, /\bn{3}\b/g);   // nnn
+        const note_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bn{3}\b/g);   // nnn
         if (note_indices.length){
             // post('note_indices :', note_indices, '\n');
 
@@ -381,7 +378,7 @@ class Tracker  {
 
     pattern_input_handler(key, caret, desciptor, pattern){
 
-        const param_at_position = getParameterTypeAtPosition(desciptor.track, caret.col);
+        const param_at_position = getParameterTypeAtPosition(desciptor.lexical_track, caret.col);
         if (param_at_position == null){
             return;  // in space column
         }
@@ -434,54 +431,10 @@ class Tracker  {
 
     }
 
-    draw_caret(){
-
-        const [offset_x, offset_y] = this.caret_to_location();
-        this.mgraphics.set_source_rgba(0.7, 0.2, 0.4, 1);
-        this.mgraphics.rectangle(offset_x, offset_y - (0.9 * this.charheight), this.charwidth, this.charheight);
-        this.mgraphics.fill();        
-
-    }
-
-    draw_selection(){
-
-        var selection = this.getSelectionRect();
-        if (!this.#started_selection_mode && !selection){ return; }
-        // post('selection:', selection.top, selection.bottom, selection.left, selection.right, '\n');
-
-        const [cx, cy] = this.corner_to_location(selection.left, selection.top);
-        var rect_width = Math.abs((selection.right - selection.left)) * this.charwidth;
-        var rect_height = Math.abs(selection.top - selection.bottom-1) * this.charheight;
-        this.mgraphics.set_source_rgba(0.7, 0.7, 0.9, 1);
-        this.mgraphics.rectangle(cx, cy-(this.charheight * 0.9), rect_width + this.charwidth, rect_height);
-        this.mgraphics.stroke();
-
-    }
-
-    draw_highlighted_lines(every_nth){
-
-        this.set_rgb({r: 0.1, g: 0.2, b:0.4}, 1.3);
-        var total_draw_amount = Math.floor(this.pattern_markup.length / Math.max(every_nth, 1));
-        for (var i = 0; i < total_draw_amount; i++){
-            var tick_y = this.start_y + (i * every_nth * this.settings_font_size) - (0.75 * this.text_h);
-            this.mgraphics.rectangle(this.start_x, tick_y, this.text_w, this.settings_font_size);
-            this.mgraphics.fill();
-        }
-    }
-
-    draw_edit_mode_indicator(h){
-
-        if (this.#g_in_edit_mode){
-            this.mgraphics.set_source_rgba(0.9, 0.5, 0.5, 1.0);
-            this.mgraphics.rectangle(0, 0, 5, this.mgraphics.size[1]);
-            this.mgraphics.fill();        
-        }
-    }
-
 
     wheres_the_caret(){
         // dont do this frequently
-        var indices = find_idx_after_space(this.pattern_markup.track);
+        var indices = find_idx_after_space(this.pattern_markup.lexical_track);
         for (var idx = indices.length - 1; idx >= 0; idx--) {
             if (this.#caret.col >= indices[idx]) {
                 return [indices[idx], idx];
@@ -503,8 +456,8 @@ class Tracker  {
             // First establish if the selection contains partials. extend if needed.
             // is selection.left at index0 of the param?
             // is selection right at indexN of the param?
-            var xx_first_param = getParameterTypeAtPosition(this.pattern_markup.track, selection_start);
-            var xx_last_param = getParameterTypeAtPosition(this.pattern_markup.track, selection.right);
+            var xx_first_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection_start);
+            var xx_last_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection.right);
 
             if (xx_first_param !== null){ 
                 selection_start = xx_first_param.start;
@@ -535,8 +488,8 @@ class Tracker  {
         var selection_length = (selection.right - selection.left) + 1;
 
         // extend selection left + right if some parameters are not fully selected.
-        var xx_first_param = getParameterTypeAtPosition(this.pattern_markup.track, selection_start);
-        var xx_last_param = getParameterTypeAtPosition(this.pattern_markup.track, selection.right);
+        var xx_first_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection_start);
+        var xx_last_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection.right);
         if (xx_first_param !== null){ selection_start = xx_first_param.start; }
         if (xx_last_param !== null){ selection_length = (xx_last_param.end - xx_first_param.start) + 1; }
 
@@ -570,8 +523,8 @@ class Tracker  {
             var selection_length = (selection.right - selection.left) + 1;
 
             // extend selection left + right if some parameters are not fully selected.
-            var xx_first_param = getParameterTypeAtPosition(this.pattern_markup.track, selection_start);
-            var xx_last_param = getParameterTypeAtPosition(this.pattern_markup.track, selection.right);
+            var xx_first_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection_start);
+            var xx_last_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection.right);
             if (xx_first_param !== null){ selection_start = xx_first_param.start; }
             if (xx_last_param !== null){ selection_length = (xx_last_param.end - xx_first_param.start) + 1; }
 
@@ -847,7 +800,7 @@ class Tracker  {
 
                 if (found_in([CTRL, CTRL_SHIFT], SELECTOR)){
 
-                    var param_starts = find_idx_after_space(this.pattern_markup.track);
+                    var param_starts = find_idx_after_space(this.pattern_markup.lexical_track);
                     var [left_distance, right_distance] = [-1, 1];
                     var [low, high] = [1, 1];
 
@@ -864,7 +817,7 @@ class Tracker  {
 
                         } else if (USER_KEY === RIGHT_KEY){
 
-                            if (this.#caret.col === (this.pattern_markup.track.length - 1)){
+                            if (this.#caret.col === (this.pattern_markup.lexical_track.length - 1)){
                                 right_distance = 0;
                                 break;
                             }
@@ -889,12 +842,12 @@ class Tracker  {
                     switch(USER_KEY) {
                         case LEFT_KEY: 
                             this.moveCaret(0, -1);
-                            var over_a_space = (this.pattern_markup.track.charAt(this.#caret.col) === ' ');
+                            var over_a_space = (this.pattern_markup.lexical_track.charAt(this.#caret.col) === ' ');
                             if (over_a_space){ this.moveCaret(0, -1); } // move to the next tick
                             break;
                         case RIGHT_KEY: 
                             this.moveCaret(0,  1); 
-                            var over_a_space = (this.pattern_markup.track.charAt(this.#caret.col) === ' ');
+                            var over_a_space = (this.pattern_markup.lexical_track.charAt(this.#caret.col) === ' ');
                             if (over_a_space){ this.moveCaret(0, 1); }
                             break;
                         case UP_KEY: this.moveCaret(-1, 0); break;
@@ -912,12 +865,56 @@ class Tracker  {
     }
 
 
+    draw_caret(){
+
+        const [offset_x, offset_y] = this.caret_to_location();
+        this.mgraphics.set_source_rgba(0.7, 0.2, 0.4, 1);
+        this.mgraphics.rectangle(offset_x, offset_y - (0.9 * this.charheight), this.charwidth, this.charheight);
+        this.mgraphics.fill();        
+
+    }
+
+    draw_selection(){
+
+        var selection = this.getSelectionRect();
+        if (!this.#started_selection_mode && !selection){ return; }
+        // post('selection:', selection.top, selection.bottom, selection.left, selection.right, '\n');
+
+        const [cx, cy] = this.corner_to_location(selection.left, selection.top);
+        var rect_width = Math.abs((selection.right - selection.left)) * this.charwidth;
+        var rect_height = Math.abs(selection.top - selection.bottom-1) * this.charheight;
+        this.mgraphics.set_source_rgba(0.7, 0.7, 0.9, 1);
+        this.mgraphics.rectangle(cx, cy-(this.charheight * 0.9), rect_width + this.charwidth, rect_height);
+        this.mgraphics.stroke();
+
+    }
+
+    draw_highlighted_lines(every_nth){
+
+        this.set_rgb({r: 0.1, g: 0.2, b:0.4}, 1.3);
+        var total_draw_amount = Math.floor(this.pattern_markup.length / Math.max(every_nth, 1));
+        for (var i = 0; i < total_draw_amount; i++){
+            var tick_y = this.start_y + (i * every_nth * this.settings_font_size) - (0.75 * this.text_h);
+            this.mgraphics.rectangle(this.start_x, tick_y, this.text_w, this.settings_font_size);
+            this.mgraphics.fill();
+        }
+    }
+
+    draw_edit_mode_indicator(h){
+
+        if (this.#g_in_edit_mode){
+            this.mgraphics.set_source_rgba(0.9, 0.5, 0.5, 1.0);
+            this.mgraphics.rectangle(0, 0, 5, this.start_y - this.text_h);
+            this.mgraphics.fill();        
+        }
+    }
+
     draw_command_background(markup){
         /*
         draws rectangles under the command part of the ffxxyy parameter tracks/columns
         This is not essential but adds UI contrast.
         */
-        var param_indices = find_regexed_indices(markup.track, /\bffxxyy\b/g);
+        var param_indices = find_regexed_indices(markup.lexical_track, /\bffxxyy\b/g);
         var xx_start = this.start_x + (4 * this.charwidth); // where to start from
         var rect_length = this.charheight * markup.length;
         var rect_y_start = (this.start_y - (0.9 * this.charheight));
@@ -934,7 +931,7 @@ class Tracker  {
         if the ff column of the ffxxyy track has a value other than two dots (..) 
         this draws the cmd value using a different colour for UI contrast. 
         */
-        var param_indices = find_regexed_indices(markup.track, /\bffxxyy\b/g);
+        var param_indices = find_regexed_indices(markup.lexical_track, /\bffxxyy\b/g);
         var xx_start = this.start_x + (4 * this.charwidth); // where to start from
         for (const idx in param_indices){
 
@@ -993,7 +990,7 @@ class Tracker  {
         gfx.select_font_face("Consolas", "normal", "normal");
         this.charwidth = gfx.text_measure('_')[0];
         
-        var tx_wh = gfx.text_measure('000 ' + this.pattern_markup.track);  // returns width and height
+        var tx_wh = gfx.text_measure('000 ' + this.pattern_markup.lexical_track);  // returns width and height
         this.text_w = tx_wh[0];
         this.text_h = tx_wh[1];        
 
@@ -1001,9 +998,8 @@ class Tracker  {
 
     draw_track_descriptor(){
 
-        var gfx = this.mgraphics;
-        
         // draw at bottom
+        var gfx = this.mgraphics;
         var [w, h] = gfx.size;
 
         this.set_rgb({r: 0.2, g: 0.3, b:0.2}, 2.3);
@@ -1031,6 +1027,35 @@ class Tracker  {
         }
     }
 
+    draw_scrollbars(){
+        // these are not interactive
+        var gfx = this.mgraphics;
+        var [w, h] = gfx.size;
+
+        var data_width = this.start_x + this.text_w;
+        if (w < data_width){
+
+            var hidden_portion = (w / data_width) * w;
+            this.set_rgb({r: 0.2, g: 0.2, b:0.2}, 1.0);
+            gfx.rectangle(this.start_x, 0, w, 10);
+            gfx.fill();
+            
+            var wdim = hidden_portion - this.start_x;
+            if (wdim > 0){
+                this.set_rgb({r: 0.1, g: 0.1, b:0.1}, 1.0);
+                gfx.rectangle(this.start_x, 0, wdim, 10);
+                gfx.fill();            
+            }
+        }
+
+        var data_height = this.start_y + ((this.pattern_markup.length + 0.2) * this.charheight);
+        if (h < data_height ){
+            this.set_rgb({r: 0.1, g: 0.1, b:0.1}, 1.0);
+            gfx.rectangle(0, this.start_y, 10, (h - this.start_y));
+            gfx.fill();
+        }
+
+    }
 
     paint(){
 
@@ -1046,6 +1071,7 @@ class Tracker  {
         this.draw_edit_mode_indicator();
         this.draw_selection();
         this.draw_track_descriptor();
+        this.draw_scrollbars();
 
     }
 
@@ -1056,7 +1082,7 @@ class Tracker  {
         if ((x >= caret_range_x_start ) && (y >= caret_range_y_start)){
             var cell_x = Math.floor((x - caret_range_x_start) / this.charwidth);
             var cell_y = Math.floor((y - caret_range_y_start) / this.charheight);
-            if ((cell_x < this.pattern_markup.track.length) && (cell_y < this.pattern_markup.length)){
+            if ((cell_x < this.pattern_markup.lexical_track.length) && (cell_y < this.pattern_markup.length)){
                 this.#caret.row = cell_y;
                 this.#caret.col = cell_x;
             }
