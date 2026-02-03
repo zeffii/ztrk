@@ -1098,6 +1098,10 @@ class Tracker  {
     }
 
     draw_toprow(){
+        // toprow is a visual indicator to show which parameters are grouped.
+        // topo group names? or just ID. there will always be minimum 1 charwidth space for an ID.
+        // I didn't intend this code to be so terse, but it worked first time and i 
+        // havent been able to break it.
         var gfx = this.mgraphics;
         gfx.set_source_rgba(0.8, 0.2, 0.2, 1);
         gfx.move_to(this.start_x, this.start_y + (-1 * this.settings_font_size));
@@ -1111,7 +1115,6 @@ class Tracker  {
         var current_group = 0;
         for (var i = 0; i < Object.keys(this.pattern_markup.descriptors.track).length; i++){
             var element = this.pattern_markup.descriptors.track[i];
-            var placeholder = element[0];
             var group = element[2];
             var vpffset = 1;
             if (group !== current_group){
@@ -1120,20 +1123,33 @@ class Tracker  {
                 vpffset = 0;
             }
 
-            for (var j = 0; j < (element[0].length + vpffset); j++){
-                top_row_chars.push(midline);
-            }
+            // for (var j = 0; j < (element[0].length + vpffset); j++){
+            //     top_row_chars.push(midline);
+            // }
+            top_row_chars.push(...midline.repeat(element[0].length + vpffset).split(''));
         }
-        top_row_chars.push('╕')
+        top_row_chars.push('╕');
         top_row_chars[1] = '╒';
 
         var final_top_row_dividers = top_row_chars.join('');
+
+        /*    if you wish to display a small ID in the middle of the ====  then here's some code to choke on a little.
+        var find_group_indices = s => [...s.matchAll(/═+/g)].map(m => m.index + (m[0].length >> 1));
+        var group_indices = find_group_indices(final_top_row_dividers);
+        if (group_indices){
+            for (const tidx in group_indices){
+                var mid_index = group_indices[tidx];
+                final_top_row_dividers = replaceAt(final_top_row_dividers, mid_index, '0', 1);
+            }
+        }
+        */
+
         gfx.show_text(final_top_row_dividers);
     }
 
     paint(){
 
-        this.get_text_width_and_height()
+        this.get_text_width_and_height();
 
         this.dark_background();
         this.draw_highlighted_lines(4);
