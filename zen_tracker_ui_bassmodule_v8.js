@@ -266,7 +266,13 @@ class Tracker  {
             for (var row = 0; row < celldata_array.length; row++){
                 var num_cols = celldata_array[row].length;
                 for (var col = 0; col < num_cols; col++){
-                    jit_cellblock.set(col, row, celldata_array[row][col]);
+                    var proposed_cell_data = celldata_array[row][col];
+    
+                    if (isOnlyDots(proposed_cell_data)){
+                        jit_cellblock.message('clear', col, row);
+                    } else {
+                        jit_cellblock.set(col, row, proposed_cell_data);
+                    }
                 }
             }
             
