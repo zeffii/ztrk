@@ -272,3 +272,16 @@ function MakeSimpleNoteDictFromArrays(pattern_markup){
     live_api.call("remove_notes_extended", 0, 127, 0, 9999);
     live_api.call("add_new_notes", notes_obj);
 }
+
+function pprint(iterable){
+    post('[');
+    for (var i in iterable){
+        post('[');
+        for (var j in iterable[i]){
+            post(iterable[i][j], ',');
+        }
+        post(']');
+        post('\n');
+    }
+    post(']\n');
+}

@@ -86,6 +86,14 @@ function command(instruction){
         outputDict.parse(JSON.stringify(this.pattern_markup));
         outlet(2, "dictionary", outputDict.name);
     }
+
+    if (instruction.startsWith('jitblock_')){
+    	post('yes here, jitblock set to', instruction.substring(9));
+    	my_tracker.current_patcher = this.patcher;
+    	my_tracker.jitblock_name = instruction.substring(9);
+    	return; // end early is ok.
+    }
+
     switch (instruction) {
         case 'push_to_clip':
             my_tracker.push_to_live();
