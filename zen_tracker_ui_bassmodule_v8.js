@@ -58,6 +58,7 @@ class Tracker  {
         this.start_y = 30;
         this.jitblock_name = "";
         this.current_patcher = null;
+        this.BufferMode = 0;
 
     }
 
@@ -240,6 +241,8 @@ class Tracker  {
         // better name needed as this will be the update handler for external data passing.
         if (this.#AbletonMode === 1){ MakeSimpleNoteDictFromArrays(this.pattern_markup); }
 
+        // to use this you would send a message 'command jitblock_<cellblock.scriptname>'
+        // but i may abandon it as passing data to buffers might be a more efficient way.
         if (this.jitblock_name && this.current_patcher){
             post('setting jitblock, >>', this.jitblock_name);
 
@@ -260,7 +263,12 @@ class Tracker  {
                     }
                 }
             }
-            
+        }
+    }
+
+    push_to_buffers(){
+        if (this.BufferMode === 1){
+            post('entered push to buffers function');
         }
     }
 
@@ -295,6 +303,7 @@ class Tracker  {
             }
 
             this.push_to_live();
+            this.push_to_buffers();
             this.refresh();
             return true;
         }
@@ -374,6 +383,7 @@ class Tracker  {
             }
 
             this.push_to_live();
+            this.push_to_buffers();
             this.refresh();
             return true;
         }
@@ -434,6 +444,7 @@ class Tracker  {
             }
 
             this.push_to_live();
+            this.push_to_buffers();
             this.refresh();
             return true;
         }
@@ -467,6 +478,7 @@ class Tracker  {
             }
 
             this.push_to_live();
+            this.push_to_buffers();
             this.refresh();
             return true;
         }
@@ -506,6 +518,7 @@ class Tracker  {
             }
 
             this.push_to_live();
+            this.push_to_buffers();
             this.refresh();
         }
     }
@@ -540,6 +553,7 @@ class Tracker  {
                         replacement_hex += pattern[caret.row][higher_index];
                     }
                     pattern[caret.row] = replaceAt(pattern[caret.row], caret.col, replacement_hex, 2);
+                    this.push_to_buffers();
                 }
                 else if (caret.col === higher_index){
                     if (pattern[caret.row][lower_index] === '.'){
@@ -549,9 +563,11 @@ class Tracker  {
                     }
                     replacement_hex += charfound;
                     pattern[caret.row] = replaceAt(pattern[caret.row], caret.col-1, replacement_hex, 2);
+                    this.push_to_buffers();
                 }
             } else if (found_in(hex_deletes, key)) {
                 pattern[caret.row] = replaceAt(pattern[caret.row], lower_index, '..', 2);
+                this.push_to_buffers();
             }
         }    
 
@@ -567,6 +583,7 @@ class Tracker  {
                 const key_infoB = keybangs[key];
                 const current_rowB = pattern[caret.row];
                 pattern[caret.row] = replaceAt(current_rowB, caret.col, key_infoB, 1);
+                this.push_to_buffers();
             }
         }
 
@@ -604,9 +621,12 @@ class Tracker  {
                 var proposed_param_data = replaceAt(current_param_data, (caret.col - index_0), charfound, 1);
                 proposed_param_data = proposed_param_data.replace(/\./g, "0");
                 pattern[caret.row] = replaceAt(pattern[caret.row], index_0, proposed_param_data, 2);
+                this.push_to_buffers();
             } else if (found_in(hex_deletes, key)) {
                 pattern[caret.row] = replaceAt(pattern[caret.row], index_0, '..', 2);
+                this.push_to_buffers();
             }
+
 
 
         } else if (found_in([2, 3, 4, 5], p.indexInParam)){
@@ -617,8 +637,10 @@ class Tracker  {
                 var proposed_param_data = replaceAt(current_param_data, (caret.col - index_0), charfound, 1);
                 proposed_param_data = proposed_param_data.replace(/\./g, "0");
                 pattern[caret.row] = replaceAt(pattern[caret.row], index_0, proposed_param_data, 4);
+                this.push_to_buffers();
             } else if (found_in(hex_deletes, key)) {
                 pattern[caret.row] = replaceAt(pattern[caret.row], index_0, '....', 4);
+                this.push_to_buffers();
             }
         }
 
@@ -652,8 +674,10 @@ class Tracker  {
                 var proposed_param_data = replaceAt(current_param_data, (caret.col - index_0), charfound, 1);
                 proposed_param_data = proposed_param_data.replace(/\./g, "0");
                 pattern[caret.row] = replaceAt(pattern[caret.row], index_0, proposed_param_data, 4);
+                this.push_to_buffers();
             } else if (found_in(hex_deletes, key)) {
                 pattern[caret.row] = replaceAt(pattern[caret.row], index_0, '....', 4);
+                this.push_to_buffers();
             }
         }
 
@@ -713,6 +737,7 @@ class Tracker  {
                     const current_row = pattern[caret.row];
                     const note = String(key_info[0]) + String(key_info[1] + this.#g_pattern_octave);
                     pattern[caret.row] = replaceAt(current_row, caret.col, note, 3);
+                    this.push_to_buffers();
 
                 } else if (key in NoteClearList){
 
@@ -720,8 +745,8 @@ class Tracker  {
                     const NoteReplacement = NoteClearList[key];
                     const current_row1 = pattern[caret.row];
                     pattern[caret.row] = replaceAt(current_row1, caret.col, NoteReplacement, 3);
+                    this.push_to_buffers();
                 }
-
             }
         }
 
@@ -745,11 +770,10 @@ class Tracker  {
           case 'hhhh':
             this.handle_4hex_input(key, caret, desciptor, pattern, param_at_position); break;
           case 'ffxxyy':
-            this.handle_ffxxyy_input(key, caret, desciptor, pattern, param_at_position); break;        
+            this.handle_ffxxyy_input(key, caret, desciptor, pattern, param_at_position); break;
           default:
             break;
-        }    
-
+        }
     }
 
     find_cell_under_cursor(x, y){

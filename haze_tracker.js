@@ -94,6 +94,11 @@ function command(instruction){
     	return; // end early is ok.
     }
 
+    if (instruction.startsWith('buffermode:')){
+		my_tracker.BufferMode = parseInt(instruction.substring(11));
+	    post('BufferMode set to:', my_tracker.BufferMode);
+	}
+
     switch (instruction) {
         case 'push_to_clip':
             my_tracker.push_to_live();
