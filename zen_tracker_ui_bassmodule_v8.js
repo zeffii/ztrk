@@ -35,6 +35,7 @@ class Tracker  {
     constructor(pattern_markup, mgraphics, options = {} ){
 
         this.send = options.send || function() { post("No send function provided"); };
+        this.write_buffers = options.write_buffers || function() { post("No buffer function provided"); };
 
         // make local params
         this.mgraphics = mgraphics;
@@ -269,6 +270,12 @@ class Tracker  {
     push_to_buffers(){
         if (this.BufferMode === 1){
             post('entered push to buffers function');
+            //var ch24 = new Buffer("");
+            //var env = new Buffer("env");
+            // end.send("setsize, 32);
+            // var source_sample = foo.peek(1, i, 1);
+            // env.poke(1, i, new_val);    // 1-based index.
+            this.write_buffers(this);
         }
     }
 

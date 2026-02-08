@@ -50,7 +50,23 @@ function sendOutlet(port, ...args) {
   }
 }
 
-var my_tracker = new Tracker(pattern_markup, mgraphics, {send: sendOutlet});
+function write_buffers(tracker){
+	var pattern_length = tracker.pattern_markup.length;
+    var ch1 = new Buffer("ch1");
+    //var env = new Buffer("env");
+    // ch1.send("setsize", pattern_length);
+    ch1.setattr("sr", 1000);
+    ch1.send("sizeinsamps", pattern_length);
+    // var source_sample = foo.peek(1, i, 1);
+    for (var i=0; i < pattern_length; i++){
+    	ch1.poke(1, i, 1/32*i + Math.random());    // 1-based index.
+    }
+}
+
+var my_tracker = new Tracker(pattern_markup, mgraphics, {
+	send: sendOutlet,
+	write_buffers: write_buffers
+});
 
 key_handler = my_tracker.key_handler.bind(my_tracker);
 dictionary = my_tracker.dictionary.bind(my_tracker);
