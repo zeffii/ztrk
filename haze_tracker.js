@@ -53,13 +53,26 @@ function sendOutlet(port, ...args) {
 function write_buffers(tracker){
 	var pattern_length = tracker.pattern_markup.length;
     var ch1 = new Buffer("ch1");
-    //var env = new Buffer("env");
+    var triggers = new Buffer("triggers");
+    
+    // var env = new Buffer("env");
     // ch1.send("setsize", pattern_length);
-    ch1.setattr("sr", 1000);
-    ch1.send("sizeinsamps", pattern_length);
     // var source_sample = foo.peek(1, i, 1);
-    for (var i=0; i < pattern_length; i++){
-    	ch1.poke(1, i, 1/32*i + Math.random());    // 1-based index.
+    
+    ch1.setattr("sr", 1000);
+    ch1.setattr("chans", 24);
+    ch1.send("sizeinsamps", pattern_length);
+
+    var array2d = pattern_data_to_2d_array(tracker.pattern_markup.data);
+    //for (var i=0; i < pattern_length; i++){
+    // 	ch1.poke(1, i, 1/32*i + Math.random());    // 1-based index.
+    //}
+    for (var row = 0; row < array2d.length; row++){
+    	for (var col = 0; col < array2d[0].length; col++){
+    		var celld = array2d[row][col];
+            var floatval = encode_cell_to_float(celld);
+            ch1.poke(col+1, row+1, floatval);
+    	}
     }
 }
 

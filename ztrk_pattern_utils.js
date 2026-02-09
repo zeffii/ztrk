@@ -286,7 +286,7 @@ function pprint(iterable){
     post(']\n');
 }
 
-function pattern_data_to_2d_array(origin, data){
+function pattern_data_to_2d_array(data){
     var celldata_array = [];
 
     // not super efficient looping strategy..
@@ -305,3 +305,55 @@ function pattern_data_to_2d_array(origin, data){
     }
     return celldata_array;
 }
+
+function encode2hex(v) {
+    // v ∈ [0, 255]
+    return v / 255;
+}
+
+function decode2hex(f) {
+    return Math.round(f * 255);
+}
+
+function encode4hex(v) {
+    // v ∈ [0, 65535]
+    return v / 65535;
+}
+
+function decode4hex(f) {
+    return Math.round(f * 65535);
+}
+
+function encodeMidi(v) {
+    // v ∈ [0, 127]
+    return v / 127;
+}
+
+function decodeMidi(f) {
+    return Math.round(f * 127);
+}
+
+function encode_cell_to_float(celld){
+    var empty = isOnlyDots(celld) ? 1 : 0;
+    var new_cell_value = 0.0;
+
+    if (empty){ new_cell_value = -1.0; }
+    else {
+        if (celld.length === 3){
+            if (celld.includes('^')){
+                new_cell_value = -0.8; }
+            else if (celld.includes('=')){
+                new_cell_value = -0.6; } 
+            else { 
+                new_cell_value = encodeMidi(note_to_int(celld)); 
+            }
+        }
+        else if (celld.length === 1){ 
+            new_cell_value = 1.0; }
+        else if (celld.length === 2){ 
+            new_cell_value = encode2hex(celld); }
+        else if (celld.length === 4){
+            new_cell_value = encode4hex(celld); }
+    }
+    return new_cell_value;
+};

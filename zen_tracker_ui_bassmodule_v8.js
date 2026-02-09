@@ -123,7 +123,7 @@ class Tracker  {
             this.mgraphics.redraw();
         }
         this.#g_key_codes = [a1, a2, a3, a4];
-        post(this.#g_key_codes);
+        // post(this.#g_key_codes);
     }
 
     dictionary(dictName) {
@@ -248,7 +248,7 @@ class Tracker  {
             post('setting jitblock, >>', this.jitblock_name);
 
             var jit_cellblock = this.current_patcher.getnamed(this.jitblock_name);
-            var celldata_array = pattern_data_to_2d_array(this, this.pattern_markup.data);
+            var celldata_array = pattern_data_to_2d_array(this.pattern_markup.data);
 
             // pprint(celldata_array);
             
