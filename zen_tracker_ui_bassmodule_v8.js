@@ -258,9 +258,9 @@ class Tracker  {
                     var proposed_cell_data = celldata_array[row][col];
     
                     if (isOnlyDots(proposed_cell_data)){
-                        jit_cellblock.message('clear', col, row);
+                        jit_cellblock.message('clear', row+1, col);
                     } else {
-                        jit_cellblock.set(col, row, proposed_cell_data);
+                        jit_cellblock.set(row+1, col, proposed_cell_data);
                     }
                 }
             }

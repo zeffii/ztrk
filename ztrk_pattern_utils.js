@@ -351,9 +351,9 @@ function encode_cell_to_float(celld){
         else if (celld.length === 1){ 
             new_cell_value = 1.0; }
         else if (celld.length === 2){ 
-            new_cell_value = encode2hex(celld); }
+            new_cell_value = encode2hex(parseInt(celld, 16)); }
         else if (celld.length === 4){
-            new_cell_value = encode4hex(celld); }
+            new_cell_value = encode4hex(parseInt(celld, 16)); }
     }
     return new_cell_value;
 };
