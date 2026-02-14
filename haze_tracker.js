@@ -71,7 +71,7 @@ function write_buffers(tracker){
     	for (var col = 0; col < array2d[0].length; col++){
     		var celld = array2d[row][col];
             var floatval = encode_cell_to_float(celld);
-            ch1.poke(col+1, row+1, floatval);
+            ch1.poke(col+1, row, floatval);
     	}
     }
 }

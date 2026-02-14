@@ -1,0 +1,10 @@
+Buffer buf1();
+Buffer wwindow();
+Param size(100, min=100, max=1000);
+s = mstosamps(size);
+c = counter(1, 0, s);
+phase = c / s;
+win = wave(wwindow, phase);
+playback = peek(buf1, c);
+
+out1 = playback * win;
