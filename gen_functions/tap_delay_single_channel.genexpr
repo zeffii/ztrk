@@ -1,0 +1,13 @@
+// inspired by axers fall https://www.youtube.com/watch?v=e52qw0q80K4
+Delay del(samplerate);
+Param fd(0.67, min=0, max=0.94);
+Param delay_time(1000, min=12, max=1000);
+Param distortion_mix(0, min=0.0, max=1.0);
+Param wetdry_mix(0.0, min=0.0, max=1.0);
+delay_sig = del.read(mstosamps(samplerate));
+feedback = delay_sig * fd;
+
+pre_out = mix(delay_sig, tanh(delay_sig), distortion_mix);
+out1 = mix(in1, pre_out, wetdry_mix);
+ 
+del.write(in1 + feedback);
