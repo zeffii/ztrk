@@ -27,7 +27,7 @@ var pattern_markup = {
             12: ['nnn', 'Note 3', 3],
             13: ['hh', 'Volume 3', 3],
             14: ['hh', 'Duration 3', 3],
-            15: ['hhhh', 'Offset 3', 3],
+            15: ['b', 'Snare 3', 3],
             16: ['b', 'Trigger', 4], 
             17: ['hh', 'Volume', 4],
             18: ['hh', 'LDelay', 4],
@@ -65,7 +65,7 @@ function write_buffers(tracker){
 
     var array2d = pattern_data_to_2d_array(tracker.pattern_markup.data);
     //for (var i=0; i < pattern_length; i++){
-    // 	ch1.poke(1, i, 1/32*i + Math.random());    // 1-based index.
+    // 	ch1.poke(1, i, 1/32*i + Math.random());  
     //}
     for (var row = 0; row < array2d.length; row++){
     	for (var col = 0; col < array2d[0].length; col++){
