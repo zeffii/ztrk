@@ -1,7 +1,7 @@
 /*
 
 You will always move in the direction of your strongest thought -- so make it a good one.
-
+what remains after fear, is my true form.
 */
 
 include("ztrk_pattern_utils.js");
@@ -57,6 +57,8 @@ class Tracker  {
         this.text_h = this.settings_font_size;
         this.start_x = 30;
         this.start_y = 30;
+        this.pattern_row_shift = 0;
+
         this.jitblock_name = "";
         this.current_patcher = null;
         this.BufferMode = 0;
@@ -123,6 +125,7 @@ class Tracker  {
             this.mgraphics.redraw();
         }
         this.#g_key_codes = [a1, a2, a3, a4];
+        // this.patcher.send(1)
         // post(this.#g_key_codes);
     }
 
@@ -829,6 +832,10 @@ class Tracker  {
             var [MINUS, PLUS] = [95, 43];   // not the numkey ones at the moment.
 
             /*
+            -- TODO 
+            - ctrl + pgup/down scrolls the pattern, 
+            -        pgup/down jumps up/down 16 tick.
+
             maxmsp captures some of the kb shortcuts for its own purposes:
             - ctrl+I = inspector
             - f5 = magnifying glass
@@ -876,6 +883,15 @@ class Tracker  {
                     this.#anchor = { row: this.#caret.row, col: this.#caret.col };
                     post('starting selection mode\n');
                     this.#started_selection_mode = true;
+                }
+
+            } else if (found_in([PAGE_UP, PAGE_DOWN], USER_KEY)){
+
+                post('using PageUP/Down\n');
+                switch(USER_KEY) {
+                    case PAGE_UP: this.moveCaret(-16, 0); break;
+                    case PAGE_DOWN: this.moveCaret(16, 0); break;
+                    default: return;
                 }
 
             } else {
@@ -1231,9 +1247,13 @@ class Tracker  {
             this.find_cell_under_cursor(x, y);
         }
         this.mgraphics.redraw();
+        post(button);
     }
 
-    ondrag(x, y, button){ return; }
+    ondrag(x, y, button){ 
+        post(button);
+        return; 
+    }
     onidle(x, y, button, mod1, shift, caps, opt, mod2) { this.#g_mouse_on_rect = true; }
     onidleout(x, y, button, mod1, shift, caps, opt, mod2) { this.#g_mouse_on_rect = false; }
 
