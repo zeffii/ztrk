@@ -800,6 +800,15 @@ class Tracker  {
         }
     }
 
+    scroll_pattern(steps){
+        // .... i haven't yet decided how this works.
+        post('scrolling pattern', steps);
+        this.pattern_row_shift += steps;
+        this.pattern_row_shift %= this.pattern_markup.length;
+        this.pattern_row_shift = parseInt(this.pattern_row_shift);
+        post('new pattern_row_shift value', this.pattern_row_shift, '\n');
+    }
+
 
     key_handler(){
 
@@ -867,6 +876,8 @@ class Tracker  {
                     case C_KEY: this.handle_copy_selection(this.faux_pattern); return;
                     case V_KEY: this.handle_paste_selection(this.faux_pattern); return;
                     case X_KEY: this.handle_delete_selection(this.faux_pattern); return;
+                    case PAGE_UP: this.scroll_pattern(-16); return;
+                    case PAGE_DOWN: this.scroll_pattern(+16); return;
                     default: break;
                 }
             }
@@ -1078,12 +1089,26 @@ class Tracker  {
         gfx.fill();
     }
 
+    recomputed_index(idx){
+        var plen = this.pattern_markup.length;
+        var adjusted_tick = parseInt(idx + this.pattern_row_shift);
+        if (adjusted_tick < 0){
+            adjusted_tick = parseInt(plen + adjusted_tick);
+        }
+        else if (adjusted_tick > 0){
+            adjusted_tick = parseInt((plen + adjusted_tick) % plen);
+        }
+        return adjusted_tick;
+    }
+
     draw_pattern_data(){
         var gfx = this.mgraphics;
         gfx.set_source_rgba(0.4, 0.9, 1.0, 1);
         for (const idx in this.faux_pattern){
+            //var idxx = this.recomputed_index(idx); // currently broken
+            var idxx = idx;
             gfx.move_to(this.start_x, this.start_y + (idx * this.settings_font_size));
-            var pattern_row = fmt(idx) + this.faux_pattern[idx];
+            var pattern_row = fmt(idxx) + this.faux_pattern[idxx];
             gfx.show_text(pattern_row);
         }
     }

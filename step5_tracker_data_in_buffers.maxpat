@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 35.0, 146.0, 1884.0, 1218.0 ],
+        "rect": [ 3999.0, 201.0, 2492.0, 1281.0 ],
         "boxes": [
             {
                 "box": {
@@ -285,7 +285,6 @@
             {
                 "box": {
                     "buffername": "ch1",
-                    "chanoffset": 18,
                     "id": "obj-77",
                     "maxclass": "waveform~",
                     "numinlets": 5,
@@ -297,7 +296,6 @@
             {
                 "box": {
                     "buffername": "ch1",
-                    "chanoffset": 17,
                     "id": "obj-70",
                     "maxclass": "waveform~",
                     "numinlets": 5,
@@ -1210,7 +1208,7 @@
                     "numoutlets": 3,
                     "outlettype": [ "", "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 217.0, 157.0, 609.0, 308.0 ],
+                    "patching_rect": [ 217.0, 157.0, 617.0, 438.0 ],
                     "textfile": {
                         "filename": "haze_tracker.js",
                         "flags": 0,
@@ -1237,8 +1235,7 @@
                             "modernui": 1
                         },
                         "classnamespace": "box",
-                        "rect": [ -1818.0, 198.0, 858.0, 649.0 ],
-                        "visible": 1,
+                        "rect": [ 134.0, 134.0, 858.0, 649.0 ],
                         "boxes": [
                             {
                                 "box": {
@@ -1357,7 +1354,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "127",
+                                    "text": "12",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -1446,7 +1443,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "117",
+                                    "text": "121",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -1491,7 +1488,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 127 117 0 -6",
+                                    "text": "keys 12 121 4352 -14",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -2031,7 +2028,7 @@
             {
                 "patchline": {
                     "destination": [ "obj-4", 2 ],
-                    "midpoints": [ 258.5, 69.0, 619.8333333333333, 69.0 ],
+                    "midpoints": [ 258.5, 69.0, 625.1666666666667, 69.0 ],
                     "source": [ "obj-22", 1 ]
                 }
             },
@@ -2056,7 +2053,7 @@
             {
                 "patchline": {
                     "destination": [ "obj-4", 1 ],
-                    "midpoints": [ 771.5577116012573, 129.0, 423.16666666666663, 129.0 ],
+                    "midpoints": [ 771.5577116012573, 129.0, 425.83333333333337, 129.0 ],
                     "source": [ "obj-3", 1 ]
                 }
             },

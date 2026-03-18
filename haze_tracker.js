@@ -9,7 +9,7 @@ inlets = 4;
 mgraphics.init();
 
 var pattern_markup = {
-    length: 32,
+    length: 64,
     descriptors: {
         track: {
             0: ['nnn', 'Note 0', 0],
@@ -74,7 +74,7 @@ function write_buffers(tracker){
             ch1.poke(col+1, row, floatval);
     	}
     }
-}
+}  
 
 var my_tracker = new Tracker(pattern_markup, mgraphics, {
 	send: sendOutlet,
