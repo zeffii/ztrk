@@ -26,7 +26,7 @@ var pattern_markup = {
             11: ['hhhh', 'Offset 3', 3],
             12: ['nnn', 'Note 3', 3],
             13: ['hh', 'Volume 3', 3],
-            14: ['hh', 'Duration 3', 3],
+            14: ['hh', 'Offset 3', 3],
             15: ['b', 'Snare 3', 3],
             16: ['b', 'Trigger', 4], 
             17: ['hh', 'Volume', 4],

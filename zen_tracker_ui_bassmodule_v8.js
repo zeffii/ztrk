@@ -28,7 +28,8 @@ class Tracker  {
     #started_selection_mode = false;
     #g_updating_selection = true;
     
-    #caret = { row: 0, col: 0 };     
+    #caret = { row: 0, col: 0};
+    
     #anchor = null;
     #g_pattern_octave = 4;           // [ todo, implement current octave for input ]
 
@@ -285,6 +286,8 @@ class Tracker  {
 
     handle_delete_selection(pattern){
 
+        //[x]  handles shifted rows
+
         if (this.#started_selection_mode){
             this.handle_copy_selection(pattern);
             var selection = this.getSelectionRect();
@@ -307,9 +310,16 @@ class Tracker  {
             }
 
             for (var row = selection.top; row <= selection.bottom; row++){
-                var row_substr = pattern[row].substr(selection_start, selection_length);
+                
+                // this takes shifted pattern row view into account.
+                var row_idx = row;
+                if (this.pattern_row_shift !== 0){
+                    row_idx = getRotatedIndex(this, row_idx);
+                }
+
+                var row_substr = pattern[row_idx].substr(selection_start, selection_length);
                 row_substr = row_substr.replace(/[^ ]/g, '.');
-                pattern[row] = replaceAt(pattern[row], selection_start, row_substr, selection_length);
+                pattern[row_idx] = replaceAt(pattern[row_idx], selection_start, row_substr, selection_length);
             }
 
             this.push_to_live();
@@ -323,6 +333,8 @@ class Tracker  {
 
 
     handle_interpolate_selection(pattern){
+
+        // [x]  handles shifted rows
 
         if (this.#started_selection_mode){
             /*
@@ -347,9 +359,18 @@ class Tracker  {
             if (xx_first_param !== null){ selection_start = xx_first_param.start; }
             if (xx_last_param !== null){ selection_length = (xx_last_param.end - xx_first_param.start) + 1; }
 
+
+            // this takes shifted pattern row view into account.
+            var selection_top = selection.top;
+            var selection_bottom = selection.bottom;
+            if (this.pattern_row_shift !== 0){
+                selection_top = getRotatedIndex(this, selection_top);
+                selection_bottom = getRotatedIndex(this, selection_bottom);
+            }
+
             // get content of the first and last selected row, to prepare interpolation attempt
-            var substr_start = pattern[selection.top].substr(selection_start, selection_length);
-            var substr_end = pattern[selection.bottom].substr(selection_start, selection_length);
+            var substr_start = pattern[selection_top].substr(selection_start, selection_length);
+            var substr_end = pattern[selection_bottom].substr(selection_start, selection_length);
             var start_list = substr_start.split(' ');
             var end_list = substr_end.split(' ');
 
@@ -368,7 +389,8 @@ class Tracker  {
             // we could (and probably should) skip the first and last row as they should be the same.
             for (var row = selection.top; row <= selection.bottom; row++){
 
-                var row_repr = pattern[row].substr(selection_start, selection_length);
+                var shifted_row = getRotatedIndex(this, row)
+                var row_repr = pattern[shifted_row].substr(selection_start, selection_length);
                 var splitted_row = row_repr.split(' ');
                 var rebuilt_list_of_strings = []
 
@@ -389,7 +411,7 @@ class Tracker  {
                     }
                 }
                 var replacement_part = rebuilt_list_of_strings.join(' ');
-                pattern[row] = replaceAt(pattern[row], selection_start, replacement_part, selection_length);
+                pattern[shifted_row] = replaceAt(pattern[shifted_row], selection_start, replacement_part, selection_length);
             }
 
             this.push_to_live();
@@ -402,24 +424,9 @@ class Tracker  {
     }
 
 
-    handle_copy_selection(pattern){
-
-        // post('initiating copy function\n');
-        var sel_rect = this.get_adjusted_selection_rect();
-        //  selection_info: {start_index: 7  selection_length: 29  top: 2  bottom: 8  num_rows: 7}
-        //  selection_data: [rows,....]
-        this.#ztrk_clipboard = {
-            'selection_info': sel_rect,
-            'selection_data': []
-        }
-        for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
-            var this_row_data = pattern[row].substr(sel_rect.start_index, sel_rect.selection_length);
-            this.#ztrk_clipboard.selection_data.push(this_row_data);
-        }
-    }
-
-
     handle_shift_selection(pattern, direction){
+
+        //[ ]  handles shifted rows
 
         if (this.#started_selection_mode){
             var remap_main = {30: 'UP', 31: 'DOWN'};
@@ -433,6 +440,7 @@ class Tracker  {
                 'selection_data': []
             }
             for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
+               // var shifted_row = getRotatedIndex(this, row)
                var this_row_data = pattern[row].substr(sel_rect.start_index, sel_rect.selection_length);
                this.#ztrk_clipboard.selection_data.push(this_row_data);
             }
@@ -463,6 +471,8 @@ class Tracker  {
 
     handle_transpose_selection(pattern, direction){
 
+        //[ ]  handles shifted rows
+
         // post('initiating transpose function: ' + direction + '\n');
         if (this.#started_selection_mode){
 
@@ -474,6 +484,7 @@ class Tracker  {
                 'selection_data': []
             }
             for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
+                // var shifted_row = getRotatedIndex(this, row)
                 var this_row_data = pattern[row].substr(sel_rect.start_index, sel_rect.selection_length);
                 var row_data = this_row_data.split(' ');
                 var new_row_data = [];
@@ -495,7 +506,28 @@ class Tracker  {
         return false;
     }
 
+    handle_copy_selection(pattern){
+
+        //[ ]  handles shifted rows
+
+        // post('initiating copy function\n');
+        var sel_rect = this.get_adjusted_selection_rect();
+        //  selection_info: {start_index: 7  selection_length: 29  top: 2  bottom: 8  num_rows: 7}
+        //  selection_data: [rows,....]
+        this.#ztrk_clipboard = {
+            'selection_info': sel_rect,
+            'selection_data': []
+        }
+        for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
+            // var shifted_row = getRotatedIndex(this, row)
+            var this_row_data = pattern[row].substr(sel_rect.start_index, sel_rect.selection_length);
+            this.#ztrk_clipboard.selection_data.push(this_row_data);
+        }
+    }
+
     handle_paste_selection(pattern){
+
+        //[ ]  handles shifted rows
 
         post('initiating paste function\n');
         /*  
@@ -518,6 +550,7 @@ class Tracker  {
             var selection_length = this.#ztrk_clipboard.selection_info.selection_length;
             var idx = this.#caret.row;
             for (const paste_row_idx in this.#ztrk_clipboard.selection_data){
+                // var shifted_row = getRotatedIndex(this, row)
                 var replacement_part = this.#ztrk_clipboard.selection_data[paste_row_idx];
                 pattern[idx] = replaceAt(pattern[idx], selection_start, replacement_part, selection_length);
                 idx++;
@@ -552,31 +585,35 @@ class Tracker  {
             var charfound = String.fromCharCode(key).toUpperCase();
             var HEXALPHNUM = '0123456789ABCDEF';
             var listed = HEXALPHNUM.split('');
+
+            // this makes it possible to enter data when the pattern is row-shifted.
+            const caret_row = getRotatedIndex(this, caret.row);
+            
             if (found_in(listed, charfound)){
                 var replacement_hex = '';
 
                 if (caret.col === lower_index){
                     replacement_hex += charfound;
-                    if (pattern[caret.row][higher_index] === '.'){
+                    if (pattern[caret_row][higher_index] === '.'){
                         replacement_hex += '0';
                     } else {
-                        replacement_hex += pattern[caret.row][higher_index];
+                        replacement_hex += pattern[caret_row][higher_index];
                     }
-                    pattern[caret.row] = replaceAt(pattern[caret.row], caret.col, replacement_hex, 2);
+                    pattern[caret_row] = replaceAt(pattern[caret_row], caret.col, replacement_hex, 2);
                     this.push_to_buffers();
                 }
                 else if (caret.col === higher_index){
-                    if (pattern[caret.row][lower_index] === '.'){
+                    if (pattern[caret_row][lower_index] === '.'){
                         replacement_hex += '0';
                     } else {
-                        replacement_hex += pattern[caret.row][lower_index];
+                        replacement_hex += pattern[caret_row][lower_index];
                     }
                     replacement_hex += charfound;
-                    pattern[caret.row] = replaceAt(pattern[caret.row], caret.col-1, replacement_hex, 2);
+                    pattern[caret_row] = replaceAt(pattern[caret_row], caret.col-1, replacement_hex, 2);
                     this.push_to_buffers();
                 }
             } else if (found_in(hex_deletes, key)) {
-                pattern[caret.row] = replaceAt(pattern[caret.row], lower_index, '..', 2);
+                pattern[caret_row] = replaceAt(pattern[caret_row], lower_index, '..', 2);
                 this.push_to_buffers();
             }
         }    
@@ -591,8 +628,12 @@ class Tracker  {
             var keybangs = {49: "1", 46: ".", 127: "."};
             if (key in keybangs){
                 const key_infoB = keybangs[key];
-                const current_rowB = pattern[caret.row];
-                pattern[caret.row] = replaceAt(current_rowB, caret.col, key_infoB, 1);
+
+                // this makes it possible to enter data when the pattern is row-shifted.
+                const shifted_row = getRotatedIndex(this, caret.row);
+                const current_rowB = pattern[shifted_row];
+
+                pattern[shifted_row] = replaceAt(current_rowB, caret.col, key_infoB, 1);
                 this.push_to_buffers();
             }
         }
@@ -623,33 +664,34 @@ class Tracker  {
         var HEXALPHNUM = '0123456789ABCDEF';
         var listed = HEXALPHNUM.split('');
 
+        // this makes it possible to enter data when the pattern is row-shifted.
+        const caret_row = getRotatedIndex(this, caret.row);
+
         if (found_in([0, 1], p.indexInParam)){
 
             var [index_0, index_1] = [p.start, p.start + 1];
             if (found_in(listed, charfound)){
-                var current_param_data = pattern[caret.row].substr(index_0, 2);
+                var current_param_data = pattern[caret_row].substr(index_0, 2);
                 var proposed_param_data = replaceAt(current_param_data, (caret.col - index_0), charfound, 1);
                 proposed_param_data = proposed_param_data.replace(/\./g, "0");
-                pattern[caret.row] = replaceAt(pattern[caret.row], index_0, proposed_param_data, 2);
+                pattern[caret_row] = replaceAt(pattern[caret_row], index_0, proposed_param_data, 2);
                 this.push_to_buffers();
             } else if (found_in(hex_deletes, key)) {
-                pattern[caret.row] = replaceAt(pattern[caret.row], index_0, '..', 2);
+                pattern[caret_row] = replaceAt(pattern[caret_row], index_0, '..', 2);
                 this.push_to_buffers();
             }
-
-
 
         } else if (found_in([2, 3, 4, 5], p.indexInParam)){
 
             var [index_0, index_1, index_2, index_3] = [p.start + 2, p.start + 3, p.start + 4, p.start + 5];
             if (found_in(listed, charfound)){
-                var current_param_data = pattern[caret.row].substr(index_0, 4);
+                var current_param_data = pattern[caret_row].substr(index_0, 4);
                 var proposed_param_data = replaceAt(current_param_data, (caret.col - index_0), charfound, 1);
                 proposed_param_data = proposed_param_data.replace(/\./g, "0");
-                pattern[caret.row] = replaceAt(pattern[caret.row], index_0, proposed_param_data, 4);
+                pattern[caret_row] = replaceAt(pattern[caret_row], index_0, proposed_param_data, 4);
                 this.push_to_buffers();
             } else if (found_in(hex_deletes, key)) {
-                pattern[caret.row] = replaceAt(pattern[caret.row], index_0, '....', 4);
+                pattern[caret_row] = replaceAt(pattern[caret_row], index_0, '....', 4);
                 this.push_to_buffers();
             }
         }
@@ -674,19 +716,22 @@ class Tracker  {
         var four_hex_indices_found = findSublistContaining(caret.col, four_hex_index_pairs);
         if (four_hex_indices_found !== null){
 
+            // this makes it possible to enter data when the pattern is row-shifted.
+            const caret_row = getRotatedIndex(this, caret.row);
+
             var [index_0, index_1, index_2, index_3] = four_hex_indices_found;
             var charfound = String.fromCharCode(key).toUpperCase();
             var HEXALPHNUM = '0123456789ABCDEF';
             var listed = HEXALPHNUM.split('');
 
             if (found_in(listed, charfound)){
-                var current_param_data = pattern[caret.row].substr(index_0, 4);
+                var current_param_data = pattern[caret_row].substr(index_0, 4);
                 var proposed_param_data = replaceAt(current_param_data, (caret.col - index_0), charfound, 1);
                 proposed_param_data = proposed_param_data.replace(/\./g, "0");
-                pattern[caret.row] = replaceAt(pattern[caret.row], index_0, proposed_param_data, 4);
+                pattern[caret_row] = replaceAt(pattern[caret_row], index_0, proposed_param_data, 4);
                 this.push_to_buffers();
             } else if (found_in(hex_deletes, key)) {
-                pattern[caret.row] = replaceAt(pattern[caret.row], index_0, '....', 4);
+                pattern[caret_row] = replaceAt(pattern[caret_row], index_0, '....', 4);
                 this.push_to_buffers();
             }
         }
@@ -741,20 +786,23 @@ class Tracker  {
                     105: ['C-', 2], 57: ['C#', 2], 111: ['D-', 2], 48: ['D#', 2], 112: ['E-', 2], 
                 }
 
+                // this makes it possible to enter data when the pattern is row-shifted.
+                const caret_row = getRotatedIndex(this, caret.row);                
+
                 if (key in g_keyjam_encoding){
 
                     const key_info = g_keyjam_encoding[key];
-                    const current_row = pattern[caret.row];
+                    const current_row = pattern[caret_row];
                     const note = String(key_info[0]) + String(key_info[1] + this.#g_pattern_octave);
-                    pattern[caret.row] = replaceAt(current_row, caret.col, note, 3);
+                    pattern[caret_row] = replaceAt(current_row, caret.col, note, 3);
                     this.push_to_buffers();
 
                 } else if (key in NoteClearList){
 
                     // this can be moved into a loop over the 3 indices, so input can be handled in all three
                     const NoteReplacement = NoteClearList[key];
-                    const current_row1 = pattern[caret.row];
-                    pattern[caret.row] = replaceAt(current_row1, caret.col, NoteReplacement, 3);
+                    const current_row1 = pattern[caret_row];
+                    pattern[caret_row] = replaceAt(current_row1, caret.col, NoteReplacement, 3);
                     this.push_to_buffers();
                 }
             }
@@ -807,6 +855,7 @@ class Tracker  {
         this.pattern_row_shift %= this.pattern_markup.length;
         this.pattern_row_shift = parseInt(this.pattern_row_shift);
         post('new pattern_row_shift value', this.pattern_row_shift, '\n');
+        this.refresh();
     }
 
 
@@ -1072,7 +1121,10 @@ class Tracker  {
             for (var pidx = 0; pidx < this.pattern_markup.length; pidx++){
                 var tx = xx_start + (start_idx * this.charwidth);
 
-                var command = this.faux_pattern[pidx].slice(start_idx, start_idx+2);
+                // this makes it possible to enter data when the pattern is row-shifted.
+                var shifted_pidx = getRotatedIndex(this, pidx);
+
+                var command = this.faux_pattern[shifted_pidx].slice(start_idx, start_idx+2);
                 if (command !== '..'){
                     mgraphics.move_to(tx, this.start_y + (pidx * this.settings_font_size));
                     mgraphics.show_text(command);
@@ -1080,6 +1132,7 @@ class Tracker  {
             }
         }
     }
+
 
     draw_tick_position(tick){
         var gfx = this.mgraphics;        
@@ -1089,24 +1142,19 @@ class Tracker  {
         gfx.fill();
     }
 
-    recomputed_index(idx){
-        var plen = this.pattern_markup.length;
-        var adjusted_tick = parseInt(idx + this.pattern_row_shift);
-        if (adjusted_tick < 0){
-            adjusted_tick = parseInt(plen + adjusted_tick);
-        }
-        else if (adjusted_tick > 0){
-            adjusted_tick = parseInt((plen + adjusted_tick) % plen);
-        }
-        return adjusted_tick;
-    }
-
     draw_pattern_data(){
         var gfx = this.mgraphics;
         gfx.set_source_rgba(0.4, 0.9, 1.0, 1);
+
+        // this is lazy.. i know.  maybe just do this one, if the pattern size changes.
+        const index_list = [...Array(this.pattern_markup.length).keys()];
+        
+        // maybe make a adjunct rotated_index_list to avoid recomputing this too.
+        const rotated_index_list = rotate(index_list, this.pattern_row_shift);
+
         for (const idx in this.faux_pattern){
-            //var idxx = this.recomputed_index(idx); // currently broken
-            var idxx = idx;
+
+            var idxx = rotated_index_list[idx];
             gfx.move_to(this.start_x, this.start_y + (idx * this.settings_font_size));
             var pattern_row = fmt(idxx) + this.faux_pattern[idxx];
             gfx.show_text(pattern_row);

@@ -356,4 +356,29 @@ function encode_cell_to_float(celld){
             new_cell_value = encode4hex(parseInt(celld, 16)); }
     }
     return new_cell_value;
-};
+}
+
+function rotate(arr, n) {
+    if (!arr || arr.length === 0) return [...arr];
+  
+    // Normalize n to be within [0, length)
+    const len = arr.length;
+    n = ((n % len) + len) % len;
+  
+    if (n === 0) return [...arr];
+
+    return [...arr.slice(n), ...arr.slice(0, n)];
+}
+
+function getRotatedIndex(that, old_idx){
+
+    // if (typeof that.pattern_markup.length === 'undefined'){
+    //     return old_idx;
+    // }
+
+    var tempval = (old_idx + that.pattern_row_shift) % that.pattern_markup.length;
+    if (tempval < 0){
+        tempval = tempval + this.pattern_markup.length;
+    }
+    return tempval;
+}
