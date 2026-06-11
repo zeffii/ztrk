@@ -22,18 +22,21 @@ Some milestones i will need to tackle, in no particular order
     - [x] trigger ( 1 or . )
     - [x] 4 hex
     - [x] FFXXYY (this will set you free)
-- [ ] util functions(hex to int, etc)
+- [x] util functions(hex to int, etc)
     these to be used for
     - [x] interpolation functions,
     - [x] addition/subtract/transpose
-    - [ ] multiply
+- [x] scrolling pattern data
 - [ ] sequencing patterns
 - [ ] general pattern editor functions (reverse, transpose)
     - [x] interpolate (hex and notes)
     - [x] delete selection
+        - [ ] handle scrolled state
     - [x] copy and paste selection
+        - [ ] handle scrolled state
     - [x] shift content of selection up/down
 - [ ] trigger from tick
+
 
 
 -----------------
