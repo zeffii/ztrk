@@ -13,6 +13,12 @@ class Tracker  {
         Some of this is a little clunky, and will remain so until i'm able to trigger sample accurately
         once that works, then i'll go mental :) trust me.
 
+        Since the data-structure + editing are distinct and seperable from the way the data are read,
+        i'm OK with a clunky back-end to reach a point where sound can be triggered and arguments applied.
+        See it is a minimal viable product. Getting sound and other cool stuff out of this will encourage me
+        to revisit this backend, if, upon reflection, it can be done in a less head-wrecking manner :)
+
+
     */
 
     #AbletonMode = true;
@@ -426,7 +432,7 @@ class Tracker  {
 
     handle_shift_selection(pattern, direction){
 
-        //[ ]  handles shifted rows
+        //[x]  handles shifted rows
 
         if (this.#started_selection_mode){
             var remap_main = {30: 'UP', 31: 'DOWN'};
@@ -440,9 +446,15 @@ class Tracker  {
                 'selection_data': []
             }
             for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
-               // var shifted_row = getRotatedIndex(this, row)
-               var this_row_data = pattern[row].substr(sel_rect.start_index, sel_rect.selection_length);
-               this.#ztrk_clipboard.selection_data.push(this_row_data);
+                
+                // handle shifted scenario (ie, the pattern is displayed not from 0 to end, but 0-n to end-n)
+                var shifted_row = row;
+                if (this.pattern_row_shift !== 0){
+                    shifted_row = getRotatedIndex(this, row);
+                }
+
+                var this_row_data = pattern[shifted_row].substr(sel_rect.start_index, sel_rect.selection_length);
+                this.#ztrk_clipboard.selection_data.push(this_row_data);
             }
 
             if (remap_main[direction] === 'UP'){
@@ -455,7 +467,12 @@ class Tracker  {
             }
 
             var idx = sel_rect.top;
+            if (this.pattern_row_shift !== 0){
+                idx = getRotatedIndex(this, idx);  // start idx if shifting during shifted view.
+            }
+
             for (const paste_row_idx in this.#ztrk_clipboard.selection_data){
+
                 var replacement_part = this.#ztrk_clipboard.selection_data[paste_row_idx];
                 pattern[idx] = replaceAt(pattern[idx], sel_rect.start_index, replacement_part, sel_rect.selection_length);
                 idx++;
@@ -471,7 +488,7 @@ class Tracker  {
 
     handle_transpose_selection(pattern, direction){
 
-        //[ ]  handles shifted rows
+        //[x]  handles shifted rows
 
         // post('initiating transpose function: ' + direction + '\n');
         if (this.#started_selection_mode){
@@ -484,8 +501,13 @@ class Tracker  {
                 'selection_data': []
             }
             for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
-                // var shifted_row = getRotatedIndex(this, row)
-                var this_row_data = pattern[row].substr(sel_rect.start_index, sel_rect.selection_length);
+                
+                var shifted_row = row;
+                if (this.pattern_row_shift !== 0){
+                    shifted_row = getRotatedIndex(this, row);
+                }
+
+                var this_row_data = pattern[shifted_row].substr(sel_rect.start_index, sel_rect.selection_length);
                 var row_data = this_row_data.split(' ');
                 var new_row_data = [];
                 for (const param_idx in row_data){
@@ -494,7 +516,7 @@ class Tracker  {
                     new_row_data.push(adjusted_value);
                 }
                 var replacement_part = new_row_data.join(' ');
-                pattern[row] = replaceAt(pattern[row], sel_rect.start_index, replacement_part, sel_rect.selection_length);
+                pattern[shifted_row] = replaceAt(pattern[shifted_row], sel_rect.start_index, replacement_part, sel_rect.selection_length);
 
             }
 
@@ -508,7 +530,7 @@ class Tracker  {
 
     handle_copy_selection(pattern){
 
-        //[ ]  handles shifted rows
+        //[x]  handles shifted rows
 
         // post('initiating copy function\n');
         var sel_rect = this.get_adjusted_selection_rect();
@@ -519,15 +541,20 @@ class Tracker  {
             'selection_data': []
         }
         for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
-            // var shifted_row = getRotatedIndex(this, row)
-            var this_row_data = pattern[row].substr(sel_rect.start_index, sel_rect.selection_length);
+
+            var shifted_row = row;
+            if (this.pattern_row_shift !== 0){
+               shifted_row = getRotatedIndex(this, row);
+            }
+
+            var this_row_data = pattern[shifted_row].substr(sel_rect.start_index, sel_rect.selection_length);
             this.#ztrk_clipboard.selection_data.push(this_row_data);
         }
     }
 
     handle_paste_selection(pattern){
 
-        //[ ]  handles shifted rows
+        //[x]  handles shifted rows
 
         post('initiating paste function\n');
         /*  
@@ -549,10 +576,17 @@ class Tracker  {
             var selection_start = this.#ztrk_clipboard.selection_info.start_index; // in X axis, column
             var selection_length = this.#ztrk_clipboard.selection_info.selection_length;
             var idx = this.#caret.row;
+
+
             for (const paste_row_idx in this.#ztrk_clipboard.selection_data){
-                // var shifted_row = getRotatedIndex(this, row)
                 var replacement_part = this.#ztrk_clipboard.selection_data[paste_row_idx];
-                pattern[idx] = replaceAt(pattern[idx], selection_start, replacement_part, selection_length);
+
+                var shifted_row = idx;
+                if (this.pattern_row_shift !== 0){
+                    shifted_row = getRotatedIndex(this, idx);
+                }
+
+                pattern[shifted_row] = replaceAt(pattern[shifted_row], selection_start, replacement_part, selection_length);
                 idx++;
 
                 if (idx >= pattern.length){
@@ -1192,7 +1226,7 @@ class Tracker  {
 
             gfx.move_to(0 + this.charwidth, h - (0.25 * this.charheight));
             gfx.show_text(caret_string);
-            var version_identifier = 'ztrk v.003';
+            var version_identifier = 'ztrk v.004';
             var identifier_width = this.mgraphics.text_measure(version_identifier + ' ')[0];
 
             gfx.move_to(w - identifier_width, h - (0.25 * this.charheight));
