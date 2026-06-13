@@ -28,12 +28,10 @@ Some milestones i will need to tackle, in no particular order
     - [x] addition/subtract/transpose
 - [x] scrolling pattern data
 - [ ] sequencing patterns
-- [ ] general pattern editor functions (reverse, transpose)
+- [ ] general pattern editor functions
     - [x] interpolate (hex and notes)
     - [x] delete selection
-        - [ ] handle scrolled state
     - [x] copy and paste selection
-        - [ ] handle scrolled state
     - [x] shift content of selection up/down
 - [ ] trigger from tick
 
