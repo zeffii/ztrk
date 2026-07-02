@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 34.0, 77.0, 965.0, 801.0 ],
+        "rect": [ 2752.0, 190.0, 2266.0, 1170.0 ],
         "boxes": [
             {
                 "box": {
@@ -123,7 +123,7 @@
                     "numinlets": 2,
                     "numoutlets": 1,
                     "outlettype": [ "bang" ],
-                    "patching_rect": [ 1251.0, -28.0, 184.0, 68.0 ]
+                    "patching_rect": [ 1257.0, 42.0, 184.0, 68.0 ]
                 }
             },
             {
@@ -137,7 +137,7 @@
                     "numinlets": 1,
                     "numoutlets": 1,
                     "outlettype": [ "signal" ],
-                    "patching_rect": [ 1223.0, -137.0, 329.0, 110.0 ],
+                    "patching_rect": [ 1222.72716486454, -136.36362433433533, 575.7575249671936, 176.36362433433533 ],
                     "varname": "gen~_AC[1]"
                 }
             },
@@ -192,6 +192,7 @@
             {
                 "box": {
                     "buffername": "ch1",
+                    "chanoffset": 2,
                     "id": "obj-70",
                     "maxclass": "waveform~",
                     "numinlets": 5,
@@ -202,7 +203,8 @@
             },
             {
                 "box": {
-                    "buffername": "buf1",
+                    "buffername": "ch1",
+                    "chanoffset": 6,
                     "id": "obj-33",
                     "maxclass": "waveform~",
                     "numinlets": 5,
@@ -559,7 +561,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "12",
+                                    "text": "99",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -648,7 +650,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "121",
+                                    "text": "8",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -693,7 +695,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 12 121 4352 -14",
+                                    "text": "keys 99 8 0 99",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -1294,14 +1296,6 @@
         "parameters": {
             "obj-59": [ "live.dial[4]", "live.dial", 0 ],
             "obj-61": [ "speed", "speed", 0 ],
-            "parameterbanks": {
-                "0": {
-                    "index": 0,
-                    "name": "",
-                    "parameters": [ "-", "-", "-", "-", "-", "-", "-", "-" ],
-                    "buttons": [ "-", "-", "-", "-", "-", "-", "-", "-" ]
-                }
-            },
             "inherited_shortname": 1
         },
         "autosave": 0,
