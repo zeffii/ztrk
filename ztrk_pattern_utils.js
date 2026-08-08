@@ -84,11 +84,13 @@ function replaceAt(str, index, replacement, count) {
          + str.substr(index + count);
 }
 
+// I think these are off by twelve , C0 should be 24 not 12..
+
 function note_to_int(note_str) {
     var n1 = note_str.slice(0, 2);
     var n2 = note_str.slice(2);
     var semitone = note_coll2[n1];
-    return semitone + parseInt(n2) * 12 + 12;  // 60 for "C-4"
+    return semitone + parseInt(n2) * 12 + 12;
 }
 
 function int_to_note(int_val) {
@@ -204,7 +206,7 @@ function isOnlyDots(str) {
 }
 
 function PostDict(dict){
-     Object.keys(dict).forEach(function(key) { post(key + ": " + dict[key]); });
+    Object.keys(dict).forEach(function(key) { post(key + ": " + dict[key]); });
 }
 
 function find_regexed_indices(str, regex) {
@@ -381,4 +383,18 @@ function getRotatedIndex(that, old_idx){
         tempval = tempval + this.pattern_markup.length;
     }
     return tempval;
+}
+
+function clearBuffer(buf){
+	var samples = new Array;
+	var frames = buf.framecount();
+    var num_channels = buf.channelcount();
+
+	for (var i=0; i < frames; i++)
+		samples[i] = 0.0;
+
+    for (var i=1; i <= num_channels; i++)
+	    buf.poke(i, 0, samples);
+
+
 }

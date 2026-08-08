@@ -10,7 +10,7 @@ class Tracker  {
 
     /*
 
-        Some of this is a little clunky, and will remain so until i'm able to trigger sample accurately
+        Some of this is clunky, and will remain so until i'm able to trigger sample accurately.
         once that works, then i'll go mental :) trust me.
 
         Since the data-structure + editing are distinct and seperable from the way the data are read,
@@ -119,6 +119,9 @@ class Tracker  {
         this.faux_pattern = this.make_empty_pattern(this.pattern_markup);
         this.pattern_markup.data = this.faux_pattern;    
         this.mgraphics.redraw();
+        // this should also wipe the buffer data
+        var ch1 = new Buffer("ch1");
+        clearBuffer(ch1);
     }
 
     refresh(){
@@ -143,7 +146,9 @@ class Tracker  {
         var jsObject = JSON.parse(inputDict.stringify());
         this.pattern_markup = jsObject;
         this.faux_pattern = this.pattern_markup.data;
-
+        this.mgraphics.redraw();
+        //this.push_to_buffers();
+        this.write_buffers(this);
     }
 
     // command(instruction){
@@ -246,6 +251,53 @@ class Tracker  {
         return [-1, -1];
     }
 
+    get_channel_at_caret(){
+        // We store data in a multi-channel buffer, the channel is fixed with respect to the parameter. 
+        // for patching it is useful to know at a glance which channel to read data out of. The channel is 1-based.
+        // we could cache this as channel dict in the pattern_markup? and refresh whenever the pattern descriptor changes.
+        // For now we will calculate it on the fly - it's fast anyway.
+        const data = this.pattern_markup.data[0];
+        const pattern_row_data = data.split(' ');
+        
+        var channel_dict = {};
+        var channel_idx = 1;
+        var caret_idx = 0;
+        
+        // caret should never appear between parameters, so we dont track it there.
+        for (const param_idx in pattern_row_data){
+            var cell_data = pattern_row_data[param_idx];
+            if (cell_data.length < 6){
+                for (var i=0; i < cell_data.length; i++){
+                    channel_dict[caret_idx] = channel_idx;
+                    caret_idx += 1;
+                }
+
+            } else if (cell_data.length === 6){
+                channel_dict[caret_idx] = channel_idx;
+                channel_dict[caret_idx+1] = channel_idx;
+                channel_dict[caret_idx+2] = channel_idx+1;
+                channel_dict[caret_idx+3] = channel_idx+1;
+                channel_dict[caret_idx+4] = channel_idx+1;
+                channel_dict[caret_idx+5] = channel_idx+1;
+                caret_idx += 6;
+                channel_idx += 1;
+            }
+
+            // covers white space. column between params.
+            caret_idx += 1;
+            channel_idx += 1;
+        }
+        
+        //for (const [k, v] of Object.entries(channel_dict)) {
+        //    post(`${k.padStart(5)} : ${v.toFixed(2).padStart(10)}`);
+        //}
+
+        if (channel_dict.hasOwnProperty(this.#caret.col)) { 
+            return channel_dict[this.#caret.col];
+        }
+        else { return ".."; }
+    }
+
     /* ----------- Pattern Data Handlers --------------- */
 
     push_to_live(){
@@ -289,6 +341,11 @@ class Tracker  {
         }
     }
 
+    change_octave(offset){
+        // this affects new input, not existing pattern data
+        this.#g_pattern_octave = clamp(this.#g_pattern_octave + offset, 0, 7);
+
+    }
 
     handle_delete_selection(pattern){
 
@@ -486,9 +543,10 @@ class Tracker  {
         return false;
     }
 
-    handle_transpose_selection(pattern, direction){
+    handle_transpose_selection(pattern, direction, notes_flag){
 
         //[x]  handles shifted rows
+        post('transpose notes only: ' + notes_flag);
 
         // post('initiating transpose function: ' + direction + '\n');
         if (this.#started_selection_mode){
@@ -511,8 +569,8 @@ class Tracker  {
                 var row_data = this_row_data.split(' ');
                 var new_row_data = [];
                 for (const param_idx in row_data){
+                    // var NOTES = row_data[param_idx].length === 3;
                     var adjusted_value = transpose_value(row_data[param_idx], direction);
-                    // post(row_data[param_idx], 'vs', adjusted_value);
                     new_row_data.push(adjusted_value);
                 }
                 var replacement_part = new_row_data.join(' ');
@@ -921,7 +979,9 @@ class Tracker  {
             var [LEFT_KEY, RIGHT_KEY] = [28, 29];
             var SELECTOR = this.#g_key_codes[2];
             var USER_KEY = this.#g_key_codes[0];
-            var [MINUS, PLUS] = [95, 43];   // not the numkey ones at the moment.
+            var [MINUS, PLUS] = [95, 43];   // not the numkeys at the moment.     (+shift) /
+            var [MINUS1, PLUS1] = [45, 61];   // not the numkeys at the moment.            /  ---- same keys, but different int depending on accelerator pressed.
+            var [MINUS2, PLUS2] = [165, 215];   // not the numkeys at the moment. (+altGr) / 
 
             /*
             -- TODO 
@@ -941,6 +1001,16 @@ class Tracker  {
                 if (found_in([UP_KEY, DOWN_KEY], USER_KEY)){
                     if (this.handle_shift_selection(this.faux_pattern, USER_KEY)){ return; }
                 }
+
+                if (found_in([MINUS2, PLUS2], USER_KEY)){
+                    // when holding alt, the userkey for minus and plus are different numbers, hence not MINUS but MINUS2..lame.?
+                    const NOTES_ONLY = true;
+                    switch(USER_KEY){
+                        case MINUS2: this.handle_transpose_selection(this.faux_pattern, 'DOWN', NOTES_ONLY); return;
+                        case PLUS2: this.handle_transpose_selection(this.faux_pattern, 'UP', NOTES_ONLY); return;
+                        default: break;
+                    }
+                }
             }
 
             if (SELECTOR === SHIFT){
@@ -948,8 +1018,8 @@ class Tracker  {
                     if (this.handle_interpolate_selection(this.faux_pattern)){ return; } 
                 }
                 switch(USER_KEY){
-                    case MINUS: this.handle_transpose_selection(this.faux_pattern, 'DOWN'); return;
-                    case PLUS: this.handle_transpose_selection(this.faux_pattern, 'UP'); return;
+                    case MINUS: this.handle_transpose_selection(this.faux_pattern, 'DOWN', false); return;
+                    case PLUS: this.handle_transpose_selection(this.faux_pattern, 'UP', false); return;
                     default: break;
                 }
             }
@@ -963,6 +1033,13 @@ class Tracker  {
                     case PAGE_DOWN: this.scroll_pattern(+16); return;
                     default: break;
                 }
+            }
+
+            if (found_in([MINUS1, PLUS1], USER_KEY)){
+                post('changing octave', USER_KEY, '\n');
+                this.change_octave(USER_KEY === MINUS1 ? -1 : 1);
+                this.mgraphics.redraw();
+                return;
             }
 
             var directions = [LEFT_KEY, RIGHT_KEY, UP_KEY, DOWN_KEY];
@@ -1213,6 +1290,7 @@ class Tracker  {
         gfx.rectangle(0, h-this.charheight, w, this.charheight);
         gfx.fill();
 
+        var channel_idx = this.get_channel_at_caret();
         const caret_string = '[' + this.#caret.row + ', ' + this.#caret.col + ']';
 
         var idx = this.wheres_the_caret();
@@ -1226,12 +1304,16 @@ class Tracker  {
 
             gfx.move_to(0 + this.charwidth, h - (0.25 * this.charheight));
             gfx.show_text(caret_string);
-            var version_identifier = 'ztrk v.004';
+            var current_channel = "⌇ " + channel_idx + " |";
+            var current_octave = " Ξ " + this.#g_pattern_octave + " | ";
+            var version_identifier = current_channel + current_octave + 'ztrk v.006';
             var identifier_width = this.mgraphics.text_measure(version_identifier + ' ')[0];
 
             gfx.move_to(w - identifier_width, h - (0.25 * this.charheight));
             gfx.show_text(version_identifier);
         }
+
+
     }
 
     draw_scrollbars(){

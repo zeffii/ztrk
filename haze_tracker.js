@@ -1,5 +1,6 @@
 /*
 all 'on_xxxx' functions must be mapped from your js.
+
 */
 
 include("zen_tracker_ui_bassmodule_v8");
@@ -28,10 +29,10 @@ var pattern_markup = {
             13: ['hh', 'Volume 3', 3],
             14: ['hh', 'Offset 3', 3],
             15: ['b', 'Snare 3', 3],
-            16: ['b', 'Trigger', 4], 
-            17: ['hh', 'Volume', 4],
-            18: ['hh', 'LDelay', 4],
-            19: ['hh', 'RDelay', 4],
+            16: ['b', 'Trigger 1', 4], 
+            17: ['b', 'Trigger 2', 4],
+            18: ['b', 'Trigger 3', 4],
+            19: ['b', 'Trigger 4', 4],
             20: ['ffxxyy', 'Effect 1', 4],
             21: ['ffxxyy', 'Effect 2', 5]
         }
@@ -53,7 +54,6 @@ function sendOutlet(port, ...args) {
 function write_buffers(tracker){
 	var pattern_length = tracker.pattern_markup.length;
     var ch1 = new Buffer("ch1");
-    var triggers = new Buffer("triggers");
     
     // var env = new Buffer("env");
     // ch1.send("setsize", pattern_length);
@@ -111,8 +111,8 @@ function command(instruction){
         post('Exporting Pattern\n');
         var outputDict = new Dict('pattern_data');
         
-        my_tracker.pattern_markup.data = this.faux_pattern;
-        outputDict.parse(JSON.stringify(this.pattern_markup));
+        // my_tracker.pattern_markup.data = this.faux_pattern; // ensure the data is up to date before exporting, necessary?
+        outputDict.parse(JSON.stringify(my_tracker.pattern_markup));
         outlet(2, "dictionary", outputDict.name);
     }
 
