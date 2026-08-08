@@ -1,0 +1,65 @@
+// general buffer to action converter
+Buffer ch1();
+Param kind(0, min=0, max=5);
+Param chIndex(0, min=0, max=128);   // really? you need more?  0-based
+pindex = in1;
+
+//0=pass, 1=trigger, 2=2hex, 3=note, 4=4hex, 5=pass, 6=2hex+4hex (this is two channels combined)
+
+out1 = 0.0;
+out2 = 0.0;
+
+if (kind == 1){
+
+	trigger = peek(ch1, pindex, chIndex, 0, channels=1);
+	if (trigger == 1.0){
+	    out1 = 1.0;
+	} else { 
+	    out1 = -1.0;
+	}
+} 
+else if (kind == 3)	{
+
+	note = peek(ch1, pindex, chIndex, 0, channels=1);
+	if (note >= 0.0){
+	    out1 = mtof(round(note * 127.0));
+	} else { // some if statements might go here, note-off, note=cut
+	    out1 = note;
+	}
+} 
+else if (kind == 2) {
+
+	two_hex = peek(ch1, pindex, chIndex, 0, channels=1);
+	if (two_hex == -1.0){
+	    out1 = -1.0;
+	} else { 
+	    out1 = round(two_hex * 255);
+	}	
+}
+else if (kind == 4) {
+
+	four_hex = peek(ch1, pindex, chIndex, 0, channels=1);
+	if (four_hex == -1.0){
+	    out1 = -1.0;
+	} else { 
+	    out1 = round(four_hex * 65535);
+	};	
+} 
+else if (kind == 6) {
+
+	two_hex = peek(ch1, pindex, chIndex, 0, channels=1);
+	four_hex = peek(ch1, pindex, chIndex+1, 0, channels=1);
+	// two_hex, four_hex = peek(ch1, pindex, chIndex, 0, channels=2);  ???
+
+	if (two_hex == -1.0){
+	    out1 = -1.0;
+	} else { 
+	    out1 = round(two_hex * 255);
+	};
+
+	if (four_hex == -1.0){
+	    out2 = -1.0;
+	} else { 
+	    out2 = round(four_hex * 65535);
+	}	
+}
