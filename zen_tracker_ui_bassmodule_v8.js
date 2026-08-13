@@ -69,6 +69,24 @@ class Tracker  {
         this.jitblock_name = "";
         this.current_patcher = null;
         this.BufferMode = 0;
+        
+        this.default_theme_colors = {
+            caret_color: [0.7, 0.2, 0.4, 1],
+            selection_rect_color: [0.7, 0.7, 0.9, 1],
+            row_highlight_color: [0.1, 0.2, 0.4, 1],
+            edit_indicator_color: [0.9, 0.5, 0.5, 1.0],
+            fx_bg_color: [0.1, 0.1, 0.3, 0.42],
+            fx_fg_color: [0.1, 0.5, 0.8, 1.0],
+            tick_index_color: [0.1, 0.1, 0.1, 1],
+            data_color: [0.4, 0.9, 1.0, 1],
+            ui_bg_color: [0.1, 0.2, 0.4, 1],
+            status_bg_color: [0.2, 0.3, 0.2, 1.0],
+            status_text_color: [0.9, 0.9, 0.7, 1.0],
+            scrollbar_bg_color: [0.2, 0.2, 0.2, 1.0],
+            scrollbar_fg_color: [0.1, 0.1, 0.1, 1.0],
+            divider_gfx_color: [0.8, 0.2, 0.2, 1.0]
+        };
+        this.theme_colors = {...this.default_theme_colors};
 
     }
 
@@ -185,6 +203,8 @@ class Tracker  {
         this.mgraphics.set_source_rgba(color.r / dimming, color.g / dimming, color.b / dimming, 1);
 
     }
+
+    asRGB(r, g, b, a){ return {r:r, g:g, b:b}};
 
     moveCaret(dr, dc) {
         this.#caret.row = clamp(this.#caret.row + dr, 0, this.rows - 1);
@@ -1160,7 +1180,8 @@ class Tracker  {
     draw_caret(){
 
         const [offset_x, offset_y] = this.caret_to_location();
-        this.mgraphics.set_source_rgba(0.7, 0.2, 0.4, 1);
+        // this.mgraphics.set_source_rgba(0.7, 0.2, 0.4, 1);   // this.caret_color
+        this.mgraphics.set_source_rgba(...this.theme_colors.caret_color);
         this.mgraphics.rectangle(offset_x, offset_y - (0.9 * this.charheight), this.charwidth, this.charheight);
         this.mgraphics.fill();        
 
@@ -1175,7 +1196,8 @@ class Tracker  {
         const [cx, cy] = this.corner_to_location(selection.left, selection.top);
         var rect_width = Math.abs((selection.right - selection.left)) * this.charwidth;
         var rect_height = Math.abs(selection.top - selection.bottom-1) * this.charheight;
-        this.mgraphics.set_source_rgba(0.7, 0.7, 0.9, 1);
+        // this.mgraphics.set_source_rgba(0.7, 0.7, 0.9, 1);  // this.selection_rect_color
+        this.mgraphics.set_source_rgba(...this.theme_colors.selection_rect_color); 
         this.mgraphics.rectangle(cx, cy-(this.charheight * 0.9), rect_width + this.charwidth, rect_height);
         this.mgraphics.stroke();
 
@@ -1183,7 +1205,8 @@ class Tracker  {
 
     draw_highlighted_lines(every_nth){
 
-        this.set_rgb({r: 0.1, g: 0.2, b: 0.4}, 1.3);
+        // this.set_rgb({r: 0.1, g: 0.2, b: 0.4}, 1.3);  // this.row_highlight_color
+        this.set_rgb(this.asRGB(...this.theme_colors.row_highlight_color), 1.3);
         var total_draw_amount = Math.floor(this.pattern_markup.length / Math.max(every_nth, 1));
         for (var i = 0; i < total_draw_amount; i++){
             var tick_y = this.start_y + (i * every_nth * this.settings_font_size) - (0.75 * this.text_h);
@@ -1195,7 +1218,8 @@ class Tracker  {
     draw_edit_mode_indicator(h){
 
         if (this.#g_in_edit_mode){
-            this.mgraphics.set_source_rgba(0.9, 0.5, 0.5, 1.0);
+            // this.mgraphics.set_source_rgba(0.9, 0.5, 0.5, 1.0); // this.edit_indicator_color
+            this.mgraphics.set_source_rgba(...this.theme_colors.edit_indicator_color);
             this.mgraphics.rectangle(0, 0, 5, this.start_y - this.text_h);
             this.mgraphics.fill();        
         }
@@ -1212,7 +1236,8 @@ class Tracker  {
         var rect_y_start = (this.start_y - (0.9 * this.charheight));
         // post(this.faux_pattern.length);
         for (const idx in param_indices){
-            this.mgraphics.set_source_rgba(0.1, 0.1, 0.3, 0.42);
+            // this.mgraphics.set_source_rgba(0.1, 0.1, 0.3, 0.42); // this.fx_bg_color
+            this.mgraphics.set_source_rgba(...this.theme_colors.fx_bg_color);
             this.mgraphics.rectangle(xx_start + (param_indices[idx] * this.charwidth), rect_y_start, (this.charwidth * 2), rect_length);
             this.mgraphics.fill();
         }
@@ -1228,7 +1253,8 @@ class Tracker  {
         for (const idx in param_indices){
 
             var start_idx = param_indices[idx];
-            this.mgraphics.set_source_rgba(0.1, 0.5, 0.8, 1.);
+            // this.mgraphics.set_source_rgba(0.1, 0.5, 0.8, 1.);  // this.fx_fg_color
+            this.mgraphics.set_source_rgba(...this.theme_colors.fx_fg_color);
             for (var pidx = 0; pidx < this.pattern_markup.length; pidx++){
                 var tx = xx_start + (start_idx * this.charwidth);
 
@@ -1248,14 +1274,16 @@ class Tracker  {
     draw_tick_position(tick){
         var gfx = this.mgraphics;        
         var tick_y = this.start_y + (this.g_pattern_playhead * this.settings_font_size) - (0.75 * this.text_h);
-        gfx.set_source_rgba(0.1, 0.1, 0.1, 1);  // almost black
+        // gfx.set_source_rgba(0.1, 0.1, 0.1, 1);  // almost black this.tick_index_color
+        gfx.set_source_rgba(...this.theme_colors.tick_index_color);
         gfx.rectangle(this.start_x, tick_y, this.text_w, this.settings_font_size);
         gfx.fill();
     }
 
     draw_pattern_data(){
         var gfx = this.mgraphics;
-        gfx.set_source_rgba(0.4, 0.9, 1.0, 1);
+        // gfx.set_source_rgba(0.4, 0.9, 1.0, 1);  // this.data_color
+        gfx.set_source_rgba(...this.theme_colors.data_color);
 
         // this is lazy.. i know.  maybe just do this one, if the pattern size changes.
         const index_list = [...Array(this.pattern_markup.length).keys()];
@@ -1275,7 +1303,9 @@ class Tracker  {
     dark_background(){
         var gfx = this.mgraphics;
         var [w, h] = gfx.size;
-        gfx.set_source_rgba(0.1, 0.2, 0.4, 1);
+        // gfx.set_source_rgba(0.1, 0.2, 0.4, 1);  // this.ui_bg_color
+        post('uibgcol', this.theme_colors.ui_bg_color);
+        gfx.set_source_rgba(...this.theme_colors.ui_bg_color);
         gfx.rectangle(0, 0, w, h);
         gfx.fill();
     }
@@ -1286,7 +1316,8 @@ class Tracker  {
         var gfx = this.mgraphics;
         var [w, h] = gfx.size;
 
-        this.set_rgb({r: 0.2, g: 0.3, b: 0.2}, 2.3);
+        // this.set_rgb({r: 0.2, g: 0.3, b: 0.2}, 2.3); // this.status_bg_color
+        this.set_rgb(this.asRGB(...this.theme_colors.status_bg_color), 2.3);
         gfx.rectangle(0, h-this.charheight, w, this.charheight);
         gfx.fill();
 
@@ -1296,7 +1327,8 @@ class Tracker  {
         var idx = this.wheres_the_caret();
         if (idx[0] >= 0) {
             const vidx = idx + 4;
-            this.set_rgb({r: 0.9, g: 0.9, b: 0.7}, 1.3);
+            // this.set_rgb({r: 0.9, g: 0.9, b: 0.7}, 1.3); // this.status_text_color
+            this.set_rgb(this.asRGB(...this.theme_colors.status_text_color), 1.3);
             // mgraphics.move_to(start_x + ((idx[0] + 4) * charwidth), start_y - (0.9 * charheight));
             var locator_width = this.mgraphics.text_measure(caret_string + '  ')[0];
             gfx.move_to(locator_width, h - (0.25 * this.charheight));
@@ -1329,13 +1361,15 @@ class Tracker  {
         if (w < data_width){
 
             var hidden_portion = (w / data_width) * w;
-            this.set_rgb({r: 0.2, g: 0.2, b: 0.2}, 1.0);
+            // this.set_rgb({r: 0.2, g: 0.2, b: 0.2}, 1.0); // this.scrollbar_bg_color
+            this.set_rgb(this.asRGB(...this.theme_colors.scrollbar_bg_color), 1.0);
             gfx.rectangle(this.start_x, 0, w, 10);
             gfx.fill();
             
             var wdim = hidden_portion - this.start_x;
             if (wdim > 0){
-                this.set_rgb({r: 0.1, g: 0.1, b: 0.1}, 1.0);
+                // this.set_rgb({r: 0.1, g: 0.1, b: 0.1}, 1.0);  // this.scrollbar_fg_color
+                this.set_rgb(this.asRGB(...this.theme_colors.scrollbar_fg_color), 1.0);
                 gfx.rectangle(this.start_x, 0, wdim, 10);
                 gfx.fill();            
             }
@@ -1345,13 +1379,15 @@ class Tracker  {
         if (h < data_height ){
 
             var hidden_height_portion = ((h - this.charheight - this.start_y) / data_height) * h;
-            this.set_rgb({r: 0.2, g: 0.2, b: 0.2}, 1.0);
+            //this.set_rgb({r: 0.2, g: 0.2, b: 0.2}, 1.0); // this.scrollbar_bg_color
+            this.set_rgb(this.asRGB(...this.theme_colors.scrollbar_bg_color), 1.0);
             gfx.rectangle(0, this.start_y, 10, (h - this.start_y) - this.charheight);
             gfx.fill();
 
             var hdim = hidden_height_portion - this.charheight;
             if (hdim > 0){
-                this.set_rgb({r: 0.1, g: 0.1, b: 0.1}, 1.0);
+                // this.set_rgb({r: 0.1, g: 0.1, b: 0.1}, 1.0);  // this.scrollbar_fg_color
+                this.set_rgb(this.asRGB(...this.theme_colors.scrollbar_fg_color), 1.0);  // this.scrollbar_fg_color
                 gfx.rectangle(0, (this.start_y - this.charheight), 10, hdim);
                 gfx.fill();                            
             }
@@ -1365,7 +1401,8 @@ class Tracker  {
         // I didn't intend this code to be so terse, but it worked first time and i 
         // havent been able to break it.
         var gfx = this.mgraphics;
-        gfx.set_source_rgba(0.8, 0.2, 0.2, 1);
+        // gfx.set_source_rgba(0.8, 0.2, 0.2, 1); // this.divider_gfx_color
+        gfx.set_source_rgba(this.theme_colors.divider_gfx_color);
         gfx.move_to(this.start_x, this.start_y + (-1 * this.settings_font_size));
 
         var midline = "═";
@@ -1410,6 +1447,10 @@ class Tracker  {
     }
 
     paint(){
+        /*
+        when not in edit mode, this could do some pop/push, rather than performing all draw commands..
+
+        */
 
         this.get_text_width_and_height();
 
@@ -1425,7 +1466,7 @@ class Tracker  {
         this.draw_track_descriptor();
         this.draw_scrollbars();
         this.draw_toprow();
-
+        post('success');
     }
 
     /* -------- Mouse Handling ------------ */

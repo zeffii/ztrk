@@ -128,6 +128,21 @@ function command(instruction){
 	    post('BufferMode set to:', my_tracker.BufferMode);
 	}
 
+    if (instruction.startsWith('theme=')){
+
+        var theme_dict_name = instruction.substring(6);
+        var max_dict = new Dict(theme_dict_name);
+        var dict_obj = JSON.parse(max_dict.stringify());
+
+        my_tracker.theme_colors = {...dict_obj};
+        post('set theme uibgcolor', my_tracker.theme_colors.ui_bg_color);
+    }
+
+    if (instruction.startsWith('theme_reset')){
+        my_tracker.theme_colors = {...my_tracker.default_theme_colors};
+        my_tracker.mgraphics.redraw();
+    }
+
     switch (instruction) {
         case 'push_to_clip':
             my_tracker.push_to_live();
