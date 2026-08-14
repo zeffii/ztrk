@@ -913,6 +913,7 @@ class Tracker  {
                     const note = String(key_info[0]) + String(key_info[1] + this.#g_pattern_octave);
                     pattern[caret_row] = replaceAt(current_row, caret.col, note, 3);
                     this.push_to_buffers();
+                    this.send(0, ['noteplay', note_to_int(note) ,50, 50]);
 
                 } else if (key in NoteClearList){
 

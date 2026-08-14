@@ -74,7 +74,8 @@ function write_buffers(tracker){
             ch1.poke(col+1, row, floatval);
     	}
     }
-}  
+}
+
 
 var my_tracker = new Tracker(pattern_markup, mgraphics, {
 	send: sendOutlet,
