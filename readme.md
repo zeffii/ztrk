@@ -27,13 +27,13 @@ Some milestones i will need to tackle, in no particular order
     - [x] interpolation functions,
     - [x] addition/subtract/transpose
 - [x] scrolling pattern data
-- [ ] sequencing patterns
-- [ ] general pattern editor functions
+- [x] general pattern editor functions
     - [x] interpolate (hex and notes)
     - [x] delete selection
     - [x] copy and paste selection
     - [x] shift content of selection up/down
-- [ ] trigger from tick
+- [x] trigger from tick
+- [ ] sequencing patterns
 
 
 
