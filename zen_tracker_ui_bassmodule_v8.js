@@ -922,6 +922,7 @@ class Tracker  {
                     const current_row1 = pattern[caret_row];
                     pattern[caret_row] = replaceAt(current_row1, caret.col, NoteReplacement, 3);
                     this.push_to_buffers();
+                    this.send(0, ['noteflush', 0]);
                 }
             }
 
