@@ -92,14 +92,16 @@ class Tracker  {
 
     make_empty_pattern(markup){
 
-        // lexical_track: "nnn hh ss hh hhhh hh hhhh"
-        // nnn  = note
-        // hh   = 2hex
-        // ss   = short (ints 0..80)
-        // hhhh = 4hex
-        // b    = bang/trigger  ( 1 or .)
-        // FFXXYY = COMMAND+ARG
-        // ggg  = signed (-20 .. +20)  NOT IMPLEMENTED
+        /*
+        lexical_track: "nnn hh ss hh hhhh hh hhhh"
+        nnn    = note
+        hh     = 2hex
+        hhhh   = 4hex
+        b      = bang/trigger  ( 1 or .)
+        FFXXYY = COMMAND+ARG
+        ss     = short (ints 0..80)   NOT IMPLEMENTED
+        ggg    = signed (-20 .. +20)  NOT IMPLEMENTED
+        */
 
         var pattern = [];
         var param_track = [];
@@ -352,11 +354,6 @@ class Tracker  {
     push_to_buffers(){
         if (this.BufferMode === 1){
             post('entered push to buffers function');
-            //var ch24 = new Buffer("");
-            //var env = new Buffer("env");
-            // end.send("setsize, 32);
-            // var source_sample = foo.peek(1, i, 1);
-            // env.poke(1, i, new_val);    // 1-based index.
             this.write_buffers(this);
         }
     }
@@ -852,6 +849,14 @@ class Tracker  {
 
 
     handle_note_input(key, caret, desciptor, pattern){
+        /*  Note: 
+                Todo: if there is no note, 
+                            then idx1 and idx2 can not be edited
+                      if there is a note, 
+                            then idx1 can take a '-'(45) or '#'(35)
+                            then idx2 can take 0...9  (48...57)  
+
+        */
 
         const NoteClearList = {46: "...", 127: "...", 96: "^^^", 49: "==="};
         const note_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bn{3}\b/g);   // nnn
@@ -899,7 +904,7 @@ class Tracker  {
                 }
 
                 // this makes it possible to enter data when the pattern is row-shifted.
-                const caret_row = getRotatedIndex(this, caret.row);                
+                const caret_row = getRotatedIndex(this, caret.row);
 
                 if (key in g_keyjam_encoding){
 
@@ -918,6 +923,42 @@ class Tracker  {
                     this.push_to_buffers();
                 }
             }
+
+            var notefield_sharp_index = notefield_indices_found[1];
+            if (caret.col === notefield_sharp_index){
+
+                // this toggles between # or -, keeps it easy to remember and press.
+                if (key === 35){
+                    const caret_row2 = getRotatedIndex(this, caret.row);
+                    const current_row2 = pattern[caret_row2];
+
+                    const found_character = current_row2[caret.col];
+                    if (found_character !== "-" && found_character !== "#") {
+                        return; // dots..or === or ^^^
+                    }
+
+                    const replacement_character = found_character === "-" ? "#" : "-";
+                    pattern[caret_row2] = replaceAt(current_row2, caret.col, replacement_character, 1);
+                    this.push_to_buffers();
+                }
+            }
+            
+            var notefield_octave_index = notefield_indices_found[2];
+            const octave_map = {48: 0, 49: 1, 50: 2, 51: 3, 52: 4, 53: 5, 54: 6, 55: 7, 56: 8, 57: 9};
+            if (caret.col === notefield_octave_index && (key in octave_map)){
+
+                const caret_row3 = getRotatedIndex(this, caret.row);
+                const current_row3 = pattern[caret_row3];
+                const found_character = current_row3[caret.col];
+
+                if (/^[0-9]$/.test(found_character)) { // it's an octave
+                    const replacement_character = octave_map[key];
+                    pattern[caret_row3] = replaceAt(current_row3, caret.col, replacement_character, 1);
+                    this.push_to_buffers();                       
+                }
+
+            }            
+
         }
 
     }
@@ -1304,7 +1345,6 @@ class Tracker  {
         var gfx = this.mgraphics;
         var [w, h] = gfx.size;
         // gfx.set_source_rgba(0.1, 0.2, 0.4, 1);  // this.ui_bg_color
-        post('uibgcol', this.theme_colors.ui_bg_color);
         gfx.set_source_rgba(...this.theme_colors.ui_bg_color);
         gfx.rectangle(0, 0, w, h);
         gfx.fill();
@@ -1466,7 +1506,7 @@ class Tracker  {
         this.draw_track_descriptor();
         this.draw_scrollbars();
         this.draw_toprow();
-        post('success');
+        // post('success');
     }
 
     /* -------- Mouse Handling ------------ */
