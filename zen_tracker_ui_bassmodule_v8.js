@@ -164,6 +164,16 @@ class Tracker  {
         // expect error here.
         var inputDict = new Dict(dictName);
         var jsObject = JSON.parse(inputDict.stringify());
+
+        const isEmpty = (obj) => Object.keys(obj).length === 0;
+
+        if (isEmpty(jsObject)){
+            post('malformed pattern object, or empty..probably empty');
+            return;
+        }
+
+        // this could inspect the pattern string data to see if it is empty (only dots and spaces) notify user
+
         this.pattern_markup = jsObject;
         this.faux_pattern = this.pattern_markup.data;
         this.mgraphics.redraw();
@@ -960,8 +970,10 @@ class Tracker  {
             const octave_map = {48: 0, 49: 1, 50: 2, 51: 3, 52: 4, 53: 5, 54: 6, 55: 7, 56: 8, 57: 9};
             if (caret.col === notefield_octave_index){
 
-                // small feature here, the 1 key will not change the content to === when the note is filled, 
+                // small bug/feature here, the 1 key will not change the content to === when the note is filled, 
                 // because 1 is a valid octave. Undecided how to resolve.
+                // some improvements can be made here by looking at the current content of the notefield
+                // this is not super important, but it is inconsistent and sloppy.
 
                 const caret_row3 = getRotatedIndex(this, caret.row);
                 
