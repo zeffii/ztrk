@@ -11,6 +11,7 @@ theme_colors.stroke_color = [0.7, 0.3, 0.2, 1.0];
 theme_colors.stroke_color_dark = [0.3, 0.3, 0.3, 1.0];
 theme_colors.active_node = [0.3, 0.6, 0.7, 1.0];
 theme_colors.node = [0.8, 0.8, 0.7, 1.0];
+theme_colors.info_text = [0.3, 0.6, 0.97, 1.0];
 
 const padding = 20;
 const node_size = 7.5;
@@ -21,6 +22,13 @@ env_nodes[2] = [1.0, 0.0];
 
 const draw_data = {};
 draw_data.coords = {};
+
+const config = {};
+config.font_size = 12;
+config.font_descriptor = ["Consolas", "normal", "normal"];
+mgraphics.set_font_size(config.font_size);
+mgraphics.select_font_face(...config.font_descriptor);
+// charwidth = gfx.text_measure('_')[0];
 
 function absolute_coord(rx, ry, w, h){
     var total_width = w - ( 2*padding );
@@ -80,7 +88,15 @@ function draw_nodes(gfx, w, h){
             gfx.stroke();
         }
     }
-};
+}
+
+function draw_node_info(gfx, w, h){
+    var text_content = "[Node: 0, XY: 0.3, 0.6]";
+    var [text_width, text_height] = gfx.text_measure(text_content);
+    gfx.set_source_rgba(...theme_colors.info_text);
+    gfx.move_to(w-padding-text_width, h-padding+text_height);
+    gfx.show_text(text_content);
+}
 
 function paint() {
     // state and setup     
@@ -97,6 +113,7 @@ function paint() {
     draw_bounding_rect(gfx, w, h);
     draw_lines(gfx, w, h);
     draw_nodes(gfx, w, h);
+    draw_node_info(gfx, w, h);
 }
 
 function onresize(w, h) {
