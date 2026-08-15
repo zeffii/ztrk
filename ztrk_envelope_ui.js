@@ -9,8 +9,8 @@ const theme_colors = {};
 theme_colors.main_bg_color = [0.2, 0.2, 0.2, 1.0];
 theme_colors.stroke_color = [0.7, 0.3, 0.2, 1.0];
 theme_colors.stroke_color_dark = [0.18, 0.18, 0.18, 1.0];
-theme_colors.active_node = [0.3, 0.6, 0.7, 1.0];
-theme_colors.node = [0.8, 0.8, 0.7, 1.0];
+theme_colors.active_node = [0.8, 0.6, 0.7, 1.0];
+theme_colors.node = [0.8, 0.3, 0.7, 1.0];
 theme_colors.info_text = [0.3, 0.6, 0.97, 1.0];
 
 const padding = 20;
@@ -24,7 +24,7 @@ const draw_data = {};
 draw_data.coords = {};
 
 const config = {};
-config.font_size = 12;
+config.font_size = 12; 
 config.font_descriptor = ["Consolas", "normal", "normal"];
 config.display_help = false;
 config.g_in_edit_mode = false;
@@ -86,7 +86,8 @@ function draw_nodes(gfx, w, h){
     for (const node in env_nodes) {
         if (env_nodes.hasOwnProperty(node)) {
             var [real_x, real_y] = draw_data.coords[node];
-            gfx.set_source_rgba(...theme_colors.node);
+            var node_color = (config.current_node === Number(node)) ? theme_colors.active_node : theme_colors.node;
+            gfx.set_source_rgba(...node_color);
             gfx.rectangle(real_x, real_y, node_size, node_size);
             gfx.stroke();
         }
@@ -174,22 +175,27 @@ function display_help(){
 function key_handler(){
     // if in edit mode, this is called.
     post('in keyhandler, and edit mode');
+    // a1 = 28: left 29 right 30 up 31 down
+    // a3 4352 + a1 === ctrl + arrow
 }
 
 function keys(a1, a2, a3, a4) {
     /*
     this function is called when keys are pressed, when in edit mode it calls keyhandler too.
     */
-    if (a1 === 32 && config.g_mouse_on_rect){
-        config.g_in_edit_mode = !config.g_in_edit_mode;
-        config.g_key_codes = [a1, a2, a3, a4];
-        this.mgraphics.redraw();
-    }
+    if (config.g_mouse_on_rect){
 
-    if (config.g_in_edit_mode && config.g_mouse_on_rect){
-        key_handler();
+        if (a1 === 32){ // spacebar
+            config.g_in_edit_mode = !config.g_in_edit_mode;
+            this.mgraphics.redraw();
+            return;
+        }
+        
+        if (config.g_in_edit_mode){
+            config.g_key_codes = [a1, a2, a3, a4];
+            key_handler();
+        }
     }
-
 }
 
 function onidle(x, y, button, mod1, shift, caps, opt, mod2) { config.g_mouse_on_rect = true; }
