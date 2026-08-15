@@ -173,18 +173,23 @@ function display_help(){
 
 function key_handler(){
     // if in edit mode, this is called.
+    post('in keyhandler, and edit mode');
 }
 
 function keys(a1, a2, a3, a4) {
     /*
-    this function is called when keys are pressed, most important, the rest of the body 
+    this function is called when keys are pressed, when in edit mode it calls keyhandler too.
     */
     if (a1 === 32 && config.g_mouse_on_rect){
         config.g_in_edit_mode = !config.g_in_edit_mode;
         config.g_key_codes = [a1, a2, a3, a4];
-        key_handler();
         this.mgraphics.redraw();
     }
+
+    if (config.g_in_edit_mode && config.g_mouse_on_rect){
+        key_handler();
+    }
+
 }
 
 function onidle(x, y, button, mod1, shift, caps, opt, mod2) { config.g_mouse_on_rect = true; }
