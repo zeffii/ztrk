@@ -30,6 +30,7 @@ config.display_help = false;
 config.g_in_edit_mode = false;
 config.g_key_codes = [];
 config.g_mouse_on_rect = false;
+config.current_node = 1;
 
 
 function absolute_coord(rx, ry, w, h){
@@ -170,12 +171,20 @@ function display_help(){
     refresh(); 
 }
 
+function key_handler(){
+    // if in edit mode, this is called.
+}
+
 function keys(a1, a2, a3, a4) {
+    /*
+    this function is called when keys are pressed, most important, the rest of the body 
+    */
     if (a1 === 32 && config.g_mouse_on_rect){
         config.g_in_edit_mode = !config.g_in_edit_mode;
+        config.g_key_codes = [a1, a2, a3, a4];
+        key_handler();
         this.mgraphics.redraw();
     }
-    config.g_key_codes = [a1, a2, a3, a4];
 }
 
 function onidle(x, y, button, mod1, shift, caps, opt, mod2) { config.g_mouse_on_rect = true; }
