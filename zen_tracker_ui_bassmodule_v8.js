@@ -859,9 +859,17 @@ class Tracker  {
         */
 
         const NoteClearList = {46: "...", 127: "...", 96: "^^^", 49: "==="};
+
+        function non_note_cursor_input(this_origin, key, caret, pattern, caret_row, position){
+            const NoteReplacement = NoteClearList[key];
+            const current_row = pattern[caret_row];
+            pattern[caret_row] = replaceAt(current_row, caret.col + position, NoteReplacement, 3);
+            this_origin.push_to_buffers();
+            // this.send(0, ['noteflush', 0]);   having key control over flush would be useful. implement a direct kb for this.
+        }
+
         const note_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bn{3}\b/g);   // nnn
         if (note_indices.length){
-            // post('note_indices :', note_indices, '\n');
 
             const note_index_pairs = [];
             for (var i=0; i < note_indices.length; i++){
@@ -870,7 +878,6 @@ class Tracker  {
                 var index_2 = index_0 + 2;
                 note_index_pairs.push([index_0, index_1, index_2]);
             }
-            // post('note_index_pairs :', note_index_pairs);
 
             var notefield_indices_found = findSublistContaining(caret.col, note_index_pairs);
             if (notefield_indices_found === null){
@@ -917,12 +924,11 @@ class Tracker  {
 
                 } else if (key in NoteClearList){
 
-                    // this can be moved into a loop over the 3 indices, so input can be handled in all three
-                    const NoteReplacement = NoteClearList[key];
-                    const current_row1 = pattern[caret_row];
-                    pattern[caret_row] = replaceAt(current_row1, caret.col, NoteReplacement, 3);
-                    this.push_to_buffers();
-                    this.send(0, ['noteflush', 0]);
+                    // const NoteReplacement = NoteClearList[key];
+                    // const current_row1 = pattern[caret_row];
+                    // pattern[caret_row] = replaceAt(current_row1, caret.col, NoteReplacement, 3);
+                    // this.push_to_buffers();
+                    non_note_cursor_input(this, key, caret, pattern, caret_row, 0);
                 }
             }
 
@@ -930,10 +936,10 @@ class Tracker  {
             if (caret.col === notefield_sharp_index){
 
                 // this toggles between # or -, keeps it easy to remember and press.
+                const caret_row2 = getRotatedIndex(this, caret.row);
                 if (key === 35){
-                    const caret_row2 = getRotatedIndex(this, caret.row);
-                    const current_row2 = pattern[caret_row2];
 
+                    const current_row2 = pattern[caret_row2];
                     const found_character = current_row2[caret.col];
                     if (found_character !== "-" && found_character !== "#") {
                         return; // dots..or === or ^^^
@@ -942,21 +948,38 @@ class Tracker  {
                     const replacement_character = found_character === "-" ? "#" : "-";
                     pattern[caret_row2] = replaceAt(current_row2, caret.col, replacement_character, 1);
                     this.push_to_buffers();
+
+                } else if (key in NoteClearList){
+                    // we are at the second index of a note field, means the rewrite will start 
+                    // to the left of the current caret.col
+                    non_note_cursor_input(this, key, caret, pattern, caret_row2, -1);  
                 }
             }
             
             var notefield_octave_index = notefield_indices_found[2];
             const octave_map = {48: 0, 49: 1, 50: 2, 51: 3, 52: 4, 53: 5, 54: 6, 55: 7, 56: 8, 57: 9};
-            if (caret.col === notefield_octave_index && (key in octave_map)){
+            if (caret.col === notefield_octave_index){
+
+                // small feature here, the 1 key will not change the content to === when the note is filled, 
+                // because 1 is a valid octave. Undecided how to resolve.
 
                 const caret_row3 = getRotatedIndex(this, caret.row);
-                const current_row3 = pattern[caret_row3];
-                const found_character = current_row3[caret.col];
+                
+                if (key in octave_map){
 
-                if (/^[0-9]$/.test(found_character)) { // it's an octave
-                    const replacement_character = octave_map[key];
-                    pattern[caret_row3] = replaceAt(current_row3, caret.col, replacement_character, 1);
-                    this.push_to_buffers();                       
+                    const current_row3 = pattern[caret_row3];
+                    const found_character = current_row3[caret.col];
+
+                    if (/^[0-9]$/.test(found_character)) { // it's an octave
+                        const replacement_character = octave_map[key];
+                        pattern[caret_row3] = replaceAt(current_row3, caret.col, replacement_character, 1);
+                        this.push_to_buffers();                       
+                    }
+
+                } else if (key in NoteClearList){
+                    // we are at the 3rd index of a note field, means the rewrite will start 
+                    // 2 places to the left of the current caret.col, hence -1 in position
+                    non_note_cursor_input(this, key, caret, pattern, caret_row3, -2);  
                 }
 
             }            
