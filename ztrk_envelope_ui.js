@@ -27,10 +27,10 @@ const config = {};
 config.font_size = 12;
 config.font_descriptor = ["Consolas", "normal", "normal"];
 config.display_help = false;
+config.g_in_edit_mode = false;
+config.g_key_codes = [];
+config.g_mouse_on_rect = false;
 
-mgraphics.set_font_size(config.font_size);
-mgraphics.select_font_face(...config.font_descriptor);
-// charwidth = gfx.text_measure('_')[0];
 
 function absolute_coord(rx, ry, w, h){
     var total_width = w - ( 2*padding );
@@ -102,12 +102,13 @@ function draw_node_info(gfx, w, h){
 
 function draw_node_help(gfx, w, h){
     const help_lines = [
-        "Spacebar : Enter edit mode",
-        "Arrows : Go to next or previous node",
+        "    Spacebar : Enter edit mode",
+        "      Arrows : Go to next or previous node",
         "Shift+Arrows : Move current node around",
-        "S : Enable sustain mode on current node",
-        "Del : Remove current node",
-        "H : Show/Hide this message"
+        "           S : Enable sustain mode on current node",
+        "         Del : Remove current node",
+        "           H : Show/Hide this message",
+        "    messages : <move_node idx x y> <display_help> <preset idx>"
     ];
     gfx.set_source_rgba(...theme_colors.info_text);
     var [text_width, text_height] = gfx.text_measure("X");
@@ -124,6 +125,9 @@ function paint() {
     var gfx = this.mgraphics;
     var [w, h] = gfx.size;
 
+    gfx.set_font_size(config.font_size);
+    gfx.select_font_face(...config.font_descriptor);
+
     draw_data.coords = {};
     // this could be done once, per calculation update, and redraw
     calculate_node_locations(gfx, w, h);
@@ -135,7 +139,9 @@ function paint() {
         draw_bounding_rect(gfx, w, h);
         draw_lines(gfx, w, h);
         draw_nodes(gfx, w, h);
-        draw_node_info(gfx, w, h);
+        if (config.g_in_edit_mode){
+            draw_node_info(gfx, w, h);
+        }
     } else {
         draw_node_help(gfx, w, h);
     }
@@ -153,7 +159,7 @@ function onresize(w, h) {
 function move_node(arg1, arg2, arg3){
     if (!(arg1 in env_nodes)) return;       // node index check, dont ref nodes that dont exist
     if (arg2 > 1.0 || arg2 < 0.0) return;   // bound check for x
-    if (arg3 > 1.0 || arg3 < 0.0) return;   // bound check for x
+    if (arg3 > 1.0 || arg3 < 0.0) return;   // bound check for y
     
     env_nodes[arg1] = [arg2, arg3];
     refresh(); 
@@ -163,3 +169,14 @@ function display_help(){
     config.display_help = !config.display_help;
     refresh(); 
 }
+
+function keys(a1, a2, a3, a4) {
+    if (a1 === 32 && config.g_mouse_on_rect){
+        config.g_in_edit_mode = !config.g_in_edit_mode;
+        this.mgraphics.redraw();
+    }
+    config.g_key_codes = [a1, a2, a3, a4];
+}
+
+function onidle(x, y, button, mod1, shift, caps, opt, mod2) { config.g_mouse_on_rect = true; }
+function onidleout(x, y, button, mod1, shift, caps, opt, mod2) { config.g_mouse_on_rect = false; }    
