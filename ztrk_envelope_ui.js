@@ -1,3 +1,6 @@
+inlets = 2;
+outlets = 3;
+
 mgraphics.init();
 mgraphics.relative_coords = 0;
 mgraphics.autofill = 0;
@@ -5,15 +8,19 @@ mgraphics.autofill = 0;
 const theme_colors = {};
 theme_colors.main_bg_color = [0.2, 0.2, 0.2, 1.0];
 theme_colors.stroke_color = [0.7, 0.3, 0.2, 1.0];
+theme_colors.stroke_color_dark = [0.3, 0.3, 0.3, 1.0];
 theme_colors.active_node = [0.3, 0.6, 0.7, 1.0];
 theme_colors.node = [0.8, 0.8, 0.7, 1.0];
 
-const padding = 50;
-const node_size = 15;
+const padding = 20;
+const node_size = 7.5;
 const env_nodes = {};
 env_nodes[0] = [0.0, 1.0];
 env_nodes[1] = [0.5, 0.5];
 env_nodes[2] = [1.0, 0.0];
+
+const draw_data = {};
+draw_data.coords = {};
 
 function absolute_coord(rx, ry, w, h){
     var total_width = w - ( 2*padding );
@@ -23,6 +30,18 @@ function absolute_coord(rx, ry, w, h){
     return [abs_x, abs_y];
 }
 
+function calculate_node_locations(gfx, w, h){
+
+    for (const node in env_nodes) {
+        if (env_nodes.hasOwnProperty(node)) {
+            var [cx, cy] = env_nodes[node];
+            var [abs_x, abs_y] = absolute_coord(cx, cy, w, h);
+            var [real_x, real_y] = [abs_x - (node_size/2), h - abs_y - (node_size/2)];
+            draw_data.coords[node] = [real_x, real_y];
+        }
+    }
+};
+
 function fill_background(gfx, w, h){
     gfx.set_source_rgba(...theme_colors.main_bg_color);
     gfx.rectangle(0, 0, w, h);
@@ -30,21 +49,34 @@ function fill_background(gfx, w, h){
 }
 
 function draw_bounding_rect(gfx, w, h){
-    gfx.set_source_rgba(...theme_colors.stroke_color);
+    gfx.set_source_rgba(...theme_colors.stroke_color_dark);
     gfx.move_to(padding, padding);
-    gfx.line_to(w-padding, padding);
-    gfx.set_line_width(5.0);
+    // gfx.line_to(w-padding, padding);
+    gfx.rectangle(padding, padding, w-(2*padding), h-(2*padding));
     gfx.stroke();
 }
 
+function draw_lines(gfx, w, h){
+    
+    const num_lines = Object.keys(draw_data.coords).length;
+    gfx.set_source_rgba(...theme_colors.stroke_color);
+
+    for (var i = 0; i < num_lines-1; i++){
+        var [x1, y1] = draw_data.coords[i];
+        var [x2, y2] = draw_data.coords[i+1];
+        gfx.move_to(x1 + (node_size/2), y1 + (node_size/2));
+        gfx.line_to(x2 + (node_size/2), y2 + (node_size/2));
+        gfx.stroke();        
+    }
+}
+
 function draw_nodes(gfx, w, h){
-    // Object.keys(env_nodes).length;
+
     for (const node in env_nodes) {
         if (env_nodes.hasOwnProperty(node)) {
-            var [cx, cy] = env_nodes[node];
-            var [abs_x, abs_y] = absolute_coord(cx, cy, w, h);
+            var [real_x, real_y] = draw_data.coords[node];
             gfx.set_source_rgba(...theme_colors.node);
-            gfx.rectangle(abs_x - (node_size/2), h - abs_y - (node_size/2), node_size, node_size);
+            gfx.rectangle(real_x, real_y, node_size, node_size);
             gfx.stroke();
         }
     }
@@ -52,16 +84,31 @@ function draw_nodes(gfx, w, h){
 
 function paint() {
     // state and setup     
-    box.size(1200, 480);
+    box.size(500, 200);
     var gfx = this.mgraphics;
     var [w, h] = gfx.size;
 
+    draw_data.coords = {};
+    // this could be done once, per calculation update, and redraw
+    calculate_node_locations(gfx, w, h);
+
     fill_background(gfx, w, h);
+    gfx.set_line_width(2.0);
     draw_bounding_rect(gfx, w, h);
+    draw_lines(gfx, w, h);
     draw_nodes(gfx, w, h);
 }
 
 function onresize(w, h) {
     // Trigger redraw if necessary
+    refresh(); 
+}
+
+function move_node(arg1, arg2, arg3){
+    if (!(arg1 in env_nodes)) return;       // node index check, dont ref nodes that dont exist
+    if (arg2 > 1.0 || arg2 < 0.0) return;   // bound check for x
+    if (arg3 > 1.0 || arg3 < 0.0) return;   // bound check for x
+    
+    env_nodes[arg1] = [arg2, arg3];
     refresh(); 
 }
