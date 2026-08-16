@@ -31,6 +31,17 @@ config.g_in_edit_mode = false;
 config.g_key_codes = [];
 config.g_mouse_on_rect = false;
 config.current_node = 1;
+config.fine_delta = 0.01;
+config.coarse_delta = 0.05;
+
+const DELETE = 127;
+const SPACEBAR = 32;
+const [SHIFT, ALT, CTRL, CTRL_SHIFT] = [512, 2048, 4352, 4864];
+const [PAGE_UP, PAGE_DOWN] = [11, 12];
+const [C_KEY, V_KEY, X_KEY] = [3, 22, 24];
+const [UP_KEY, DOWN_KEY] = [30, 31];
+const [LEFT_KEY, RIGHT_KEY] = [28, 29];
+const MODIFIER_KEYS = [SHIFT, ALT, CTRL, CTRL_SHIFT];
 
 
 function absolute_coord(rx, ry, w, h){
@@ -173,10 +184,46 @@ function display_help(){
 }
 
 function key_handler(){
-    // if in edit mode, this is called.
-    post('in keyhandler, and edit mode');
-    // a1 = 28: left 29 right 30 up 31 down
-    // a3 4352 + a1 === ctrl + arrow
+    
+    var [k1, k2, k3, k4] = config.g_key_codes;
+    const num_nodes = Object.keys(draw_data.coords).length;
+    const MODIFIER = MODIFIER_KEYS.includes(k3);
+    const HOLDING_CTRL = (k3 === CTRL);
+    const HOLDING_CTRL_SHIFT = (k3 === CTRL_SHIFT);
+
+    // only select nodes via LR keys
+    if ([LEFT_KEY, RIGHT_KEY].includes(k1) && !MODIFIER){
+        var idx = config.current_node;
+        config.current_node = (k1 === LEFT_KEY) ? Math.max(0, idx-1) : Math.min(num_nodes-1, idx+1);
+        this.mgraphics.redraw();
+        return;
+    }
+
+    // CTRL moves, CTRL+SHIFT moves faster
+    if (HOLDING_CTRL || HOLDING_CTRL_SHIFT){
+
+        var [cx, cy] = env_nodes[config.current_node];
+        const delta = HOLDING_CTRL ? config.fine_delta : config.coarse_delta;
+
+        if ([UP_KEY, DOWN_KEY].includes(k1)){
+            [cx, cy] = (k1 === DOWN_KEY) ? [cx, Math.max(0, cy - delta)] : [cx, Math.min(1.0, cy + delta)];
+            env_nodes[config.current_node] = [cx, cy];
+            this.mgraphics.redraw();
+        } else if ([LEFT_KEY, RIGHT_KEY].includes(k1)){
+            /* 
+            slightly more involved because a choice is made for the user, 
+                - do not step to the left or right of an existing node  (or)
+                - resort on the fly if node moves beyond x of another node
+                - first node never to leave x=0
+                - last node can roam free.
+            */
+            [cx, cy] = (k1 === LEFT_KEY) ? [Math.max(0, cx - delta), cy] : [Math.min(1.0, cx + delta), cy];
+            env_nodes[config.current_node] = [cx, cy];
+            this.mgraphics.redraw();
+        }
+
+        return;
+    }
 }
 
 function keys(a1, a2, a3, a4) {
@@ -185,7 +232,7 @@ function keys(a1, a2, a3, a4) {
     */
     if (config.g_mouse_on_rect){
 
-        if (a1 === 32){ // spacebar
+        if (a1 === SPACEBAR){
             config.g_in_edit_mode = !config.g_in_edit_mode;
             this.mgraphics.redraw();
             return;
