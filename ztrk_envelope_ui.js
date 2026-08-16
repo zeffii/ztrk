@@ -324,6 +324,10 @@ function key_handler(){
         const boundary_nodes = ((idx == 0) || (idx == (num_nodes - 1)));
         if (num_nodes > 3 && !boundary_nodes){
             env_nodes.splice(idx, 1);
+            
+            if (config.loop_point > idx) {
+                config.loop_point = config.loop_point - 1;
+            }
             this.mgraphics.redraw();
             return;
         }
