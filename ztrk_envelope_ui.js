@@ -12,6 +12,7 @@ const theme_colors = {};
       theme_colors.active_node = [0.96, 0.7, 0.7, 1.0];
       theme_colors.node = [0.6, 0.3, 0.3, 1.0];
       theme_colors.info_text = [0.3, 0.6, 0.97, 1.0];
+      theme_colors.loop_line_color = [0.9, 0.5, 0.5, 1.0];
 
 const padding = 17;
 const node_size = 7.5;
@@ -31,6 +32,7 @@ const config = {};
       config.coarse_delta = 0.05;
       config.looping = false;       // implement pingpong between two points later! 
       config.loop_point = -1;
+      config.use_dashes = true;
 
 const DELETE = 127;
 const SPACEBAR = 32;
@@ -67,6 +69,22 @@ function calculate_node_locations(gfx, w, h){
 function midpoint(a, b){
     function round4(num) { return Number(Math.round(num + 'e4') + 'e-4'); }
     return [round4((a[0]+b[0]) / 2.0), round4((a[1]+b[1]) / 2.0)];
+}
+
+function dashed_line([x1, y1], [x2, y2], dash_count) {
+
+    dash_count = Math.max(1, dash_count);
+    const dashes = [];
+
+    for (let i = 0; i < dash_count; i++) {
+        const start_t = i / dash_count;
+        const end_t = (i + 0.5) / dash_count;
+        const start = [x1 + (x2 - x1) * start_t, y1 + (y2 - y1) * start_t];
+        const end = [x1 + (x2 - x1) * end_t, y1 + (y2 - y1) * end_t];
+        dashes.push([start, end]);
+    }
+
+    return dashes;
 }
 
 function fill_background(gfx, w, h){
@@ -110,7 +128,7 @@ function draw_nodes(gfx, w, h){
 function draw_node_info(gfx, w, h){
     var idx = config.current_node;
     var [nx, ny] = env_nodes[idx];
-    var text_content = `[Node: ${idx}, XY: ${nx.toFixed(4)}, ${ny.toFixed(4)}]`;   // Template Literal! woohoo! 
+    var text_content = `Node: ${idx}, X: ${nx.toFixed(4)}, Y: ${ny.toFixed(4)}`;   // Template Literal! woohoo! 
     var [text_width, text_height] = gfx.text_measure(text_content);
     gfx.set_source_rgba(...theme_colors.info_text);
     gfx.move_to(w-padding-text_width, h-padding+text_height);
@@ -118,6 +136,24 @@ function draw_node_info(gfx, w, h){
 }
 
 function draw_sustain(gfx, w, h){
+    if (!config.looping) return;
+    if (config.loop_point === -1) return;
+
+    // get the x from the current loop index and draw top to bottom
+    var [lx, ly] = env_nodes[config.loop_point];
+    var [x1, y1] = absolute_coord(lx, ly, w, h);
+    if (!config.use_dashes){
+        gfx.move_to(x1, padding);
+        gfx.line_to(x1, h-padding);
+        gfx.stroke();
+    } else {
+        var dash_segments = dashed_line([x1, padding], [x1, h-padding], 12);
+        for (const [idx, [start, end]] of dash_segments.entries()) {
+            gfx.move_to(...start);
+            gfx.line_to(...end);
+            gfx.stroke();
+        }
+    }
 
 }
 
@@ -161,11 +197,11 @@ function paint() {
         gfx.set_line_width(2.0);
         draw_bounding_rect(gfx, w, h);
         draw_lines(gfx, w, h);
+        draw_sustain(gfx, w, h);
         draw_nodes(gfx, w, h);
         if (config.g_in_edit_mode){
             draw_node_info(gfx, w, h);
         }
-        draw_sustain(gfx, w, h);
     } else {
         draw_node_help(gfx, w, h);
     }
@@ -280,6 +316,8 @@ function key_handler(){
         post('here')
         config.looping = !config.looping;
         config.loop_point = config.looping ? idx : -1;
+        this.mgraphics.redraw();
+        return;
     }
     if (k1 == X_KEY2){
         // 3 nodes is the minimum, and first and last node cant be deleted.
