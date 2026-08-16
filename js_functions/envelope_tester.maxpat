@@ -28,7 +28,7 @@
                     "numinlets": 2,
                     "numoutlets": 1,
                     "outlettype": [ "" ],
-                    "patching_rect": [ 61.0, 74.0, 70.0, 22.0 ],
+                    "patching_rect": [ 49.0, 83.0, 70.0, 22.0 ],
                     "text": "write nodes"
                 }
             },
