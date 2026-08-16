@@ -18,6 +18,7 @@ const node_size = 7.5;
 const env_nodes = [[0.0, 1.0], [0.5, 0.5], [1.0, 0.0]];  // some defaults
 const draw_data = {};
       draw_data.coords = [];
+      draw_data.loop_coords = [];
 
 const config = {};
       config.font_size = 12; 
@@ -29,11 +30,13 @@ const config = {};
       config.current_node = 1;
       config.fine_delta = 0.01;
       config.coarse_delta = 0.05;
+      config.looping = false;       // implement pingpong between two points later! 
 
 const DELETE = 127;
 const SPACEBAR = 32;
-const H = 104;
-const Z = 122;  // insert is not recognized by maxmsp keyup? Z is close to where the hand is anyway.
+const H_KEY = 104;
+const Z_KEY = 122;  // insert is not recognized by maxmsp keyup? Z is close to where the hand is anyway.
+const L_KEY = 108;
 const [SHIFT, ALT, CTRL, CTRL_SHIFT] = [512, 2048, 4352, 4864];
 const [PAGE_UP, PAGE_DOWN] = [11, 12];
 const [C_KEY, V_KEY, X_KEY] = [3, 22, 24];
@@ -113,18 +116,23 @@ function draw_node_info(gfx, w, h){
 
 function draw_node_help(gfx, w, h){
     const help_lines = [
-        "    Spacebar : Enter edit mode",
-        "      Arrows : Go to next or previous node",
-        "Shift+Arrows : Move current node around",
-        "           S : Enable sustain mode on current node",
-        "         Del : Remove current node",
-        "           H : Show/Hide this message",
-        "    messages : <move_node idx x y> <display_help> <preset idx>"
+        "          Spacebar : Enter edit mode",
+        "         LR Arrows : Select next or previous node",
+        "       CTRL+Arrows : Move current node around slowly",
+        " CTRL+SHIFT+Arrows : Move current node around faster",        
+        "                 S : Enable sustain mode on current node",
+        "                 X : Remove current node",
+        "                 H : Show/Hide this message",
+        "                 Z : Insert Node to the right, unless last node",
+        "          messages : <move_node idx x y>  - for procedural node moving",
+        "                     <display_help>       - Same as H",
+        "                     <write nodes>        - to inlet 0, as a list",
+        "                     <preset idx>         - not implemented yet"
     ];
     gfx.set_source_rgba(...theme_colors.info_text);
     var [text_width, text_height] = gfx.text_measure("X");
     for (const idx in help_lines){
-        gfx.move_to(2*padding, (2*padding) + (idx * text_height));
+        gfx.move_to(8, padding + (idx * text_height));
         gfx.show_text(help_lines[idx]);
     }
 
@@ -239,11 +247,12 @@ function key_handler(){
         }
         return;
     }
-    if (k1 === H){
+    if (k1 === H_KEY){
+        // this should maybe move to the top, and add prevention of other keyhandlers if Help is visible...
         display_help();
         return;
     }
-    if (k1 === Z){
+    if (k1 === Z_KEY){
         /*
             if current_node is last node, then insert between n-1 and n
             else insert between n and n+1
@@ -258,6 +267,9 @@ function key_handler(){
         }
         this.mgraphics.redraw();
         return;
+    }
+    if (k1 == L_KEY){
+        post('here')
     }
 }
 
