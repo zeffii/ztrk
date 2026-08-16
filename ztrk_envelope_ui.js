@@ -325,6 +325,7 @@ function key_handler(){
         if (num_nodes > 3 && !boundary_nodes){
             env_nodes.splice(idx, 1);
             
+            // still buggly
             if (config.loop_point > idx) {
                 config.loop_point = config.loop_point - 1;
             }
