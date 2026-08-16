@@ -177,6 +177,13 @@ function display_help(){
     refresh(); 
 }
 
+function write(msg){
+    // const obj = Object.fromEntries( env_nodes.map((value, index) => [index, value]) );  // if i want a dict output.. do i?
+    if (msg === 'nodes'){
+        outlet(0, ...env_nodes);
+    }
+}
+
 function key_handler(){
     
     var [k1, k2, k3, k4] = config.g_key_codes;
