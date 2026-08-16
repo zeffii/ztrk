@@ -18,7 +18,6 @@ const node_size = 7.5;
 const env_nodes = [[0.0, 1.0], [0.5, 0.5], [1.0, 0.0]];  // some defaults
 const draw_data = {};
       draw_data.coords = [];
-      draw_data.loop_coords = [];
 
 const config = {};
       config.font_size = 12; 
@@ -31,15 +30,17 @@ const config = {};
       config.fine_delta = 0.01;
       config.coarse_delta = 0.05;
       config.looping = false;       // implement pingpong between two points later! 
+      config.loop_point = -1;
 
 const DELETE = 127;
 const SPACEBAR = 32;
 const H_KEY = 104;
-const Z_KEY = 122;  // insert is not recognized by maxmsp keyup? Z is close to where the hand is anyway.
-const L_KEY = 108;
+const Z_KEY = 122;  // because insert is not recognized by maxmsp key object! Z is close.
+const S_KEY = 115;
+const X_KEY2 = 120;
 const [SHIFT, ALT, CTRL, CTRL_SHIFT] = [512, 2048, 4352, 4864];
 const [PAGE_UP, PAGE_DOWN] = [11, 12];
-const [C_KEY, V_KEY, X_KEY] = [3, 22, 24];
+const [C_KEY, V_KEY, X_KEY] = [3, 22, 24]; // width modifier
 const [UP_KEY, DOWN_KEY] = [30, 31];
 const [LEFT_KEY, RIGHT_KEY] = [28, 29];
 const MODIFIER_KEYS = [SHIFT, ALT, CTRL, CTRL_SHIFT];
@@ -107,11 +108,17 @@ function draw_nodes(gfx, w, h){
 }
 
 function draw_node_info(gfx, w, h){
-    var text_content = "[Node: 0, XY: 0.3, 0.6]";
+    var idx = config.current_node;
+    var [nx, ny] = env_nodes[idx];
+    var text_content = `[Node: ${idx}, XY: ${nx.toFixed(4)}, ${ny.toFixed(4)}]`;   // Template Literal! woohoo! 
     var [text_width, text_height] = gfx.text_measure(text_content);
     gfx.set_source_rgba(...theme_colors.info_text);
     gfx.move_to(w-padding-text_width, h-padding+text_height);
     gfx.show_text(text_content);
+}
+
+function draw_sustain(gfx, w, h){
+
 }
 
 function draw_node_help(gfx, w, h){
@@ -158,6 +165,7 @@ function paint() {
         if (config.g_in_edit_mode){
             draw_node_info(gfx, w, h);
         }
+        draw_sustain(gfx, w, h);
     } else {
         draw_node_help(gfx, w, h);
     }
@@ -231,7 +239,7 @@ function key_handler(){
             // lowest and highest x value is limited by neighbouring nodes.
             if (config.current_node === 0){  // first node
                 lowest = 0.0;
-                highest = env_nodes[1][0] - epsilon;
+                highest = 0.0; // env_nodes[1][0] - epsilon;
             } else if (config.current_node === num_nodes - 1){  // last node, maybe introduce a lock param to force 0 at end of envelope.
                 highest = 1.0
                 lowest = env_nodes[num_nodes-2][0] + epsilon;
@@ -268,9 +276,21 @@ function key_handler(){
         this.mgraphics.redraw();
         return;
     }
-    if (k1 == L_KEY){
+    if (k1 == S_KEY){
         post('here')
+        config.looping = !config.looping;
+        config.loop_point = config.looping ? idx : -1;
     }
+    if (k1 == X_KEY2){
+        // 3 nodes is the minimum, and first and last node cant be deleted.
+        const boundary_nodes = ((idx == 0) || (idx == (num_nodes - 1)));
+        if (num_nodes > 3 && !boundary_nodes){
+            env_nodes.splice(idx, 1);
+            this.mgraphics.redraw();
+            return;
+        }
+    }
+    
 }
 
 function keys(a1, a2, a3, a4) {
