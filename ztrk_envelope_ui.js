@@ -36,6 +36,7 @@ config.coarse_delta = 0.05;
 
 const DELETE = 127;
 const SPACEBAR = 32;
+const H = 104;
 const [SHIFT, ALT, CTRL, CTRL_SHIFT] = [512, 2048, 4352, 4864];
 const [PAGE_UP, PAGE_DOWN] = [11, 12];
 const [C_KEY, V_KEY, X_KEY] = [3, 22, 24];
@@ -204,6 +205,7 @@ function key_handler(){
 
         var [cx, cy] = env_nodes[config.current_node];
         const delta = HOLDING_CTRL ? config.fine_delta : config.coarse_delta;
+        const epsilon = config.fine_delta / 2; // distance in the x-axis to nearest node
 
         if ([UP_KEY, DOWN_KEY].includes(k1)){
             [cx, cy] = (k1 === DOWN_KEY) ? [cx, Math.max(0, cy - delta)] : [cx, Math.min(1.0, cy + delta)];
@@ -213,15 +215,33 @@ function key_handler(){
             /* 
             slightly more involved because a choice is made for the user, 
                 - do not step to the left or right of an existing node  (or)
-                - resort on the fly if node moves beyond x of another node
+                - resort on-the-fly if node moves beyond x of another node
                 - first node never to leave x=0
                 - last node can roam free.
             */
-            [cx, cy] = (k1 === LEFT_KEY) ? [Math.max(0, cx - delta), cy] : [Math.min(1.0, cx + delta), cy];
+            var [lowest, highest] = [0.0, 1.0];
+            // lowest and highest x value is limited by neighbouring nodes.
+            if (config.current_node === 0){  // first node
+                lowest = 0.0;
+                highest = env_nodes[1][0] - epsilon;
+            } else if (config.current_node === num_nodes - 1){  // last node, maybe introduce a lock param to force 0 at end of envelope.
+                highest = 1.0
+                lowest = env_nodes[num_nodes-2][0] + epsilon;
+            } else {  // inbetween
+                highest = env_nodes[config.current_node + 1][0] - epsilon;
+                lowest = env_nodes[config.current_node - 1][0] + epsilon;
+            }
+
+            [cx, cy] = (k1 === LEFT_KEY) ? [Math.max(lowest, cx - delta), cy] : [Math.min(highest, cx + delta), cy];
+
             env_nodes[config.current_node] = [cx, cy];
             this.mgraphics.redraw();
         }
 
+        return;
+    }
+    if (k1 === H){
+        display_help();
         return;
     }
 }
