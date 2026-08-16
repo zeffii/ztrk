@@ -9,11 +9,11 @@ const theme_colors = {};
 theme_colors.main_bg_color = [0.2, 0.2, 0.2, 1.0];
 theme_colors.stroke_color = [0.7, 0.3, 0.2, 1.0];
 theme_colors.stroke_color_dark = [0.18, 0.18, 0.18, 1.0];
-theme_colors.active_node = [0.8, 0.6, 0.7, 1.0];
-theme_colors.node = [0.8, 0.3, 0.7, 1.0];
+theme_colors.active_node = [0.8, 0.8, 0.8, 1.0];
+theme_colors.node = [0.3, 0.3, 0.3, 1.0];
 theme_colors.info_text = [0.3, 0.6, 0.97, 1.0];
 
-const padding = 20;
+const padding = 17;
 const node_size = 7.5;
 const env_nodes = {};
 env_nodes[0] = [0.0, 1.0];
@@ -37,6 +37,7 @@ config.coarse_delta = 0.05;
 const DELETE = 127;
 const SPACEBAR = 32;
 const H = 104;
+const Z = 122;  // insert is not recognized by maxmsp keyup? Z is close to where the hand is anyway.
 const [SHIFT, ALT, CTRL, CTRL_SHIFT] = [512, 2048, 4352, 4864];
 const [PAGE_UP, PAGE_DOWN] = [11, 12];
 const [C_KEY, V_KEY, X_KEY] = [3, 22, 24];
@@ -65,6 +66,13 @@ function calculate_node_locations(gfx, w, h){
     }
 };
 
+function midpoint(a, b){
+    function round4(num) {
+        return Number(Math.round(num + 'e4') + 'e-4');
+    }
+    return [round4((a[0]+b[0]) / 2.0), round4((a[1]+b[1]) / 2.0)];
+}
+
 function fill_background(gfx, w, h){
     gfx.set_source_rgba(...theme_colors.main_bg_color);
     gfx.rectangle(0, 0, w, h);
@@ -74,7 +82,6 @@ function fill_background(gfx, w, h){
 function draw_bounding_rect(gfx, w, h){
     gfx.set_source_rgba(...theme_colors.stroke_color_dark);
     gfx.move_to(padding, padding);
-    // gfx.line_to(w-padding, padding);
     gfx.rectangle(padding, padding, w-(2*padding), h-(2*padding));
     gfx.stroke();
 }
@@ -191,10 +198,10 @@ function key_handler(){
     const MODIFIER = MODIFIER_KEYS.includes(k3);
     const HOLDING_CTRL = (k3 === CTRL);
     const HOLDING_CTRL_SHIFT = (k3 === CTRL_SHIFT);
+    var idx = config.current_node;
 
     // only select nodes via LR keys
     if ([LEFT_KEY, RIGHT_KEY].includes(k1) && !MODIFIER){
-        var idx = config.current_node;
         config.current_node = (k1 === LEFT_KEY) ? Math.max(0, idx-1) : Math.min(num_nodes-1, idx+1);
         this.mgraphics.redraw();
         return;
@@ -237,11 +244,25 @@ function key_handler(){
             env_nodes[config.current_node] = [cx, cy];
             this.mgraphics.redraw();
         }
-
         return;
     }
     if (k1 === H){
         display_help();
+        return;
+    }
+    if (k1 === Z){
+        /*
+            if current_node is last node, then insert between n-1 and n
+            else insert between n and n+1
+
+        */
+        var new_node = [0.0, 0.0];
+        if (config.current_node === num_nodes-1){
+            new_node = midpoint(env_nodes[idx-1], env_nodes[idx]);
+        } else {
+            new_node = midpoint(env_nodes[idx+1], env_nodes[idx]);
+        }
+        post('Insert node', new_node);
         return;
     }
 }
