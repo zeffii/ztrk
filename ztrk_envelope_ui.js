@@ -6,33 +6,29 @@ mgraphics.relative_coords = 0;
 mgraphics.autofill = 0;
 
 const theme_colors = {};
-theme_colors.main_bg_color = [0.2, 0.2, 0.2, 1.0];
-theme_colors.stroke_color = [0.7, 0.3, 0.2, 1.0];
-theme_colors.stroke_color_dark = [0.18, 0.18, 0.18, 1.0];
-theme_colors.active_node = [0.8, 0.8, 0.8, 1.0];
-theme_colors.node = [0.3, 0.3, 0.3, 1.0];
-theme_colors.info_text = [0.3, 0.6, 0.97, 1.0];
+      theme_colors.main_bg_color = [0.2, 0.2, 0.2, 1.0];
+      theme_colors.stroke_color = [0.7, 0.3, 0.2, 1.0];
+      theme_colors.stroke_color_dark = [0.18, 0.18, 0.18, 1.0];
+      theme_colors.active_node = [0.96, 0.7, 0.7, 1.0];
+      theme_colors.node = [0.6, 0.3, 0.3, 1.0];
+      theme_colors.info_text = [0.3, 0.6, 0.97, 1.0];
 
 const padding = 17;
 const node_size = 7.5;
-const env_nodes = {};
-env_nodes[0] = [0.0, 1.0];
-env_nodes[1] = [0.5, 0.5];
-env_nodes[2] = [1.0, 0.0];
-
+const env_nodes = [[0.0, 1.0], [0.5, 0.5], [1.0, 0.0]];  // some defaults
 const draw_data = {};
-draw_data.coords = {};
+      draw_data.coords = [];
 
 const config = {};
-config.font_size = 12; 
-config.font_descriptor = ["Consolas", "normal", "normal"];
-config.display_help = false;
-config.g_in_edit_mode = false;
-config.g_key_codes = [];
-config.g_mouse_on_rect = false;
-config.current_node = 1;
-config.fine_delta = 0.01;
-config.coarse_delta = 0.05;
+      config.font_size = 12; 
+      config.font_descriptor = ["Consolas", "normal", "normal"];
+      config.display_help = false;
+      config.g_in_edit_mode = false;
+      config.g_key_codes = [];
+      config.g_mouse_on_rect = false;
+      config.current_node = 1;
+      config.fine_delta = 0.01;
+      config.coarse_delta = 0.05;
 
 const DELETE = 127;
 const SPACEBAR = 32;
@@ -56,20 +52,16 @@ function absolute_coord(rx, ry, w, h){
 
 function calculate_node_locations(gfx, w, h){
 
-    for (const node in env_nodes) {
-        if (env_nodes.hasOwnProperty(node)) {
-            var [cx, cy] = env_nodes[node];
-            var [abs_x, abs_y] = absolute_coord(cx, cy, w, h);
-            var [real_x, real_y] = [abs_x - (node_size/2), h - abs_y - (node_size/2)];
-            draw_data.coords[node] = [real_x, real_y];
-        }
+    draw_data.coords.length = 0;
+    for (const [idx, [cx, cy]] of env_nodes.entries()) {
+        var [abs_x, abs_y] = absolute_coord(cx, cy, w, h);
+        var [real_x, real_y] = [abs_x - (node_size/2), h - abs_y - (node_size/2)];
+        draw_data.coords.push([real_x, real_y]);
     }
 };
 
 function midpoint(a, b){
-    function round4(num) {
-        return Number(Math.round(num + 'e4') + 'e-4');
-    }
+    function round4(num) { return Number(Math.round(num + 'e4') + 'e-4'); }
     return [round4((a[0]+b[0]) / 2.0), round4((a[1]+b[1]) / 2.0)];
 }
 
@@ -88,7 +80,7 @@ function draw_bounding_rect(gfx, w, h){
 
 function draw_lines(gfx, w, h){
     
-    const num_lines = Object.keys(draw_data.coords).length;
+    const num_lines = Object.keys(env_nodes).length;
     gfx.set_source_rgba(...theme_colors.stroke_color);
 
     for (var i = 0; i < num_lines-1; i++){
@@ -102,14 +94,12 @@ function draw_lines(gfx, w, h){
 
 function draw_nodes(gfx, w, h){
 
-    for (const node in env_nodes) {
-        if (env_nodes.hasOwnProperty(node)) {
-            var [real_x, real_y] = draw_data.coords[node];
-            var node_color = (config.current_node === Number(node)) ? theme_colors.active_node : theme_colors.node;
-            gfx.set_source_rgba(...node_color);
-            gfx.rectangle(real_x, real_y, node_size, node_size);
-            gfx.stroke();
-        }
+    for (const [idx, [cx, cy]] of env_nodes.entries()) {
+        var [real_x, real_y] = draw_data.coords[idx];
+        var node_color = (config.current_node === idx) ? theme_colors.active_node : theme_colors.node;
+        gfx.set_source_rgba(...node_color);
+        gfx.rectangle(real_x, real_y, node_size, node_size);
+        gfx.stroke();
     }
 }
 
@@ -149,10 +139,7 @@ function paint() {
     gfx.set_font_size(config.font_size);
     gfx.select_font_face(...config.font_descriptor);
 
-    draw_data.coords = {};
-    // this could be done once, per calculation update, and redraw
-    calculate_node_locations(gfx, w, h);
-
+    calculate_node_locations(gfx, w, h);  // TODO , only calc when needed
     fill_background(gfx, w, h);
     
     if (!(config.display_help)){
@@ -166,7 +153,6 @@ function paint() {
     } else {
         draw_node_help(gfx, w, h);
     }
-
 
 }
 
@@ -198,7 +184,7 @@ function key_handler(){
     const MODIFIER = MODIFIER_KEYS.includes(k3);
     const HOLDING_CTRL = (k3 === CTRL);
     const HOLDING_CTRL_SHIFT = (k3 === CTRL_SHIFT);
-    var idx = config.current_node;
+    var idx = config.current_node;   //shorthand..
 
     // only select nodes via LR keys
     if ([LEFT_KEY, RIGHT_KEY].includes(k1) && !MODIFIER){
@@ -254,15 +240,16 @@ function key_handler(){
         /*
             if current_node is last node, then insert between n-1 and n
             else insert between n and n+1
-
         */
         var new_node = [0.0, 0.0];
         if (config.current_node === num_nodes-1){
             new_node = midpoint(env_nodes[idx-1], env_nodes[idx]);
+            env_nodes.splice(idx, 0, new_node);
         } else {
             new_node = midpoint(env_nodes[idx+1], env_nodes[idx]);
+            env_nodes.splice(idx+1, 0, new_node);
         }
-        post('Insert node', new_node);
+        this.mgraphics.redraw();
         return;
     }
 }
