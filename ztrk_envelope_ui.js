@@ -18,6 +18,7 @@ const theme_colors = {
 const padding = 17;
 const node_size = 7.5;
 const env_nodes = [[0.0, 1.0], [0.5, 0.5], [1.0, 0.0]];  // some defaults
+const env_nodes_backup = [];
 const draw_data = {};
       draw_data.coords = [];
 
@@ -288,7 +289,14 @@ function fill_buffer(bufname){
 }
 
 function doppler(ratio){
+
+    // do a backup first? todo.
+    const approximately_equal = (v1, v2, epsilon = 0.001) => Math.abs(v1 - v2) < epsilon;
+
     // this function squishes nodes towards the left if ratio < 0.5, towards the right if ratio > 0.5, 0.5 = unchanged.
+    if (approximately_equal(ratio, 0.5)){ /*dont do anything*/ }
+    else if (ratio < 0.5){}
+    else {}
 
 }
 
