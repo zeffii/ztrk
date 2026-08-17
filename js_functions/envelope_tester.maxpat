@@ -9,8 +9,49 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 1161.0, 194.0, 711.0, 589.0 ],
+        "rect": [ 1161.0, 194.0, 774.0, 981.0 ],
         "boxes": [
+            {
+                "box": {
+                    "id": "obj-10",
+                    "maxclass": "message",
+                    "numinlets": 2,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 467.0, 131.0, 88.0, 22.0 ],
+                    "text": "fill_buffer Env1"
+                }
+            },
+            {
+                "box": {
+                    "buffername": "Env1",
+                    "grid": 20.0,
+                    "gridcolor": [ 0.5764705882352941, 0.5803921568627451, 0.6313725490196078, 1.0 ],
+                    "id": "obj-5",
+                    "invert": 1,
+                    "maxclass": "waveform~",
+                    "numinlets": 5,
+                    "numoutlets": 6,
+                    "outlettype": [ "float", "float", "float", "float", "list", "" ],
+                    "patching_rect": [ 81.5, 495.0, 502.5, 164.0 ],
+                    "selectioncolor": [ 0.5450980392156862, 0.6627450980392157, 0.7764705882352941, 1.0 ],
+                    "setunit": 1,
+                    "style": "rnbohighcontrast",
+                    "vticks": 0
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-2",
+                    "maxclass": "newobj",
+                    "numinlets": 1,
+                    "numoutlets": 2,
+                    "outlettype": [ "float", "bang" ],
+                    "patching_rect": [ 256.0, 461.0, 77.0, 22.0 ],
+                    "text": "buffer~ Env1",
+                    "varname": "envelope_buf_1"
+                }
+            },
             {
                 "box": {
                     "id": "obj-6",
@@ -180,7 +221,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "115",
+                                    "text": "109",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -269,7 +310,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "1",
+                                    "text": "46",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -314,7 +355,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 115 1 0 115",
+                                    "text": "keys 109 46 0 109",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -741,6 +782,18 @@
                     },
                     "varname": "v8ui_AA"
                 }
+            },
+            {
+                "box": {
+                    "attr": "buffername",
+                    "id": "obj-8",
+                    "maxclass": "attrui",
+                    "numinlets": 1,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "parameter_enable": 0,
+                    "patching_rect": [ 81.5, 461.0, 150.0, 22.0 ]
+                }
             }
         ],
         "lines": [
@@ -748,6 +801,12 @@
                 "patchline": {
                     "destination": [ "obj-6", 0 ],
                     "source": [ "obj-1", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-1", 0 ],
+                    "source": [ "obj-10", 0 ]
                 }
             },
             {
@@ -773,8 +832,44 @@
                     "destination": [ "obj-1", 0 ],
                     "source": [ "obj-4", 0 ]
                 }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-5", 0 ],
+                    "source": [ "obj-8", 0 ]
+                }
             }
         ],
-        "autosave": 0
+        "autosave": 0,
+        "styles": [
+            {
+                "name": "rnbohighcontrast",
+                "default": {
+                    "accentcolor": [ 0.666666666666667, 0.666666666666667, 0.666666666666667, 1.0 ],
+                    "bgcolor": [ 0.0, 0.0, 0.0, 1.0 ],
+                    "bgfillcolor": {
+                        "angle": 270.0,
+                        "autogradient": 0.0,
+                        "color": [ 0.0, 0.0, 0.0, 1.0 ],
+                        "color1": [ 0.090196078431373, 0.090196078431373, 0.090196078431373, 1.0 ],
+                        "color2": [ 0.156862745098039, 0.168627450980392, 0.164705882352941, 1.0 ],
+                        "proportion": 0.5,
+                        "type": "color"
+                    },
+                    "clearcolor": [ 1.0, 1.0, 1.0, 0.0 ],
+                    "color": [ 1.0, 0.874509803921569, 0.141176470588235, 1.0 ],
+                    "editing_bgcolor": [ 0.258823529411765, 0.258823529411765, 0.258823529411765, 1.0 ],
+                    "elementcolor": [ 0.223386004567146, 0.254748553037643, 0.998085916042328, 1.0 ],
+                    "fontsize": [ 13.0 ],
+                    "locked_bgcolor": [ 0.258823529411765, 0.258823529411765, 0.258823529411765, 1.0 ],
+                    "selectioncolor": [ 0.301960784313725, 0.694117647058824, 0.949019607843137, 1.0 ],
+                    "stripecolor": [ 0.258823529411765, 0.258823529411765, 0.258823529411765, 1.0 ],
+                    "textcolor": [ 1.0, 1.0, 1.0, 1.0 ],
+                    "textcolor_inverse": [ 1.0, 1.0, 1.0, 1.0 ]
+                },
+                "parentstyle": "",
+                "multi": 0
+            }
+        ]
     }
 }

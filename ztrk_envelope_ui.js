@@ -5,14 +5,15 @@ mgraphics.init();
 mgraphics.relative_coords = 0;
 mgraphics.autofill = 0;
 
-const theme_colors = {};
-      theme_colors.main_bg_color = [0.2, 0.2, 0.2, 1.0];
-      theme_colors.stroke_color = [0.7, 0.3, 0.2, 1.0];
-      theme_colors.stroke_color_dark = [0.18, 0.18, 0.18, 1.0];
-      theme_colors.active_node = [0.96, 0.7, 0.7, 1.0];
-      theme_colors.node = [0.6, 0.3, 0.3, 1.0];
-      theme_colors.info_text = [0.3, 0.6, 0.97, 1.0];
-      theme_colors.loop_line_color = [0.9, 0.5, 0.5, 1.0];
+const theme_colors = {
+    main_bg_color: [0.2, 0.2, 0.2, 1.0],
+    stroke_color: [0.7, 0.3, 0.2, 1.0],
+    stroke_color_dark: [0.18, 0.18, 0.18, 1.0],
+    active_node: [0.96, 0.7, 0.7, 1.0],
+    node: [0.6, 0.3, 0.3, 1.0],
+    info_text: [0.3, 0.6, 0.97, 1.0],
+    loop_line_color: [0.9, 0.5, 0.5, 1.0]
+};
 
 const padding = 17;
 const node_size = 7.5;
@@ -20,19 +21,20 @@ const env_nodes = [[0.0, 1.0], [0.5, 0.5], [1.0, 0.0]];  // some defaults
 const draw_data = {};
       draw_data.coords = [];
 
-const config = {};
-      config.font_size = 12; 
-      config.font_descriptor = ["Consolas", "normal", "normal"];
-      config.display_help = false;
-      config.g_in_edit_mode = false;
-      config.g_key_codes = [];
-      config.g_mouse_on_rect = false;
-      config.current_node = 1;
-      config.fine_delta = 0.01;
-      config.coarse_delta = 0.05;
-      config.looping = false;       // implement pingpong between two points later! 
-      config.loop_point = -1;
-      config.use_dashes = true;
+const config = {
+    font_size: 12, 
+    font_descriptor: ["Consolas", "normal", "normal"],
+    display_help: false,
+    g_in_edit_mode: false,
+    g_key_codes: [],
+    g_mouse_on_rect: false,
+    current_node: 1,
+    fine_delta: 0.01,
+    coarse_delta: 0.05,
+    looping: false,       // implement pingpong between two points later! 
+    loop_point: -1,
+    use_dashes: true
+};
 
 const DELETE = 127;
 const SPACEBAR = 32;
@@ -230,10 +232,32 @@ function display_help(){
 }
 
 function write(msg){
-    // const obj = Object.fromEntries( env_nodes.map((value, index) => [index, value]) );  // if i want a dict output.. do i?
+    // const obj = Object.fromEntries( env_nodes.map((value, index) => [index, value]) );  // if i want a dict output.. do i? yes
     if (msg === 'nodes'){
         outlet(0, ...env_nodes);
     }
+}
+
+function array_from_env(num_samples){
+    // return Array.from({ length: num_samples });
+    const temp_array = [];
+    const theta = 1. / num_samples;
+    for (var i = 0; i < num_samples; i++){ temp_array.push(i * theta); }
+    return temp_array;
+}
+
+function fill_buffer(bufname){
+    const num_samples = 512;
+    var envbuff = new Buffer(bufname);
+        envbuff.setattr("sr", 1000);
+        envbuff.setattr("chans", 1);
+        envbuff.send("sizeinsamps", num_samples);
+
+    const env_as_array = array_from_env(num_samples);
+    for (const [idx, value] of env_as_array.entries()) {
+        envbuff.poke(1, idx, value);
+    }
+
 }
 
 function key_handler(){
