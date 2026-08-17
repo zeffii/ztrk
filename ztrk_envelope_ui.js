@@ -309,6 +309,12 @@ function key_handler(){
             new_node = midpoint(env_nodes[idx+1], env_nodes[idx]);
             env_nodes.splice(idx+1, 0, new_node);
         }
+
+        // inserting nodes to the left of the sustain point updates (loop_point + 1)
+        if (config.looping && (idx < config.loop_point)){
+            config.loop_point += 1;
+        }
+
         this.mgraphics.redraw();
         return;
     }
