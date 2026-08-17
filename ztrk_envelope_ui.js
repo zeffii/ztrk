@@ -238,12 +238,39 @@ function write(msg){
     }
 }
 
-function array_from_env(num_samples){
-    // return Array.from({ length: num_samples });
-    const temp_array = [];
-    const theta = 1. / num_samples;
-    for (var i = 0; i < num_samples; i++){ temp_array.push(i * theta); }
-    return temp_array;
+function array_from_env(path, n) {
+    /*
+    chatGPT wrote this Path Sampler function. I have not meditated on it at any length, output seems perfect!
+    */
+    const result = [];
+
+    for (let i = 0; i < n; i++) {
+        const x = n > 1 ? i / (n - 1) : 0;
+        const intersections = [];
+
+        for (let j = 0; j < path.length - 1; j++) {
+            const [x1, y1] = path[j];
+            const [x2, y2] = path[j + 1];
+
+            // Vertical segment
+            if (x1 === x2) {
+                if (x === x1) { intersections.push(y1, y2); }
+                continue;
+            }
+
+            // Does this segment cross our vertical line?
+            if (x >= Math.min(x1, x2) && x <= Math.max(x1, x2)) {
+                const t = (x - x1) / (x2 - x1);
+                const y = y1 + t * (y2 - y1);
+                intersections.push(y);
+            }
+        }
+
+        // First intersection from y=0
+        result.push(intersections.length > 0 ? Math.min(...intersections) : null);
+    }
+
+    return result;
 }
 
 function fill_buffer(bufname){
@@ -253,10 +280,15 @@ function fill_buffer(bufname){
         envbuff.setattr("chans", 1);
         envbuff.send("sizeinsamps", num_samples);
 
-    const env_as_array = array_from_env(num_samples);
+    const env_as_array = array_from_env(env_nodes, num_samples);
     for (const [idx, value] of env_as_array.entries()) {
         envbuff.poke(1, idx, value);
     }
+
+}
+
+function doppler(ratio){
+    // this function squishes nodes towards the left if ratio < 0.5, towards the right if ratio > 0.5, 0.5 = unchanged.
 
 }
 
