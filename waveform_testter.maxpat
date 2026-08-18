@@ -4,12 +4,12 @@
         "appversion": {
             "major": 9,
             "minor": 1,
-            "revision": 4,
+            "revision": 5,
             "architecture": "x64",
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 39.0, 184.0, 1733.0, 1027.0 ],
+        "rect": [ 383.0, 220.0, 1733.0, 1027.0 ],
         "boxes": [
             {
                 "box": {
@@ -52,7 +52,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "bang" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 1132.0, 311.1940187215805, 50.0, 22.0 ]
+                    "patching_rect": [ 1132.0, 311.0, 50.0, 22.0 ]
                 }
             },
             {
@@ -148,8 +148,8 @@
                     "numinlets": 2,
                     "numoutlets": 1,
                     "outlettype": [ "" ],
-                    "patching_rect": [ 678.0, 185.0, 87.0, 22.0 ],
-                    "text": "setxfade $1 $1"
+                    "patching_rect": [ 678.0, 185.0, 71.0, 22.0 ],
+                    "text": "setxfade $1"
                 }
             },
             {
@@ -260,7 +260,7 @@
                     "numoutlets": 1,
                     "outlettype": [ "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 535.0, 311.1940187215805, 470.8955055475235, 145.52238285541534 ],
+                    "patching_rect": [ 529.0, 311.1940187215805, 470.8955055475235, 145.52238285541534 ],
                     "textfile": {
                         "filename": "ztrk_waveform4_view.js",
                         "flags": 0,
@@ -285,12 +285,12 @@
                 "box": {
                     "fontname": "Consolas",
                     "id": "obj-51",
-                    "linecount": 28,
+                    "linecount": 27,
                     "maxclass": "comment",
                     "numinlets": 1,
                     "numoutlets": 0,
-                    "patching_rect": [ 4.0, 303.0, 503.0, 414.0 ],
-                    "text": "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n┃ Action                        ┃   What it does                          ┃\n┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩\n│ Click + drag empty area       │   Create / resize selection             │ \n│ Drag near loop start/end      │   Move loop edges                       │\n│ Drag near xfade edges         │   Adjust xfadeIn / xfadeOut lengths     │ \n│ Drag near playhead            │   Scrub playhead                        │\n│ Alt/Option + drag inside loop │   Move whole loop region                │\n│ Alt/Option + drag selection   │   Move whole selection                  │\n│ Shift held                    │   Fine control (smaller steps)          │\n└───────────────────────────────┴─────────────────────────────────────────┘\r \n  Edge detection uses a 6-pixel tolerance so the handles are easy to grab.\n\n┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n┃ Messages                      ┃   What it does                          ┃\n┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩\n│ set mybuffer                  │                                         │\n│ setview 0 441000              │   zoom region                           │\n│ setloop 10000 80000           │                                         │\n│ setxfade 2048                 │   single value, applied on both sides   │\n│ setselection 20000 50000      │                                         │\n│ setplayhead 30000             │                                         │\n│ clearselection                │                                         │\n│ clearloop                     │                                         │ \n│ bang                          │   force waveform rebuild                │\n└───────────────────────────────┴─────────────────────────────────────────┘\n\n"
+                    "patching_rect": [ 4.0, 303.0, 510.0, 386.0 ],
+                    "text": "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n┃ Action                        ┃   What it does                          ┃\n┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩\n│ Click + drag empty area       │   Create / resize selection             │ \n│ Drag near loop start/end      │   Move loop edges                       │\n│ Drag near xfade edges         │   Adjust xfadeIn / xfadeOut lengths     │ \n│ Drag near playhead            │   Scrub playhead                        │\n│ Alt/Option + drag inside loop │   Move whole loop region                │\n│ Alt/Option + drag selection   │   Move whole selection                  │\n│ Shift held                    │   Fine control (smaller steps)          │\n└───────────────────────────────┴─────────────────────────────────────────┘\r \n  Edge detection uses a 6-pixel tolerance so the handles are easy to grab.\n\n┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n┃ Messages                      ┃   What it does                          ┃\n┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩\n│ set mybuffer                  │                                         │\n│ setview 0 441000              │   zoom region                           │\n│ setloop 10000 80000           │                                         │\n│ setxfade 2048                 │   single value, applied on both sides   │\n│ setselection 20000 50000      │                                         │\n│ setplayhead 30000             │                                         │\n│ clearselection                │                                         │\n│ clearloop                     │                                         │ \n│ bang                          │   force waveform rebuild                │\n└───────────────────────────────┴─────────────────────────────────────────┘"
                 }
             }
         ],
@@ -412,7 +412,7 @@
             {
                 "patchline": {
                     "destination": [ "obj-68", 0 ],
-                    "midpoints": [ 1092.7089531421661, 294.0, 882.0, 294.0, 882.0, 294.0, 544.5, 294.0 ],
+                    "midpoints": [ 1092.7089531421661, 294.0, 882.0, 294.0, 882.0, 294.0, 538.5, 294.0 ],
                     "source": [ "obj-74", 0 ]
                 }
             },
