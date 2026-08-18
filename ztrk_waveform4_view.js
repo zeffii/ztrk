@@ -42,6 +42,11 @@ var linewidth = 1.0;
 // dictionary
 var d = new Dict();
 
+function getType(obj) {
+    return Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
+}
+
+
 // -------------------- public messages --------------------
 function set(name) {
     if (name !== bufname) {
@@ -182,22 +187,15 @@ function rebuildCache(w, h) {
     // ---------------------------------------------------------
     off.set_source_rgba(1, 1, 1, 1);
 
-    if (framesInView > w) {
+    if (framesInView >= (2.0 * w)) {
 
-        // =====================================================
         // PEAK MODE
-        //
-        // One filled vertical rectangle per display pixel.
-        // This avoids Cairo/MGraphics stroke rasterisation
-        // artefacts that can produce vertical gaps.
-        // =====================================================
 
         var samplesPerPixel = framesInView / w;
 
         for (var x = 0; x < w; x++) {
 
-            // Exact source-frame range corresponding to this
-            // destination pixel.
+            // Exact source-frame range corresponding to this destination pixel.
             var start = Math.floor(viewStart + x * samplesPerPixel);
             var end   = Math.floor(viewStart + (x + 1) * samplesPerPixel);
 
@@ -233,41 +231,26 @@ function rebuildCache(w, h) {
             var height = Math.abs(y2 - y1);
 
             // Always occupy at least one device pixel vertically.
-            if (height < 1)
+            if (height < 1){
                 height = 1;
+            }
 
-            // IMPORTANT:
-            // Use a filled 1-pixel-wide rectangle instead of
-            // move_to()/line_to()/stroke().
             off.rectangle(x, top, 1, height);
             off.fill();
         }
 
     } else {
 
-        // =====================================================
         // TRUE SAMPLE MODE
-        //
-        // Fewer/equal samples than pixels: draw the actual
-        // waveform as a continuous line.
-        // =====================================================
-
-        off.set_line_width(1.2);
-
         var first = true;
 
+        off.set_line_width(1.2);
         for (var i = viewStart; i < viewEnd; i++) {
 
-            var samps = buf.peek(1, i, 1);
-
-            if (!samps || samps.length === 0)
-                continue;
-
-            var v = samps[0];
-
+            var v = buf.peek(1, i, 1);
             var x = ((i - viewStart) / framesInView) * w;
             var y = mid - v * mid;
-
+            
             if (first) {
                 off.move_to(x, y);
                 first = false;
@@ -276,8 +259,10 @@ function rebuildCache(w, h) {
             }
         }
 
-        if (!first)
+        if (!first){
             off.stroke();
+        }
+
     }
 
     // ---------------------------------------------------------
@@ -294,6 +279,7 @@ function rebuildCache(w, h) {
 function paint() {
     var w = mgraphics.size[0];
     var h = mgraphics.size[1];
+    // post(`width ${w}, height ${h}`);
 
     if (dirty || w !== lastW || h !== lastH || !cachedImage) {
         rebuildCache(w, h);
