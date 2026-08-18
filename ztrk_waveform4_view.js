@@ -170,48 +170,101 @@ function rebuildCache(w, h) {
     var framesInView = viewEnd - viewStart;
     var mid = h * 0.5;
 
-    // Always start with black background for clarity when zoomed in
+    // ---------------------------------------------------------
+    // Background
+    // ---------------------------------------------------------
     off.set_source_rgba(0, 0, 0, 1);
     off.rectangle(0, 0, w, h);
     off.fill();
 
-    off.set_source_rgba(1, 1, 1, 1);   // white waveform
-    off.set_line_width(1.2);
+    // ---------------------------------------------------------
+    // Waveform
+    // ---------------------------------------------------------
+    off.set_source_rgba(1, 1, 1, 1);
 
     if (framesInView > w) {
-        // ===== Peak style only when we have MORE samples than pixels =====
+
+        // =====================================================
+        // PEAK MODE
+        //
+        // One filled vertical rectangle per display pixel.
+        // This avoids Cairo/MGraphics stroke rasterisation
+        // artefacts that can produce vertical gaps.
+        // =====================================================
+
         var samplesPerPixel = framesInView / w;
 
         for (var x = 0; x < w; x++) {
+
+            // Exact source-frame range corresponding to this
+            // destination pixel.
             var start = Math.floor(viewStart + x * samplesPerPixel);
             var end   = Math.floor(viewStart + (x + 1) * samplesPerPixel);
-            
-            // Important: do NOT force end = start + 1 any more
-            if (end <= start) continue;   // skip empty pixels
+
+            // Clamp to the visible view / buffer.
+            start = Math.max(viewStart, start);
+            end   = Math.min(viewEnd, end);
+
+            if (end <= start)
+                continue;
 
             var samps = buf.peek(1, start, end - start);
-            var minv =  1.0;
+
+            if (!samps || samps.length === 0)
+                continue;
+
+            var minv = 1.0;
             var maxv = -1.0;
 
             for (var i = 0; i < samps.length; i++) {
                 var v = samps[i];
-                if (v < minv) minv = v;
-                if (v > maxv) maxv = v;
+
+                if (v < minv)
+                    minv = v;
+
+                if (v > maxv)
+                    maxv = v;
             }
 
             var y1 = mid - maxv * mid;
             var y2 = mid - minv * mid;
 
-            off.move_to(x + 0.5, y1);
-            off.line_to(x + 0.5, y2);
+            var top    = Math.min(y1, y2);
+            var height = Math.abs(y2 - y1);
+
+            // Always occupy at least one device pixel vertically.
+            if (height < 1)
+                height = 1;
+
+            // IMPORTANT:
+            // Use a filled 1-pixel-wide rectangle instead of
+            // move_to()/line_to()/stroke().
+            off.rectangle(x, top, 1, height);
+            off.fill();
         }
-        off.stroke();
-    }
-    else {
-        // ===== True continuous line between real samples =====
+
+    } else {
+
+        // =====================================================
+        // TRUE SAMPLE MODE
+        //
+        // Fewer/equal samples than pixels: draw the actual
+        // waveform as a continuous line.
+        // =====================================================
+
+        off.set_line_width(1.2);
+
         var first = true;
+
         for (var i = viewStart; i < viewEnd; i++) {
-            var v = buf.peek(1, i, 1)[0];
+
+            var samps = buf.peek(1, i, 1);
+
+            if (!samps || samps.length === 0)
+                continue;
+
+            var v = samps[0];
+
             var x = ((i - viewStart) / framesInView) * w;
             var y = mid - v * mid;
 
@@ -222,10 +275,16 @@ function rebuildCache(w, h) {
                 off.line_to(x, y);
             }
         }
-        off.stroke();
+
+        if (!first)
+            off.stroke();
     }
 
+    // ---------------------------------------------------------
+    // Create cached image
+    // ---------------------------------------------------------
     cachedImage = new Image(off);
+
     lastW = w;
     lastH = h;
     dirty = false;
