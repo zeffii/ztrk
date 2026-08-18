@@ -1,5 +1,6 @@
 // waveform_display_full.js
-// Cached mono waveform + zoom + selection + loop + xfade + playhead + mouse + dict out
+// Cached mono waveform + zoom + selection + loop + equal xfade + playhead + mouse + dict
+// Proper hybrid rendering (peak style vs true sample lines)
 
 mgraphics.init();
 mgraphics.relative_coords = 0;
@@ -20,15 +21,14 @@ var viewEnd   = 0;
 
 var selStart = -1, selEnd = -1;
 var loopStart = -1, loopEnd = -1;
-var xfadeIn  = 0;
-var xfadeOut = 0;
+var xfade = 0;                  // single value – applied equally on both sides
 var playhead = -1;
 
 // mouse
 var dragMode = "none";
 var dragOriginSample = 0;
-var origA = 0, origB = 0;          // original values when drag started
-var HIT = 6;                       // pixel tolerance for edges
+var origA = 0, origB = 0;
+var HIT = 6;                    // pixel tolerance
 
 // colors
 var bg       = [0.12, 0.12, 0.12, 1];
@@ -39,7 +39,7 @@ var xfadeCol = [0.9,  0.55, 0.15, 0.40];
 var playCol  = [1.0,  0.25, 0.25, 1.0];
 var linewidth = 1.0;
 
-// dictionary for output
+// dictionary
 var d = new Dict();
 
 // -------------------- public messages --------------------
@@ -88,19 +88,21 @@ function clearselection() {
 function setloop(start, end) {
     loopStart = start|0;
     loopEnd   = end|0;
+    clampXfade();
     outputDict();
     mgraphics.redraw();
 }
 
 function clearloop() {
     loopStart = loopEnd = -1;
+    xfade = 0;
     outputDict();
     mgraphics.redraw();
 }
 
-function setxfade(xin, xout) {
-    xfadeIn  = Math.max(0, xin|0);
-    xfadeOut = Math.max(0, xout|0);
+function setxfade(len) {
+    xfade = Math.max(0, len|0);
+    clampXfade();
     outputDict();
     mgraphics.redraw();
 }
@@ -129,7 +131,16 @@ function clamp(v, lo, hi) {
     return Math.max(lo, Math.min(hi, v));
 }
 
-// -------------------- dictionary output --------------------
+function clampXfade() {
+    if (loopStart >= 0 && loopEnd > loopStart) {
+        var maxX = Math.floor((loopEnd - loopStart) / 2);
+        xfade = Math.min(xfade, maxX);
+    } else {
+        xfade = 0;
+    }
+}
+
+// -------------------- dictionary --------------------
 function outputDict() {
     d.clear();
     d.set("buffer", bufname);
@@ -139,8 +150,7 @@ function outputDict() {
     d.set("selEnd", selEnd);
     d.set("loopStart", loopStart);
     d.set("loopEnd", loopEnd);
-    d.set("xfadeIn", xfadeIn);
-    d.set("xfadeOut", xfadeOut);
+    d.set("xfade", xfade);
     d.set("playhead", playhead);
     if (buf) {
         d.set("frames", buf.framecount());
@@ -157,35 +167,68 @@ function rebuildCache(w, h) {
     }
 
     var off = new MGraphics(w, h);
-    off.set_source_rgba(bg);
-    off.rectangle(0, 0, w, h);
-    off.fill();
 
     var framesInView = viewEnd - viewStart;
-    var samplesPerPixel = framesInView / w;
     var mid = h * 0.5;
 
-    off.set_source_rgba(waveCol);
-    off.set_line_width(linewidth);
+    if (framesInView >= w) {
+        // ========== Peak style (normal / zoomed out) ==========
+        off.set_source_rgba(bg);
+        off.rectangle(0, 0, w, h);
+        off.fill();
 
-    for (var x = 0; x < w; x++) {
-        var start = Math.floor(viewStart + x * samplesPerPixel);
-        var end   = Math.min(Math.floor(viewStart + (x + 1) * samplesPerPixel), viewEnd);
-        if (end <= start) end = start + 1;
+        off.set_source_rgba(waveCol);
+        off.set_line_width(linewidth);
 
-        var samps = buf.peek(1, start, end - start);
-        var minv = 1, maxv = -1;
-        for (var i = 0; i < samps.length; i++) {
-            var v = samps[i];
-            if (v < minv) minv = v;
-            if (v > maxv) maxv = v;
+        var samplesPerPixel = framesInView / w;
+
+        for (var x = 0; x < w; x++) {
+            var start = Math.floor(viewStart + x * samplesPerPixel);
+            var end   = Math.min(Math.floor(viewStart + (x + 1) * samplesPerPixel), viewEnd);
+            if (end <= start) end = start + 1;
+
+            var samps = buf.peek(1, start, end - start);
+            var minv =  1.0;
+            var maxv = -1.0;
+
+            for (var i = 0; i < samps.length; i++) {
+                var v = samps[i];
+                if (v < minv) minv = v;
+                if (v > maxv) maxv = v;
+            }
+
+            var y1 = mid - maxv * mid;
+            var y2 = mid - minv * mid;
+
+            off.move_to(x + 0.5, y1);
+            off.line_to(x + 0.5, y2);
         }
-        var y1 = mid - maxv * mid;
-        var y2 = mid - minv * mid;
-        off.move_to(x + 0.5, y1);
-        off.line_to(x + 0.5, y2);
+        off.stroke();
     }
-    off.stroke();
+    else {
+        // ========== Deep zoom: black background + white line between real samples ==========
+        off.set_source_rgba(0, 0, 0, 1);          // pure black background
+        off.rectangle(0, 0, w, h);
+        off.fill();
+
+        off.set_source_rgba(1, 1, 1, 1);          // pure white line
+        off.set_line_width(1.5);                  // slightly thicker for clarity
+
+        var first = true;
+        for (var i = viewStart; i < viewEnd; i++) {
+            var v = buf.peek(1, i, 1)[0];
+            var x = ((i - viewStart) / framesInView) * w;
+            var y = mid - v * mid;
+
+            if (first) {
+                off.move_to(x, y);
+                first = false;
+            } else {
+                off.line_to(x, y);
+            }
+        }
+        off.stroke();
+    }
 
     cachedImage = new Image(off);
     lastW = w;
@@ -220,7 +263,7 @@ function paint() {
         mgraphics.fill();
     }
 
-    // loop + xfade
+    // loop + equal xfade
     if (loopStart >= 0 && loopEnd > loopStart) {
         var lx1 = sampleToX(loopStart, w);
         var lx2 = sampleToX(loopEnd, w);
@@ -229,14 +272,15 @@ function paint() {
         mgraphics.rectangle(lx1, 0, lx2 - lx1, h);
         mgraphics.fill();
 
-        if (xfadeIn > 0) {
-            var xin2 = sampleToX(loopStart + xfadeIn, w);
+        if (xfade > 0) {
+            // left xfade
+            var xin2 = sampleToX(loopStart + xfade, w);
             mgraphics.set_source_rgba(xfadeCol);
             mgraphics.rectangle(lx1, 0, xin2 - lx1, h);
             mgraphics.fill();
-        }
-        if (xfadeOut > 0) {
-            var xout1 = sampleToX(loopEnd - xfadeOut, w);
+
+            // right xfade (same length)
+            var xout1 = sampleToX(loopEnd - xfade, w);
             mgraphics.set_source_rgba(xfadeCol);
             mgraphics.rectangle(xout1, 0, lx2 - xout1, h);
             mgraphics.fill();
@@ -262,32 +306,26 @@ function paint() {
 
 // -------------------- mouse --------------------
 function hitTest(x, w) {
-    // returns the mode string
     var s = xToSample(x, w);
 
-    // playhead first (highest priority)
     if (playhead >= 0 && Math.abs(sampleToX(playhead, w) - x) <= HIT)
         return "playhead";
 
-    // loop edges
     if (loopStart >= 0) {
         if (Math.abs(sampleToX(loopStart, w) - x) <= HIT) return "loopstart";
         if (Math.abs(sampleToX(loopEnd, w) - x) <= HIT)   return "loopend";
 
-        // xfade edges
-        if (xfadeIn > 0 && Math.abs(sampleToX(loopStart + xfadeIn, w) - x) <= HIT)
-            return "xfadein";
-        if (xfadeOut > 0 && Math.abs(sampleToX(loopEnd - xfadeOut, w) - x) <= HIT)
-            return "xfadeout";
+        if (xfade > 0) {
+            if (Math.abs(sampleToX(loopStart + xfade, w) - x) <= HIT) return "xfade";
+            if (Math.abs(sampleToX(loopEnd   - xfade, w) - x) <= HIT) return "xfade";
+        }
     }
 
-    // selection edges
     if (selStart >= 0) {
         if (Math.abs(sampleToX(selStart, w) - x) <= HIT) return "selstart";
         if (Math.abs(sampleToX(selEnd, w) - x) <= HIT)   return "selend";
     }
 
-    // inside regions
     if (loopStart >= 0 && s >= loopStart && s <= loopEnd) return "insideloop";
     if (selStart >= 0 && s >= selStart && s <= selEnd)     return "insidesel";
 
@@ -301,7 +339,6 @@ function onclick(x, y, button, mod1, shift, caps, opt, mod2) {
     dragOriginSample = xToSample(x, w);
 
     if (mode === "empty") {
-        // start new selection
         selStart = selEnd = Math.round(dragOriginSample);
         dragMode = "selecting";
     }
@@ -323,11 +360,8 @@ function onclick(x, y, button, mod1, shift, caps, opt, mod2) {
         origA = selStart;
         origB = selEnd;
     }
-    else if (mode === "xfadein") {
-        origA = xfadeIn;
-    }
-    else if (mode === "xfadeout") {
-        origA = xfadeOut;
+    else if (mode === "xfade") {
+        origA = xfade;
     }
 
     outputDict();
@@ -335,7 +369,7 @@ function onclick(x, y, button, mod1, shift, caps, opt, mod2) {
 }
 
 function ondrag(x, y, button, mod1, shift, caps, opt, mod2) {
-    if (button === 0) {          // mouse up
+    if (button === 0) {
         dragMode = "none";
         outputDict();
         return;
@@ -344,7 +378,7 @@ function ondrag(x, y, button, mod1, shift, caps, opt, mod2) {
     var w = mgraphics.size[0];
     var s = xToSample(x, w);
     var delta = s - dragOriginSample;
-    if (shift) delta *= 0.15;    // fine control
+    if (shift) delta *= 0.15;
 
     var frames = buf ? buf.framecount() : 0;
 
@@ -358,27 +392,25 @@ function ondrag(x, y, button, mod1, shift, caps, opt, mod2) {
             } else if (dragMode === "selstart") {
                 selStart = clamp(Math.round(origA + delta), 0, selEnd - 1);
             } else {
-                selEnd   = clamp(Math.round(origB + delta), selStart + 1, frames);
+                selEnd = clamp(Math.round(origB + delta), selStart + 1, frames);
             }
             break;
 
         case "loopstart":
             loopStart = clamp(Math.round(origA + delta), 0, loopEnd - 1);
-            // keep xfade legal
-            xfadeIn  = Math.min(xfadeIn,  loopEnd - loopStart);
-            xfadeOut = Math.min(xfadeOut, loopEnd - loopStart);
+            clampXfade();
             break;
 
         case "loopend":
             loopEnd = clamp(Math.round(origB + delta), loopStart + 1, frames);
-            xfadeIn  = Math.min(xfadeIn,  loopEnd - loopStart);
-            xfadeOut = Math.min(xfadeOut, loopEnd - loopStart);
+            clampXfade();
             break;
 
         case "moveloop":
             var len = origB - origA;
             loopStart = clamp(Math.round(origA + delta), 0, frames - len);
             loopEnd   = loopStart + len;
+            clampXfade();
             break;
 
         case "movesel":
@@ -387,12 +419,11 @@ function ondrag(x, y, button, mod1, shift, caps, opt, mod2) {
             selEnd   = selStart + len;
             break;
 
-        case "xfadein":
-            xfadeIn = clamp(Math.round(origA + delta), 0, loopEnd - loopStart);
-            break;
-
-        case "xfadeout":
-            xfadeOut = clamp(Math.round(origA - delta), 0, loopEnd - loopStart);
+        case "xfade":
+            var center = (loopStart + loopEnd) * 0.5;
+            var newXfade = Math.round(Math.abs(s - (s < center ? loopStart : loopEnd)));
+            var maxX = Math.floor((loopEnd - loopStart) / 2);
+            xfade = clamp(newXfade, 0, maxX);
             break;
 
         case "playhead":
@@ -404,4 +435,20 @@ function ondrag(x, y, button, mod1, shift, caps, opt, mod2) {
     mgraphics.redraw();
 }
 
-function onidle(x, y) {}
+function onidle(x, y) {
+    var w = mgraphics.size[0];
+    var mode = hitTest(x, w);
+
+    if (mode === "playhead" || mode === "loopstart" || mode === "loopend" ||
+        mode === "selstart" || mode === "selend" || mode === "xfade") {
+        setcursor(8);               // left-right resize
+    } else if (mode === "insideloop" || mode === "insidesel") {
+        setcursor(7);               // dragging hand
+    } else {
+        setcursor(1);               // arrow
+    }
+}
+
+function onidleout(x, y) {
+    setcursor(1);
+}

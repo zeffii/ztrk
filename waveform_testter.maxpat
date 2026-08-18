@@ -13,6 +13,61 @@
         "boxes": [
             {
                 "box": {
+                    "id": "obj-75",
+                    "maxclass": "newobj",
+                    "numinlets": 1,
+                    "numoutlets": 2,
+                    "outlettype": [ "bang", "int" ],
+                    "patching_rect": [ 1069.0, 154.0, 29.5, 22.0 ],
+                    "text": "t b i"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-76",
+                    "maxclass": "newobj",
+                    "numinlets": 2,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 1069.0, 192.0, 29.5, 22.0 ],
+                    "text": "join"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-77",
+                    "maxclass": "number",
+                    "numinlets": 1,
+                    "numoutlets": 2,
+                    "outlettype": [ "", "bang" ],
+                    "parameter_enable": 0,
+                    "patching_rect": [ 1010.0, 154.0, 50.0, 22.0 ]
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-78",
+                    "maxclass": "number",
+                    "numinlets": 1,
+                    "numoutlets": 2,
+                    "outlettype": [ "", "bang" ],
+                    "parameter_enable": 0,
+                    "patching_rect": [ 1110.0, 154.0, 50.0, 22.0 ]
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-74",
+                    "maxclass": "message",
+                    "numinlets": 2,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 1068.0, 263.0, 82.0, 22.0 ],
+                    "text": "setview $1 $2"
+                }
+            },
+            {
+                "box": {
                     "id": "obj-70",
                     "maxclass": "dict.view",
                     "numinlets": 1,
@@ -27,7 +82,7 @@
                     "numinlets": 1,
                     "numoutlets": 2,
                     "outlettype": [ "bang", "int" ],
-                    "patching_rect": [ 814.0, 110.0, 29.5, 22.0 ],
+                    "patching_rect": [ 839.0, 90.0, 29.5, 22.0 ],
                     "text": "t b i"
                 }
             },
@@ -38,7 +93,7 @@
                     "numinlets": 2,
                     "numoutlets": 1,
                     "outlettype": [ "" ],
-                    "patching_rect": [ 814.0, 148.0, 29.5, 22.0 ],
+                    "patching_rect": [ 839.0, 128.0, 29.5, 22.0 ],
                     "text": "join"
                 }
             },
@@ -50,7 +105,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "bang" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 755.0, 110.0, 50.0, 22.0 ]
+                    "patching_rect": [ 780.0, 90.0, 50.0, 22.0 ]
                 }
             },
             {
@@ -61,7 +116,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "bang" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 855.0, 110.0, 50.0, 22.0 ]
+                    "patching_rect": [ 880.0, 90.0, 50.0, 22.0 ]
                 }
             },
             {
@@ -205,7 +260,7 @@
                     "numoutlets": 1,
                     "outlettype": [ "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 509.0, 306.0, 357.0, 146.0 ],
+                    "patching_rect": [ 529.0, 303.0, 357.0, 146.0 ],
                     "textfile": {
                         "filename": "ztrk_waveform4_view.js",
                         "flags": 0,
@@ -230,25 +285,12 @@
                 "box": {
                     "fontname": "Consolas",
                     "id": "obj-51",
-                    "linecount": 13,
+                    "linecount": 28,
                     "maxclass": "comment",
                     "numinlets": 1,
                     "numoutlets": 0,
-                    "patching_rect": [ 509.0, 483.0, 503.0, 189.0 ],
-                    "text": "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n┃ Action                        ┃   What it does                          ┃\n┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩\n│ Click + drag empty area       │   Create / resize selection             │ \n│ Drag near loop start/end      │   Move loop edges                       │\n│ Drag near xfade edges         │   Adjust xfadeIn / xfadeOut lengths     │ \n│ Drag near playhead            │   Scrub playhead                        │\n│ Alt/Option + drag inside loop │   Move whole loop region                │\n│ Alt/Option + drag selection   │   Move whole selection                  │\n│ Shift held                    │   Fine control (smaller steps)          │\n└───────────────────────────────┴─────────────────────────────────────────┘\r \n  Edge detection uses a 6-pixel tolerance so the handles are easy to grab."
-                }
-            },
-            {
-                "box": {
-                    "fontname": "Consolas",
-                    "fontsize": 14.0,
-                    "id": "obj-24",
-                    "linecount": 14,
-                    "maxclass": "comment",
-                    "numinlets": 1,
-                    "numoutlets": 0,
-                    "patching_rect": [ 89.0, 483.0, 399.0, 236.0 ],
-                    "text": "set mybuffer\n\nsetview 12000 48000          ← zoom/scroll (samples)\nsetselection 15000 22000\nsetloop 18000 42000\nsetxfade 1024 1024           ← xfade-in samples, xfade-out samples\nsetplayhead 25000\n\nclearselection\nclearloop\nbang                         ← force waveform rebuild"
+                    "patching_rect": [ 4.0, 303.0, 503.0, 414.0 ],
+                    "text": "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n┃ Action                        ┃   What it does                          ┃\n┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩\n│ Click + drag empty area       │   Create / resize selection             │ \n│ Drag near loop start/end      │   Move loop edges                       │\n│ Drag near xfade edges         │   Adjust xfadeIn / xfadeOut lengths     │ \n│ Drag near playhead            │   Scrub playhead                        │\n│ Alt/Option + drag inside loop │   Move whole loop region                │\n│ Alt/Option + drag selection   │   Move whole selection                  │\n│ Shift held                    │   Fine control (smaller steps)          │\n└───────────────────────────────┴─────────────────────────────────────────┘\r \n  Edge detection uses a 6-pixel tolerance so the handles are easy to grab.\n\n┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n┃ Messages                      ┃   What it does                          ┃\n┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩\n│ set mybuffer                  │                                         │\n│ setview 0 441000              │   zoom region                           │\n│ setloop 10000 80000           │                                         │\n│ setxfade 2048                 │   single value, applied on both sides   │\n│ setselection 20000 50000      │                                         │\n│ setplayhead 30000             │                                         │\n│ clearselection                │                                         │\n│ clearloop                     │                                         │ \n│ bang                          │   force waveform rebuild                │\n└───────────────────────────────┴─────────────────────────────────────────┘\n\n"
                 }
             }
         ],
@@ -365,6 +407,43 @@
                 "patchline": {
                     "destination": [ "obj-70", 0 ],
                     "source": [ "obj-68", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-68", 0 ],
+                    "midpoints": [ 1077.5, 294.0, 882.0, 294.0, 882.0, 294.0, 538.5, 294.0 ],
+                    "source": [ "obj-74", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-76", 1 ],
+                    "source": [ "obj-75", 1 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-76", 0 ],
+                    "source": [ "obj-75", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-74", 0 ],
+                    "source": [ "obj-76", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-76", 0 ],
+                    "source": [ "obj-77", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-75", 0 ],
+                    "source": [ "obj-78", 0 ]
                 }
             }
         ],
