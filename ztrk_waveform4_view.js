@@ -31,8 +31,8 @@ var origA = 0, origB = 0;
 var HIT = 6;                    // pixel tolerance
 
 // colors
-var bg       = [0.12, 0.12, 0.12, 1];
-var waveCol  = [0.82, 0.82, 0.82, 1];
+var bg       = [0.17, 0.17, 0.17, 1];
+var waveCol  = [0.72, 0.72, 0.82, 1];
 var selCol   = [0.25, 0.45, 0.85, 0.35];
 var loopCol  = [0.15, 0.65, 0.35, 0.25];
 var xfadeCol = [0.9,  0.55, 0.15, 0.40];
@@ -166,6 +166,7 @@ function outputDict() {
 
 // -------------------- cache --------------------
 function rebuildCache(w, h) {
+
     if (!buf || buf.framecount() === 0 || viewEnd <= viewStart) {
         cachedImage = null;
         return;
@@ -175,118 +176,75 @@ function rebuildCache(w, h) {
     var framesInView = viewEnd - viewStart;
     var mid = h * 0.5;
 
-    // ---------------------------------------------------------
     // Background
-    // ---------------------------------------------------------
-    off.set_source_rgba(0, 0, 0, 1);
+    off.set_source_rgba(...bg);
     off.rectangle(0, 0, w, h);
     off.fill();
 
-    // ---------------------------------------------------------
     // Waveform
-    // ---------------------------------------------------------
-    off.set_source_rgba(1, 1, 1, 1);
+    off.set_source_rgba(...waveCol);
 
     if (framesInView > w) {
 
-        // =====================================================
         // PEAK MODE
-        //
         // More source frames than display pixels.
         // Each display pixel gets a min/max envelope.
-        // =====================================================
 
         var samplesPerPixel = framesInView / w;
 
         for (var x = 0; x < w; x++) {
 
             // Source-frame range represented by this pixel.
-            var start = Math.floor(
-                viewStart + x * samplesPerPixel
-            );
-
-            var end = Math.floor(
-                viewStart + (x + 1) * samplesPerPixel
-            );
+            var start = Math.floor(viewStart + x * samplesPerPixel);
+            var end = Math.floor(viewStart + (x + 1) * samplesPerPixel);
 
             // Clamp to visible range.
             start = Math.max(viewStart, start);
             end   = Math.min(viewEnd, end);
 
-            if (end <= start)
-                continue;
+            if (end <= start){ continue; }
 
             var count = end - start;
             var samps = buf.peek(1, start, count);
-
             var minv;
             var maxv;
 
-            // -------------------------------------------------
-            // Buffer.peek() returns:
-            //
-            //   number  -> count === 1
-            //   array   -> count > 1
-            // -------------------------------------------------
+            // Buffer.peek() returns and array or a number depending on count
             if (count === 1) {
-
                 minv = samps;
                 maxv = samps;
-
             } else {
 
-                if (!samps || samps.length === 0)
-                    continue;
-
+                if (!samps || samps.length === 0){ continue; }
                 minv = 1.0;
                 maxv = -1.0;
 
                 for (var i = 0; i < samps.length; i++) {
-
                     var v = samps[i];
-
-                    if (v < minv)
-                        minv = v;
-
-                    if (v > maxv)
-                        maxv = v;
+                    if (v < minv){ minv = v; }
+                    if (v > maxv){ maxv = v; }
                 }
             }
 
-            // -------------------------------------------------
             // Convert sample range to screen coordinates.
-            // -------------------------------------------------
             var y1 = mid - maxv * mid;
             var y2 = mid - minv * mid;
-
             var top = Math.floor(Math.min(y1, y2));
             var bottom = Math.ceil(Math.max(y1, y2));
 
             // Always render at least one vertical pixel.
-            if (bottom <= top)
-                bottom = top + 1;
+            if (bottom <= top){ bottom = top + 1; }
 
-            // -------------------------------------------------
             // Pixel-aligned vertical bar.
-            // -------------------------------------------------
-            off.rectangle(
-                x,
-                top,
-                1,
-                bottom - top
-            );
-
+            off.rectangle(x, top, 1, bottom - top);
             off.fill();
         }
 
     } else {
 
-        // =====================================================
         // TRUE SAMPLE MODE
-        //
         // Equal to or fewer samples than display pixels.
         // Draw the actual waveform as a continuous line.
-        // =====================================================
 
         off.set_line_width(1.2);
         var first = true;
@@ -306,13 +264,10 @@ function rebuildCache(w, h) {
             }
         }
 
-        if (!first)
-            off.stroke();
+        if (!first){ off.stroke(); }
     }
 
-    // ---------------------------------------------------------
     // Create cached image
-    // ---------------------------------------------------------
     cachedImage = new Image(off);
 
     lastW = w;
@@ -324,7 +279,6 @@ function rebuildCache(w, h) {
 function paint() {
     var w = mgraphics.size[0];
     var h = mgraphics.size[1];
-    // post(`width ${w}, height ${h}`);
 
     if (dirty || w !== lastW || h !== lastH || !cachedImage) {
         rebuildCache(w, h);

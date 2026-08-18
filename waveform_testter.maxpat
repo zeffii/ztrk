@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 383.0, 220.0, 1733.0, 1027.0 ],
+        "rect": [ 137.0, 152.0, 1733.0, 1027.0 ],
         "boxes": [
             {
                 "box": {
@@ -18,7 +18,7 @@
                     "numinlets": 1,
                     "numoutlets": 2,
                     "outlettype": [ "bang", "int" ],
-                    "patching_rect": [ 1083.955221772194, 311.1940187215805, 29.5, 22.0 ],
+                    "patching_rect": [ 934.0, 56.0, 29.5, 22.0 ],
                     "text": "t b i"
                 }
             },
@@ -29,7 +29,7 @@
                     "numinlets": 2,
                     "numoutlets": 1,
                     "outlettype": [ "" ],
-                    "patching_rect": [ 1083.955221772194, 349.2537188529968, 29.5, 22.0 ],
+                    "patching_rect": [ 934.0, 94.0, 29.5, 22.0 ],
                     "text": "join"
                 }
             },
@@ -41,7 +41,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "bang" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 1025.0, 311.1940187215805, 50.0, 22.0 ]
+                    "patching_rect": [ 875.0, 56.0, 50.0, 22.0 ]
                 }
             },
             {
@@ -52,7 +52,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "bang" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 1132.0, 311.0, 50.0, 22.0 ]
+                    "patching_rect": [ 982.0, 56.0, 50.0, 22.0 ]
                 }
             },
             {
@@ -62,7 +62,7 @@
                     "numinlets": 2,
                     "numoutlets": 1,
                     "outlettype": [ "" ],
-                    "patching_rect": [ 1083.2089531421661, 420.14923870563507, 82.0, 22.0 ],
+                    "patching_rect": [ 934.0, 139.0, 82.0, 22.0 ],
                     "text": "setview $1 $2"
                 }
             },
@@ -72,7 +72,7 @@
                     "maxclass": "dict.view",
                     "numinlets": 1,
                     "numoutlets": 0,
-                    "patching_rect": [ 1025.0, 483.0, 168.0, 263.0 ]
+                    "patching_rect": [ 321.0, 311.1940187215805, 168.0, 263.0 ]
                 }
             },
             {
@@ -82,7 +82,7 @@
                     "numinlets": 1,
                     "numoutlets": 2,
                     "outlettype": [ "bang", "int" ],
-                    "patching_rect": [ 839.0, 90.0, 29.5, 22.0 ],
+                    "patching_rect": [ 758.0, 56.0, 29.5, 22.0 ],
                     "text": "t b i"
                 }
             },
@@ -93,7 +93,7 @@
                     "numinlets": 2,
                     "numoutlets": 1,
                     "outlettype": [ "" ],
-                    "patching_rect": [ 839.0, 128.0, 29.5, 22.0 ],
+                    "patching_rect": [ 758.0, 94.0, 29.5, 22.0 ],
                     "text": "join"
                 }
             },
@@ -105,7 +105,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "bang" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 780.0, 90.0, 50.0, 22.0 ]
+                    "patching_rect": [ 699.0, 56.0, 50.0, 22.0 ]
                 }
             },
             {
@@ -116,7 +116,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "bang" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 880.0, 90.0, 50.0, 22.0 ]
+                    "patching_rect": [ 799.0, 56.0, 50.0, 22.0 ]
                 }
             },
             {
@@ -126,7 +126,7 @@
                     "numinlets": 2,
                     "numoutlets": 1,
                     "outlettype": [ "" ],
-                    "patching_rect": [ 814.0, 182.0, 81.0, 22.0 ],
+                    "patching_rect": [ 758.0, 139.0, 81.0, 22.0 ],
                     "text": "setloop $1 $2"
                 }
             },
@@ -138,7 +138,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "bang" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 678.0, 154.0, 50.0, 22.0 ]
+                    "patching_rect": [ 638.0, 104.0, 50.0, 22.0 ]
                 }
             },
             {
@@ -148,7 +148,7 @@
                     "numinlets": 2,
                     "numoutlets": 1,
                     "outlettype": [ "" ],
-                    "patching_rect": [ 678.0, 185.0, 71.0, 22.0 ],
+                    "patching_rect": [ 638.0, 139.0, 71.0, 22.0 ],
                     "text": "setxfade $1"
                 }
             },
@@ -159,7 +159,7 @@
                     "numinlets": 2,
                     "numoutlets": 1,
                     "outlettype": [ "" ],
-                    "patching_rect": [ 568.0, 187.0, 90.0, 22.0 ],
+                    "patching_rect": [ 529.0, 140.0, 90.0, 22.0 ],
                     "text": "setplayhead $1"
                 }
             },
@@ -171,7 +171,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "bang" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 568.0, 154.0, 50.0, 22.0 ]
+                    "patching_rect": [ 529.0, 104.0, 50.0, 22.0 ]
                 }
             },
             {
@@ -181,7 +181,7 @@
                     "numinlets": 1,
                     "numoutlets": 2,
                     "outlettype": [ "bang", "int" ],
-                    "patching_rect": [ 535.0, 37.0, 29.5, 22.0 ],
+                    "patching_rect": [ 370.0, 65.0, 29.5, 22.0 ],
                     "text": "t b i"
                 }
             },
@@ -192,7 +192,7 @@
                     "numinlets": 2,
                     "numoutlets": 1,
                     "outlettype": [ "" ],
-                    "patching_rect": [ 535.0, 76.0, 29.5, 22.0 ],
+                    "patching_rect": [ 370.0, 104.0, 29.5, 22.0 ],
                     "text": "join"
                 }
             },
@@ -204,7 +204,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "bang" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 476.0, 37.0, 50.0, 22.0 ]
+                    "patching_rect": [ 311.0, 65.0, 50.0, 22.0 ]
                 }
             },
             {
@@ -215,7 +215,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "bang" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 576.0, 37.0, 50.0, 22.0 ]
+                    "patching_rect": [ 411.0, 65.0, 50.0, 22.0 ]
                 }
             },
             {
@@ -225,7 +225,7 @@
                     "numinlets": 2,
                     "numoutlets": 1,
                     "outlettype": [ "" ],
-                    "patching_rect": [ 535.0, 110.0, 105.0, 22.0 ],
+                    "patching_rect": [ 370.0, 140.0, 105.0, 22.0 ],
                     "text": "setselection $1 $2"
                 }
             },
@@ -237,7 +237,7 @@
                     "numoutlets": 1,
                     "outlettype": [ "bang" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 415.0, 179.0, 24.0, 24.0 ]
+                    "patching_rect": [ 393.0, 248.0, 24.0, 24.0 ]
                 }
             },
             {
@@ -247,7 +247,7 @@
                     "numinlets": 2,
                     "numoutlets": 1,
                     "outlettype": [ "" ],
-                    "patching_rect": [ 461.0, 180.0, 53.0, 22.0 ],
+                    "patching_rect": [ 439.0, 249.0, 53.0, 22.0 ],
                     "text": "set AMP"
                 }
             },
@@ -277,7 +277,7 @@
                     "numinlets": 1,
                     "numoutlets": 2,
                     "outlettype": [ "float", "bang" ],
-                    "patching_rect": [ 722.0, 257.0, 148.0, 22.0 ],
+                    "patching_rect": [ 577.0, 256.0, 148.0, 22.0 ],
                     "text": "buffer~ AMP drumLoop.aif"
                 }
             },
@@ -289,7 +289,7 @@
                     "maxclass": "comment",
                     "numinlets": 1,
                     "numoutlets": 0,
-                    "patching_rect": [ 4.0, 303.0, 510.0, 386.0 ],
+                    "patching_rect": [ 1077.0, 56.0, 510.0, 386.0 ],
                     "text": "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n┃ Action                        ┃   What it does                          ┃\n┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩\n│ Click + drag empty area       │   Create / resize selection             │ \n│ Drag near loop start/end      │   Move loop edges                       │\n│ Drag near xfade edges         │   Adjust xfadeIn / xfadeOut lengths     │ \n│ Drag near playhead            │   Scrub playhead                        │\n│ Alt/Option + drag inside loop │   Move whole loop region                │\n│ Alt/Option + drag selection   │   Move whole selection                  │\n│ Shift held                    │   Fine control (smaller steps)          │\n└───────────────────────────────┴─────────────────────────────────────────┘\r \n  Edge detection uses a 6-pixel tolerance so the handles are easy to grab.\n\n┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n┃ Messages                      ┃   What it does                          ┃\n┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩\n│ set mybuffer                  │                                         │\n│ setview 0 441000              │   zoom region                           │\n│ setloop 10000 80000           │                                         │\n│ setxfade 2048                 │   single value, applied on both sides   │\n│ setselection 20000 50000      │                                         │\n│ setplayhead 30000             │                                         │\n│ clearselection                │                                         │\n│ clearloop                     │                                         │ \n│ bang                          │   force waveform rebuild                │\n└───────────────────────────────┴─────────────────────────────────────────┘"
                 }
             }
@@ -328,6 +328,7 @@
             {
                 "patchline": {
                     "destination": [ "obj-68", 0 ],
+                    "midpoints": [ 767.5, 232.0, 538.5, 232.0 ],
                     "source": [ "obj-56", 0 ]
                 }
             },
@@ -340,12 +341,14 @@
             {
                 "patchline": {
                     "destination": [ "obj-68", 0 ],
+                    "midpoints": [ 647.5, 231.0, 538.5, 231.0 ],
                     "source": [ "obj-58", 0 ]
                 }
             },
             {
                 "patchline": {
                     "destination": [ "obj-68", 0 ],
+                    "midpoints": [ 538.5, 297.0, 538.5, 297.0 ],
                     "source": [ "obj-59", 0 ]
                 }
             },
@@ -388,31 +391,35 @@
             {
                 "patchline": {
                     "destination": [ "obj-68", 0 ],
+                    "midpoints": [ 379.5, 229.0, 538.5, 229.0 ],
                     "source": [ "obj-65", 0 ]
                 }
             },
             {
                 "patchline": {
                     "destination": [ "obj-68", 0 ],
+                    "midpoints": [ 402.5, 281.0, 538.5, 281.0 ],
                     "source": [ "obj-66", 0 ]
                 }
             },
             {
                 "patchline": {
                     "destination": [ "obj-68", 0 ],
+                    "midpoints": [ 448.5, 281.0, 538.5, 281.0 ],
                     "source": [ "obj-67", 0 ]
                 }
             },
             {
                 "patchline": {
                     "destination": [ "obj-70", 0 ],
+                    "midpoints": [ 538.5, 459.0, 501.0, 459.0, 501.0, 297.0, 330.5, 297.0 ],
                     "source": [ "obj-68", 0 ]
                 }
             },
             {
                 "patchline": {
                     "destination": [ "obj-68", 0 ],
-                    "midpoints": [ 1092.7089531421661, 294.0, 882.0, 294.0, 882.0, 294.0, 538.5, 294.0 ],
+                    "midpoints": [ 943.5, 233.0, 882.0, 233.0, 882.0, 233.0, 538.5, 233.0 ],
                     "source": [ "obj-74", 0 ]
                 }
             },
