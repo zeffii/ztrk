@@ -167,25 +167,27 @@ function rebuildCache(w, h) {
     }
 
     var off = new MGraphics(w, h);
-
     var framesInView = viewEnd - viewStart;
     var mid = h * 0.5;
 
-    if (framesInView >= w) {
-        // ========== Peak style (normal / zoomed out) ==========
-        off.set_source_rgba(bg);
-        off.rectangle(0, 0, w, h);
-        off.fill();
+    // Always start with black background for clarity when zoomed in
+    off.set_source_rgba(0, 0, 0, 1);
+    off.rectangle(0, 0, w, h);
+    off.fill();
 
-        off.set_source_rgba(waveCol);
-        off.set_line_width(linewidth);
+    off.set_source_rgba(1, 1, 1, 1);   // white waveform
+    off.set_line_width(1.2);
 
+    if (framesInView > w) {
+        // ===== Peak style only when we have MORE samples than pixels =====
         var samplesPerPixel = framesInView / w;
 
         for (var x = 0; x < w; x++) {
             var start = Math.floor(viewStart + x * samplesPerPixel);
-            var end   = Math.min(Math.floor(viewStart + (x + 1) * samplesPerPixel), viewEnd);
-            if (end <= start) end = start + 1;
+            var end   = Math.floor(viewStart + (x + 1) * samplesPerPixel);
+            
+            // Important: do NOT force end = start + 1 any more
+            if (end <= start) continue;   // skip empty pixels
 
             var samps = buf.peek(1, start, end - start);
             var minv =  1.0;
@@ -206,14 +208,7 @@ function rebuildCache(w, h) {
         off.stroke();
     }
     else {
-        // ========== Deep zoom: black background + white line between real samples ==========
-        off.set_source_rgba(0, 0, 0, 1);          // pure black background
-        off.rectangle(0, 0, w, h);
-        off.fill();
-
-        off.set_source_rgba(1, 1, 1, 1);          // pure white line
-        off.set_line_width(1.5);                  // slightly thicker for clarity
-
+        // ===== True continuous line between real samples =====
         var first = true;
         for (var i = viewStart; i < viewEnd; i++) {
             var v = buf.peek(1, i, 1)[0];

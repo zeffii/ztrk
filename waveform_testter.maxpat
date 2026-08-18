@@ -18,7 +18,7 @@
                     "numinlets": 1,
                     "numoutlets": 2,
                     "outlettype": [ "bang", "int" ],
-                    "patching_rect": [ 1069.0, 154.0, 29.5, 22.0 ],
+                    "patching_rect": [ 1083.955221772194, 311.1940187215805, 29.5, 22.0 ],
                     "text": "t b i"
                 }
             },
@@ -29,7 +29,7 @@
                     "numinlets": 2,
                     "numoutlets": 1,
                     "outlettype": [ "" ],
-                    "patching_rect": [ 1069.0, 192.0, 29.5, 22.0 ],
+                    "patching_rect": [ 1083.955221772194, 349.2537188529968, 29.5, 22.0 ],
                     "text": "join"
                 }
             },
@@ -41,7 +41,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "bang" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 1010.0, 154.0, 50.0, 22.0 ]
+                    "patching_rect": [ 1025.0, 311.1940187215805, 50.0, 22.0 ]
                 }
             },
             {
@@ -52,7 +52,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "bang" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 1110.0, 154.0, 50.0, 22.0 ]
+                    "patching_rect": [ 1124.9999964237213, 311.1940187215805, 50.0, 22.0 ]
                 }
             },
             {
@@ -62,7 +62,7 @@
                     "numinlets": 2,
                     "numoutlets": 1,
                     "outlettype": [ "" ],
-                    "patching_rect": [ 1068.0, 263.0, 82.0, 22.0 ],
+                    "patching_rect": [ 1083.2089531421661, 420.14923870563507, 82.0, 22.0 ],
                     "text": "setview $1 $2"
                 }
             },
@@ -260,7 +260,7 @@
                     "numoutlets": 1,
                     "outlettype": [ "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 529.0, 303.0, 357.0, 146.0 ],
+                    "patching_rect": [ 529.1044586896896, 302.985063791275, 470.8955055475235, 145.52238285541534 ],
                     "textfile": {
                         "filename": "ztrk_waveform4_view.js",
                         "flags": 0,
@@ -412,7 +412,7 @@
             {
                 "patchline": {
                     "destination": [ "obj-68", 0 ],
-                    "midpoints": [ 1077.5, 294.0, 882.0, 294.0, 882.0, 294.0, 538.5, 294.0 ],
+                    "midpoints": [ 1092.7089531421661, 294.0, 882.0, 294.0, 882.0, 294.0, 538.6044586896896, 294.0 ],
                     "source": [ "obj-74", 0 ]
                 }
             },
