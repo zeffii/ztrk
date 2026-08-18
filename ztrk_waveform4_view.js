@@ -187,70 +187,117 @@ function rebuildCache(w, h) {
     // ---------------------------------------------------------
     off.set_source_rgba(1, 1, 1, 1);
 
-    if (framesInView >= (2.0 * w)) {
+    if (framesInView > w) {
 
+        // =====================================================
         // PEAK MODE
+        //
+        // More source frames than display pixels.
+        // Each display pixel gets a min/max envelope.
+        // =====================================================
 
         var samplesPerPixel = framesInView / w;
 
         for (var x = 0; x < w; x++) {
 
-            // Exact source-frame range corresponding to this destination pixel.
-            var start = Math.floor(viewStart + x * samplesPerPixel);
-            var end   = Math.floor(viewStart + (x + 1) * samplesPerPixel);
+            // Source-frame range represented by this pixel.
+            var start = Math.floor(
+                viewStart + x * samplesPerPixel
+            );
 
-            // Clamp to the visible view / buffer.
+            var end = Math.floor(
+                viewStart + (x + 1) * samplesPerPixel
+            );
+
+            // Clamp to visible range.
             start = Math.max(viewStart, start);
             end   = Math.min(viewEnd, end);
 
             if (end <= start)
                 continue;
 
-            var samps = buf.peek(1, start, end - start);
+            var count = end - start;
+            var samps = buf.peek(1, start, count);
 
-            if (!samps || samps.length === 0)
-                continue;
+            var minv;
+            var maxv;
 
-            var minv = 1.0;
-            var maxv = -1.0;
+            // -------------------------------------------------
+            // Buffer.peek() returns:
+            //
+            //   number  -> count === 1
+            //   array   -> count > 1
+            // -------------------------------------------------
+            if (count === 1) {
 
-            for (var i = 0; i < samps.length; i++) {
-                var v = samps[i];
+                minv = samps;
+                maxv = samps;
 
-                if (v < minv)
-                    minv = v;
+            } else {
 
-                if (v > maxv)
-                    maxv = v;
+                if (!samps || samps.length === 0)
+                    continue;
+
+                minv = 1.0;
+                maxv = -1.0;
+
+                for (var i = 0; i < samps.length; i++) {
+
+                    var v = samps[i];
+
+                    if (v < minv)
+                        minv = v;
+
+                    if (v > maxv)
+                        maxv = v;
+                }
             }
 
+            // -------------------------------------------------
+            // Convert sample range to screen coordinates.
+            // -------------------------------------------------
             var y1 = mid - maxv * mid;
             var y2 = mid - minv * mid;
 
-            var top    = Math.min(y1, y2);
-            var height = Math.abs(y2 - y1);
+            var top = Math.floor(Math.min(y1, y2));
+            var bottom = Math.ceil(Math.max(y1, y2));
 
-            // Always occupy at least one device pixel vertically.
-            if (height < 1){
-                height = 1;
-            }
+            // Always render at least one vertical pixel.
+            if (bottom <= top)
+                bottom = top + 1;
 
-            off.rectangle(x, top, 1, height);
+            // -------------------------------------------------
+            // Pixel-aligned vertical bar.
+            // -------------------------------------------------
+            off.rectangle(
+                x,
+                top,
+                1,
+                bottom - top
+            );
+
             off.fill();
         }
 
     } else {
 
+        // =====================================================
         // TRUE SAMPLE MODE
-        var first = true;
+        //
+        // Equal to or fewer samples than display pixels.
+        // Draw the actual waveform as a continuous line.
+        // =====================================================
 
         off.set_line_width(1.2);
+        var first = true;
+
         for (var i = viewStart; i < viewEnd; i++) {
 
-            var v = buf.peek(1, i, 1);
+            // Buffer.peek() returns a NUMBER when count == 1.
+            var sample = buf.peek(1, i, 1);
             var x = ((i - viewStart) / framesInView) * w;
-            var y = mid - v * mid;
-            
+            var y = mid - sample * mid;
+
             if (first) {
                 off.move_to(x, y);
                 first = false;
@@ -259,10 +306,8 @@ function rebuildCache(w, h) {
             }
         }
 
-        if (!first){
+        if (!first)
             off.stroke();
-        }
-
     }
 
     // ---------------------------------------------------------
