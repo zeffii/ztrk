@@ -1,9 +1,79 @@
+/// RaveTable 2026
+/// 2048 normal resolution
+/// 8192 current industry standard 
+/// rebuild and augmentation of my 2019 RavetTable SoftSynth (C++).
+
 inlets = 2;
 outlets = 3;
 
 mgraphics.init();
 mgraphics.relative_coords = 0;
 mgraphics.autofill = 0;
+
+function make_param(...params){
+    const [param, param_props] = [{}, ["def", "min", "max", "longname", "shortname"]];
+    for (const [idx, value] of params.entries())
+        param[param_props[idx]] = value;
+    return param;
+}
+
+const params = {
+    Amp:   make_param(1.0,    0.0, 4.0,   "Amplifier",   "Amp"),
+    A01:   make_param(0.5,    0.0, 4.0,   "Osc 1 Amp",   "A01"),
+    A02:   make_param(0.25,   0.0, 4.0,   "Osc 2 Amp",   "A02"),
+    A03:   make_param(0.123,  0.0, 4.0,   "Osc 3 Amp",   "A03"),
+    A04:   make_param(0.0625, 0.0, 4.0,   "Osc 4 Amp",   "A04"),
+    NMix:  make_param(0.0,    0.0, 1.0,   "Noise Mix",   "NMix"),
+    Seed:  make_param(1.0,    0.0, 255.0, "Noise Seed",  "Seed"),
+    Shift: make_param(0.0,    0.0, 1.0,   "Noise Rot",   "Shift"),
+    Sm:    make_param(0.0,    0.0, 1.0,   "smoothing",   "Sm")
+}
+
+// init the ravetable variables using defaults.
+const RaveTable = {buff: null, data: [], num_samples: 2048};
+for (const [key, value] of Object.entries(params)) { 
+    RaveTable[key] = value.def;
+}
+
+// dynamic function definitions in a loop.
+for (const [key, param_props] of Object.entries(params)) { 
+    // hard clamp to avoid accidental out of bounds input.
+    eval(
+    `function ${key}(value) { 
+        if (value > params.${key}.max) { value = params.${key}.max }
+        else if ( value < params.${key}.min) { value = params.${key}.min }
+        RaveTable.${key} = value;
+        update_wavetable();
+    }`);
+}
+
+function fill_buffer(bufname, data){
+    var envbuff = new Buffer(bufname);
+        envbuff.setattr("sr", 1000);  // 44100 ?
+        envbuff.setattr("chans", 1);
+        envbuff.send("sizeinsamps", data.length);
+
+    for (const [idx, value] of data.entries()) {
+        envbuff.poke(1, idx, value);
+    }
+}
+
+function generate_wavetable(){    
+    /*
+    this is where the fun stuff happens!
+
+    */
+   RaveTable.data = []; // reset anyway.
+   fill_buffer(RaveTable.buff, RaveTable.data)
+};
+
+// regenerate the wavetable and update UI to reflect this.
+function update_wavetable(){
+    generate_wavetable(2048);
+    this.mgraphics.redraw();
+}
+
+function set(buffname){ RaveTable.buff = buffname};
 
 const theme_colors = {
     main_bg_color: [0.2, 0.2, 0.2, 1.0],
@@ -51,13 +121,8 @@ function fill_background(gfx, w, h){
 }
 
 function draw_node_help(gfx, w, h){
+    // todo update...
     const help_lines = [
-        "          Spacebar : Enter edit mode",
-        "         LR Arrows : Select next or previous node",
-        "       CTRL+Arrows : Move current node around slowly",
-        " CTRL+SHIFT+Arrows : Move current node around faster",        
-        "                 S : Enable sustain mode on current node",
-        "                 X : Remove current node",
         "                 H : Show/Hide this message",
         "                 Z : Insert Node to the right, unless last node",
         "          messages : <move_node idx x y>  - for procedural node moving",
@@ -105,5 +170,4 @@ function paint() {
     } else {
         draw_node_help(gfx, w, h);
     }
-
 }
