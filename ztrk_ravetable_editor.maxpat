@@ -13,6 +13,19 @@
         "boxes": [
             {
                 "box": {
+                    "buffername": "RaveTable",
+                    "grid": 2048.0,
+                    "id": "obj-28",
+                    "maxclass": "waveform~",
+                    "numinlets": 5,
+                    "numoutlets": 6,
+                    "outlettype": [ "float", "float", "float", "float", "list", "" ],
+                    "patching_rect": [ 138.5, 434.0, 499.0, 165.0 ],
+                    "setunit": 1
+                }
+            },
+            {
+                "box": {
                     "format": 6,
                     "id": "obj-26",
                     "maxclass": "flonum",

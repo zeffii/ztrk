@@ -30,7 +30,7 @@ const params = {
 }
 
 // init the ravetable variables using defaults.
-const RaveTable = {buff: null, data: [], num_samples: 2048};
+const RaveTable = {buff: null, buff_name: null, data: [], num_samples: 2048};
 for (const [key, value] of Object.entries(params)) { 
     RaveTable[key] = value.def;
 }
@@ -48,13 +48,8 @@ for (const [key, param_props] of Object.entries(params)) {
 }
 
 function fill_buffer(bufname, data){
-    var envbuff = new Buffer(bufname);
-        envbuff.setattr("sr", 1000);  // 44100 ?
-        envbuff.setattr("chans", 1);
-        envbuff.send("sizeinsamps", data.length);
-
     for (const [idx, value] of data.entries()) {
-        envbuff.poke(1, idx, value);
+        RaveTable.buff.poke(1, idx, value);
     }
 }
 
@@ -63,8 +58,10 @@ function generate_wavetable(){
     this is where the fun stuff happens!
 
     */
+   const randomArray = (n) => Array.from({ length: n }, () => Math.random() * 2 - 1);
    RaveTable.data = []; // reset anyway.
-   fill_buffer(RaveTable.buff, RaveTable.data)
+   RaveTable.data = randomArray(RaveTable.num_samples);
+   fill_buffer(RaveTable.buff, RaveTable.data);
 };
 
 // regenerate the wavetable and update UI to reflect this.
@@ -73,7 +70,13 @@ function update_wavetable(){
     this.mgraphics.redraw();
 }
 
-function set(buffname){ RaveTable.buff = buffname};
+function set(buffname){ 
+    RaveTable.buff_name = buffname
+    RaveTable.buff = new Buffer(RaveTable.buff_name);
+    RaveTable.buff.setattr("sr", 1000);  // 44100 ?
+    RaveTable.buff.setattr("chans", 1);
+    RaveTable.buff.send("sizeinsamps", RaveTable.num_samples);
+};
 
 const theme_colors = {
     main_bg_color: [0.2, 0.2, 0.2, 1.0],
