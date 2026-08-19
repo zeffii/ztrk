@@ -10,6 +10,8 @@ mgraphics.init();
 mgraphics.relative_coords = 0;
 mgraphics.autofill = 0;
 
+const sin = Math.sin;
+
 function make_param(...params){
     const [param, param_props] = [{}, ["def", "min", "max", "longname", "shortname"]];
     for (const [idx, value] of params.entries())
@@ -55,13 +57,157 @@ function fill_buffer(bufname, data){
 
 function generate_wavetable(){    
     /*
-    this is where the fun stuff happens!
+    this is where the fun stuff happens! port from namesake function in airtracker.
 
     */
-   const randomArray = (n) => Array.from({ length: n }, () => Math.random() * 2 - 1);
-   RaveTable.data = []; // reset anyway.
-   RaveTable.data = randomArray(RaveTable.num_samples);
-   fill_buffer(RaveTable.buff, RaveTable.data);
+    // sanity_check_all_params() ?  in case i'm offering a dict input for mass param update ( like a preset palette)
+
+    function generate_noise(n, seed){
+        // seed?
+        return Array.from({ length: n }, () => Math.random() * 2 - 1);
+    } 
+
+    // void mix_signal_into_nfsamples(std::vector<RT_Point> &nfsamples, float *noise_samples, float mix){
+    //     int numsamples = nfsamples.size();
+    //     for (int i = 0; i < numsamples; ++i) {
+    //         nfsamples[i].y = float_lerp(nfsamples[i].y, noise_samples[i], mix);
+    //     }
+    // };
+
+    /*
+
+void float_constrain(float& x, float x_min, float x_max){
+    if (x <= x_min) x = x_min;
+    else if (x >= x_max) x = x_max;
+};
+
+void float_fold_constrain(float& x, float x_min, float x_max){
+    if (x < x_min) {
+        float diff = abs(x - x_min);
+        x = x_min + diff;
+    }
+    else if (x > x_max) {
+        float diff = abs(x - x_max);
+        x = x_max -          diff;
+    }
+    float_constrain(x, x_min, x_max);
+};
+
+float float_lerp(float a, float b, float mix){
+    float_constrain(mix, 0.0, 1.0);
+    if (mix == 0.0) return a;
+    if (mix == 1.0) return b;
+
+    float result = a + mix * (b - a);
+    return result;
+};
+
+float get_denominator_for_multipliers(int width){
+
+    int upmid = ceil(float(width) / float(2));
+    int sumval = 0;
+    for (int i = 1; i < upmid; i++)
+        sumval += (2 * i);
+    sumval += upmid;
+    return float(sumval);
+}
+
+    void unweighted_sliding_average(std::vector<RT_Point> &nfsamples, int width, float mix){
+    
+    std::vector<RT_Point> smoothed;
+    int numfsamples = nfsamples.size();
+
+    if (width == 3){
+        for (int i = 0; i < numfsamples; i++) {
+
+            int idx = ((i-1) < 0) ? numfsamples-1 : i-1;
+            float A = nfsamples[idx].y;
+            float B = nfsamples[i].y;
+            float C = nfsamples[(i+1) % numfsamples].y;
+            float fy = (A + B + C) / 3.0;
+            RT_Point p = {float(i), fy};
+            smoothed.push_back(p);
+        }
+    } else if (width == 9){
+
+        int midpoint = ceil(float(width) / float(2));
+        int lowermid = floor(width/2);
+        float denominator = get_denominator_for_multipliers(width);
+
+        for (int i = 0; i < numfsamples; i++) {
+
+            float samples[width];
+
+            for (int j = 0; j < width; j++){
+
+                if (j == lowermid){
+                    samples[j] = nfsamples[i].y * float(midpoint);
+
+                } else if ( j < lowermid ){
+                    float amp = j + 1;               // 1 2 3 .. midpoint
+                    int offset = lowermid - j;       // midpoint .. 3 2 1
+                    float index = ((i-offset) < 0) ? numfsamples-(offset-i) : i-offset;
+                    samples[j] = nfsamples[index].y * float(amp);
+
+                } else if ( j > lowermid ){
+                    float amp = width - j;           // midpoint .. 3 2 1
+                    int offset = j - lowermid;       // 1 2 3 ...midpoint 
+                    float index = (i+offset) % numfsamples;
+                    samples[j] = nfsamples[index].y * float(amp);
+                }
+            }
+            float fy = float(sum_of_floats(samples, width)) / denominator;
+            RT_Point p = {float(i), fy};
+            smoothed.push_back(p);
+        }
+    }
+
+    if ((width == 3) || (width == 9)){
+        for (int i = 0; i < numfsamples; i++) {
+            float mixed = float_lerp(nfsamples[i].y, smoothed[i].y, mix);
+            nfsamples[i].y = mixed;
+        }
+    }
+
+};
+*/
+
+
+    RaveTable.data = []; // reset anyway.
+    //RaveTable.data = generate_noise(RaveTable.num_samples, seed);
+
+    const fi = Math.PI * 2.0 / RaveTable.num_samples;
+
+    // apply values to formula for wavetable
+    for (let i = 0; i < RaveTable.num_samples; i++){
+        const fy = RaveTable.A01 * sin(fi*i) +
+                   RaveTable.A02 * sin(2*fi*i) +
+                   RaveTable.A03 * sin(3*fi*i) +
+                   RaveTable.A04 * sin(4*fi*i);
+        fy *= RaveTable.Amp;
+                   
+        // float_constrain(fy, -1.0, 1.0);  <-- this would be a double foldover
+        float_fold_constrain(fy, -1.0, 1.0);
+        RaveTable.data.push(fy);
+    }
+
+    // insert noise here, noise seed and noise amplitude :)
+    if (gparams[13].real_val > 0.0){
+
+        const mix = gparams[13].real_val;
+        const seed = int(gparams[14].real_val);
+        const shift = gparams[15].real_val;
+        const numspaces = int(map(shift, 0.0, 1.0, float(0), float(numsamples)));
+
+        noise_samples = generate_noise(numsamples, seed); // OK
+        shift_float_array(noise_samples, numsamples, numspaces);
+        mix_signal_into_nfsamples(RaveTable.data, noise_samples, mix);  // not implemented yet!
+    }
+    
+    // smoothing
+    if (gparams[16].real_val > 0.0){ unweighted_sliding_average(nfsamples, 9, gparams[16].real_val); }
+
+    fill_buffer(RaveTable.buff, RaveTable.data);
 };
 
 // regenerate the wavetable and update UI to reflect this.
