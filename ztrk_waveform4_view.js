@@ -1,4 +1,3 @@
-// waveform_display_full.js
 // Cached mono waveform + zoom + selection + loop + equal xfade + playhead + mouse + dict
 // Proper hybrid rendering (peak style vs true sample lines)
 
