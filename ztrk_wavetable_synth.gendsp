@@ -1,0 +1,143 @@
+/*
+
+Wavetable Synth Voice  –  2048-sample buffer "synth_wt"
+Inlets:
+   in1 = frequency (Hz)
+   in2 = gate (0 or 1)
+Params (or set via messages / UI):
+   A D S R          – amplitude envelope
+   FA FD FS FR      – filter envelope
+   cutoff           – base filter frequency (Hz)
+   res              – resonance (0..1-ish, careful >0.9)
+   fenv_amt         – how much filter env modulates cutoff (0..1+)
+   gain             – final output gain
+
+============================================================
+
+[kslider] or [makenote 100 500] or your tracker
+    │
+    ├─ note → [mtof] ──────────────────────────────→ in1 of gen~
+    └─ gate (0/1) ─────────────────────────────────→ in2 of gen~
+
+[v8ui  (your synth_mk1 script)]
+    │  (outlet 1: "param" idx value)
+    └─→ [route param] → [select 0 1 2 3 4 5 6 7 …]
+                           │
+                           └─→ [pak …] or individual [set A $1( etc.
+                                 messages into the gen~ :
+
+[gen~]  ← receive messages:
+    A $1, D $1, S $1, R $1,
+    FA $1, FD $1, FS $1, FR $1,
+    cutoff $1, res $1, fenv_amt $1, gain $1
+
+[gen~] → [*~ 0.5] → [dac~]
+
+=============================================================
+
+[v8ui]
+|
+[route param]
+|
+[sel 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16]
+|  |  |  |  |  |  |  |  …
+[set A $1(  [set D $1(  … etc.   →  [gen~]
+
+*/
+
+Buffer wt("synth_wt");
+
+Param A(0.01), D(0.2), S(0.7), R(0.3);
+Param FA(0.01), FD(0.3), FS(0.4), FR(0.4);
+Param cutoff(1200), res(0.3), fenv_amt(0.6), gain(0.4);
+
+// ---------- amplitude ADSR (linear segments) ----------
+History amp_env(0), amp_state(0);   // 0=idle,1=atk,2=dec,3=sus,4=rel
+History fenv(0), fstate(0);
+History phase(0);
+History low(0), band(0);
+
+// ---------- helpers ----------
+freq = max(in1, 1);
+gate = in2 > 0.5;
+
+// convert seconds → samples (clamp tiny values so we never divide by zero)
+sr = samplerate;
+atk_samps  = max(A  * sr, 1);
+dec_samps  = max(D  * sr, 1);
+rel_samps  = max(R  * sr, 1);
+fatk_samps = max(FA * sr, 1);
+fdec_samps = max(FD * sr, 1);
+frel_samps = max(FR * sr, 1);
+
+
+if (gate && amp_state == 0) {
+    amp_state = 1;                  // note-on → attack
+} else if (!gate && (amp_state > 0 && amp_state < 4)) {
+    amp_state = 4;                  // note-off → release
+}
+
+amp = amp_env;
+if (amp_state == 1) {               // attack
+    amp = amp + 1 / atk_samps;
+    if (amp >= 1) { amp = 1; amp_state = 2; }
+} else if (amp_state == 2) {        // decay
+    amp = amp - (1 - S) / dec_samps;
+    if (amp <= S) { amp = S; amp_state = 3; }
+} else if (amp_state == 3) {        // sustain
+    amp = S;
+} else if (amp_state == 4) {        // release
+    amp = amp - amp / rel_samps;    // exponential-ish
+    if (amp < 0.0001) { amp = 0; amp_state = 0; }
+}
+amp_env = amp;
+amp_state = amp_state;
+
+// ---------- filter ADSR (identical structure) ----------
+
+if (gate && fstate == 0) {
+    fstate = 1;
+} else if (!gate && (fstate > 0 && fstate < 4)) {
+    fstate = 4;
+}
+
+fe = fenv;
+if (fstate == 1) {
+    fe = fe + 1 / fatk_samps;
+    if (fe >= 1) { fe = 1; fstate = 2; }
+} else if (fstate == 2) {
+    fe = fe - (1 - FS) / fdec_samps;
+    if (fe <= FS) { fe = FS; fstate = 3; }
+} else if (fstate == 3) {
+    fe = FS;
+} else if (fstate == 4) {
+    fe = fe - fe / frel_samps;
+    if (fe < 0.0001) { fe = 0; fstate = 0; }
+}
+fenv = fe;
+fstate = fstate;
+
+// ---------- wavetable oscillator ----------
+phase = wrap(phase + freq / sr, 0, 1);
+// linear interpolation lookup
+osc = sample(wt, phase * dim(wt), interp="linear");
+
+// ---------- resonant low-pass (simple SVF-style) ----------
+// cutoff modulated by filter envelope
+mod_cut = cutoff * (1 + fe * fenv_amt * 8);   // up to ~9× base
+mod_cut = clip(mod_cut, 20, sr * 0.45);
+
+f = 2 * sin(pi * mod_cut / sr);               // approx
+q = 1 - res;                                  // higher res → lower q damping
+q = max(q, 0.05);
+
+high = osc - low - q * band;
+band = band + f * high;
+low  = low  + f * band;
+
+// soft clip the filter a bit so high resonance stays musical
+filt = tanh(low * 1.2);
+
+// ---------- output ----------
+out1 = filt * amp * gain;
+out2 = amp;          // optional: envelope for visualization / sidechain
