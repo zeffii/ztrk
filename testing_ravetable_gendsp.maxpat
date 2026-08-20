@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 62.0, 85.0, 2117.0, 1265.0 ],
+        "rect": [ 62.0, 85.0, 2002.0, 1265.0 ],
         "toolbars_unpinned_last_save": 4,
         "boxes": [
             {
@@ -19,7 +19,7 @@
                     "numinlets": 2,
                     "numoutlets": 1,
                     "outlettype": [ "bang" ],
-                    "patching_rect": [ 1208.6022038459778, 1181.7204822301865, 184.0, 68.0 ]
+                    "patching_rect": [ 1164.51618039608, 1155.4946756362915, 184.0, 68.0 ]
                 }
             },
             {
@@ -595,7 +595,7 @@
                     "numinlets": 2,
                     "numoutlets": 1,
                     "outlettype": [ "bang" ],
-                    "patching_rect": [ 1894.6237394809723, 1162.3656426668167, 184.0, 68.0 ]
+                    "patching_rect": [ 1776.2151402235029, 1155.4946756362915, 184.0, 68.0 ]
                 }
             },
             {
@@ -605,19 +605,26 @@
                     "numinlets": 2,
                     "numoutlets": 1,
                     "outlettype": [ "bang" ],
-                    "patching_rect": [ 1664.5162024497986, 1162.3656426668167, 184.0, 68.0 ]
+                    "patching_rect": [ 1572.3154869476953, 1155.4946756362915, 184.0, 68.0 ]
                 }
             },
             {
                 "box": {
+                    "bgcolor": [ 0.695464505564228, 0.695464333773592, 0.695464378532954, 1.0 ],
                     "fontname": "Consolas",
                     "id": "obj-70",
                     "linecount": 43,
                     "maxclass": "comment",
                     "numinlets": 1,
                     "numoutlets": 0,
-                    "patching_rect": [ 664.7256398200989, 539.4736790657043, 449.0, 625.0 ],
-                    "text": "Wavetable Synth Voice  –  2048-sample buffer \"synth_wt\"\nInlets:\n   in1 = frequency (Hz)\n   in2 = gate (0 or 1)\nParams (or set via messages / UI):\n   A D S R          – amplitude envelope\n   FA FD FS FR      – filter envelope\n   cutoff           – base filter frequency (Hz)\n   res              – resonance (0..1-ish, careful >0.9)\n   fenv_amt         – how much filter env modulates cutoff (0..1+)\n   gain             – final output gain\n\n============================================================\n\n[kslider] or [makenote 100 500] or your tracker\n    │\n    ├─ note → [mtof] ──────────────────────────────→ in1 of gen~\n    └─ gate (0/1) ─────────────────────────────────→ in2 of gen~\n\n[v8ui  (your synth_mk1 script)]\n    │  (outlet 1: \"param\" idx value)\n    └─→ [route param] → [select 0 1 2 3 4 5 6 7 …]\n                           │\n                           └─→ [pak …] or individual [set A $1( etc.\n                                 messages into the gen~ :\n\n[gen~]  ← receive messages:\n    A $1, D $1, S $1, R $1,\n    FA $1, FD $1, FS $1, FR $1,\n    cutoff $1, res $1, fenv_amt $1, gain $1\n\n[gen~] → [*~ 0.5] → [dac~]\n\n=============================================================\n\n[v8ui]\n|\n[route param]\n|\n[sel 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16]\n|  |  |  |  |  |  |  |  …\n[set A $1(  [set D $1(  … etc.   →  [gen~]\n"
+                    "patching_rect": [ 622.580672621727, 459.13980519771576, 449.0, 625.0 ],
+                    "saved_attribute_attributes": {
+                        "bgcolor": {
+                            "expression": "themecolor.live_surface_bg"
+                        }
+                    },
+                    "text": "Wavetable Synth Voice  –  2048-sample buffer \"synth_wt\"\nInlets:\n   in1 = frequency (Hz)\n   in2 = gate (0 or 1)\nParams (or set via messages / UI):\n   A D S R          – amplitude envelope\n   FA FD FS FR      – filter envelope\n   cutoff           – base filter frequency (Hz)\n   res              – resonance (0..1-ish, careful >0.9)\n   fenv_amt         – how much filter env modulates cutoff (0..1+)\n   gain             – final output gain\n\n============================================================\n\n[kslider] or [makenote 100 500] or your tracker\n    │\n    ├─ note → [mtof] ──────────────────────────────→ in1 of gen~\n    └─ gate (0/1) ─────────────────────────────────→ in2 of gen~\n\n[v8ui  (your synth_mk1 script)]\n    │  (outlet 1: \"param\" idx value)\n    └─→ [route param] → [select 0 1 2 3 4 5 6 7 …]\n                           │\n                           └─→ [pak …] or individual [set A $1( etc.\n                                 messages into the gen~ :\n\n[gen~]  ← receive messages:\n    A $1, D $1, S $1, R $1,\n    FA $1, FD $1, FS $1, FR $1,\n    cutoff $1, res $1, fenv_amt $1, gain $1\n\n[gen~] → [*~ 0.5] → [dac~]\n\n=============================================================\n\n[v8ui]\n|\n[route param]\n|\n[sel 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16]\n|  |  |  |  |  |  |  |  …\n[set A $1(  [set D $1(  … etc.   →  [gen~]\n",
+                    "textcolor": [ 0.0, 0.0, 0.0, 1.0 ]
                 }
             },
             {
@@ -849,7 +856,7 @@
                     "numinlets": 2,
                     "numoutlets": 1,
                     "outlettype": [ "bang" ],
-                    "patching_rect": [ 1426.8817833662033, 1162.3656426668167, 184.0, 68.0 ]
+                    "patching_rect": [ 1368.4158336718876, 1155.4946756362915, 184.0, 68.0 ]
                 }
             },
             {
@@ -858,7 +865,7 @@
                     "maxclass": "ezdac~",
                     "numinlets": 2,
                     "numoutlets": 0,
-                    "patching_rect": [ 2041.041416168213, 809.2105185985565, 45.0, 45.0 ]
+                    "patching_rect": [ 1096.774241924286, 1178.4946756362915, 45.0, 45.0 ]
                 }
             },
             {
@@ -870,7 +877,7 @@
                     "numoutlets": 5,
                     "outlettype": [ "signal", "signal", "", "float", "list" ],
                     "parameter_enable": 1,
-                    "patching_rect": [ 2009.4624691009521, 581.578941822052, 48.0, 136.0 ],
+                    "patching_rect": [ 1096.774241924286, 1022.5806902647018, 48.0, 136.0 ],
                     "saved_attribute_attributes": {
                         "valueof": {
                             "parameter_longname": "live.gain~",
@@ -921,7 +928,7 @@
             },
             {
                 "box": {
-                    "code": "/*\r\nwavetable synth mk2  – rewritten with safer History handling + debug\r\n*/\r\n\r\n// ---------- function (must come before everything) ----------\r\nadsr(env, state, gate, atk_samps, dec_samps, sus, rel_samps) {\r\n    // note-on / note-off state machine\r\n    if (gate && state == 0) {                   state = 1; }  // → attack\r\n    else if (!gate && state > 0 && state < 4) { state = 4; }  // → release\r\n\r\n    if (state == 1) {                       // attack\r\n        env = env + 1 / atk_samps;\r\n        if (env >= 1) env, state = 1, 2;\r\n    } else if (state == 2) {                // decay\r\n        env = env - (1 - sus) / dec_samps;\r\n        if (env <= sus) env, state = sus, 3;\r\n    } else if (state == 3) {                // sustain\r\n        env = sus;\r\n    } else if (state == 4) {                // release\r\n        env = env - env / rel_samps;\r\n        if (env < 0.0001) env, state = 0, 0;\r\n    }\r\n\r\n    return env, state;\r\n}\r\n\r\n// ---------- declarations ----------\r\nBuffer wt(\"synth_wt\");\r\n\r\nParam A(0.01), D(0.2), S(0.7), R(0.3);\r\nParam FA(0.01), FD(0.3), FS(0.4), FR(0.4);\r\nParam cutoff(1200), res(0.3), fenv_amt(0.6), gain(0.4);\r\n\r\nHistory amp_env(0), amp_state(0);       // 0=idle 1=atk 2=dec 3=sus 4=rel\r\nHistory fenv(0),    fstate(0);\r\nHistory phase(0);\r\nHistory low(0), band(0);\r\n\r\n// ---------- main code ----------\r\nfreq = max(in1, 1);\r\ngate = in2 > 0.5;                       // change to gate = 1; for forced always-on test\r\n// gate = 1;\r\n\r\n// seconds → samples (never divide by zero)\r\nsr         = samplerate;\r\natk_samps  = max(A  * sr, 1);\r\ndec_samps  = max(D  * sr, 1);\r\nrel_samps  = max(R  * sr, 1);\r\nfatk_samps = max(FA * sr, 1);\r\nfdec_samps = max(FD * sr, 1);\r\nfrel_samps = max(FR * sr, 1);\r\n\r\n// ---- amplitude envelope (safe History write-back) ----\r\namp = amp_env;\r\nst  = amp_state;\r\namp, st = adsr(amp, st, gate, atk_samps, dec_samps, S, rel_samps);\r\namp_env   = amp;\r\namp_state = st;\r\n\r\n// ---- filter envelope (same pattern) ----\r\nfe = fenv;\r\nfst = fstate;\r\nfe, fst = adsr(fe, fst, gate, fatk_samps, fdec_samps, FS, frel_samps);\r\nfenv   = fe;\r\nfstate = fst;\r\n\r\n// ---------- wavetable oscillator ----------\r\nphase = wrap(phase + freq / sr, 0, 1);\r\nosc = sample(wt, phase, interp=\"linear\");\r\n\r\n// ---------- resonant low-pass (SVF-style) ----------\r\nmod_cut = cutoff * (1 + fenv * fenv_amt * 8);\r\nmod_cut = clip(mod_cut, 20, sr * 0.45);\r\n\r\nf = 2 * sin(pi * mod_cut / sr);\r\nq = max(1 - res, 0.05);\r\n\r\nhigh = osc - low - q * band;\r\nband = band + f * high;\r\nlow  = low  + f * band;\r\nfilt = tanh(low * 1.2);                 // soft saturation\r\n\r\n// ---------- outputs ----------\r\nout1 = filt * amp_env * gain;           // main audio\r\nout2 = amp_env;                         // amplitude envelope (visual / sidechain)\r\nout3 = fenv;                            // filter envelope (visual)\r\nout4 = osc * amp_env * gain;            // dry (filter bypass) – useful for debugging",
+                    "code": "/*\r\nwavetable synth mk2  – rewritten with safer History handling + debug\r\n*/\r\n\r\n// ---------- function (must come before everything) ----------\r\nadsr(env, state, gate, atk_samps, dec_samps, sus, rel_samps) {\r\n    // note-on / note-off state machine\r\n    if (gate && state == 0) {                   state = 1; }  // → attack\r\n    else if (!gate && state > 0 && state < 4) { state = 4; }  // → release\r\n\r\n    if (state == 1) {                       // attack\r\n        env = env + 1 / atk_samps;\r\n        if (env >= 1) env, state = 1, 2;\r\n    } else if (state == 2) {                // decay\r\n        env = env - (1 - sus) / dec_samps;\r\n        if (env <= sus) env, state = sus, 3;\r\n    } else if (state == 3) {                // sustain\r\n        env = sus;\r\n    } else if (state == 4) {                // release\r\n        env = env - env / rel_samps;\r\n        if (env < 0.0001) env, state = 0, 0;\r\n    }\r\n\r\n    return env, state;\r\n}\r\n\r\n// ---------- declarations ----------\r\nBuffer wt(\"synth_wt\");\r\n\r\nParam A(0.01), D(0.2), S(0.7), R(0.3);\r\nParam FA(0.01), FD(0.3), FS(0.4), FR(0.4);\r\nParam cutoff(1200), res(0.3), fenv_amt(0.6), gain(0.4);\r\n\r\nHistory amp_env(0), amp_state(0);       // 0=idle 1=atk 2=dec 3=sus 4=rel\r\nHistory fenv(0),    fstate(0);\r\nHistory phase(0);\r\nHistory low(0), band(0);\r\n\r\n// ---------- main code ----------\r\nfreq = max(in1, 1);\r\ngate = in2 > 0.5;                   \r\n\r\n// seconds → samples (never divide by zero)\r\nsr         = samplerate;\r\natk_samps  = max(A  * sr, 1);\r\ndec_samps  = max(D  * sr, 1);\r\nrel_samps  = max(R  * sr, 1);\r\nfatk_samps = max(FA * sr, 1);\r\nfdec_samps = max(FD * sr, 1);\r\nfrel_samps = max(FR * sr, 1);\r\n\r\n// ---- amplitude envelope (safe History write-back) ----\r\namp = amp_env;\r\nst  = amp_state;\r\namp, st = adsr(amp, st, gate, atk_samps, dec_samps, S, rel_samps);\r\namp_env   = amp;\r\namp_state = st;\r\n\r\n// ---- filter envelope (same pattern) ----\r\nfe = fenv;\r\nfst = fstate;\r\nfe, fst = adsr(fe, fst, gate, fatk_samps, fdec_samps, FS, frel_samps);\r\nfenv   = fe;\r\nfstate = fst;\r\n\r\n// ---------- wavetable oscillator ----------\r\nphase = wrap(phase + freq / sr, 0, 1);\r\nosc = sample(wt, phase, interp=\"linear\");\r\n\r\n// ---------- resonant low-pass (SVF-style) ----------\r\nmod_cut = cutoff * (1 + fenv * fenv_amt * 8);\r\nmod_cut = clip(mod_cut, 20, sr * 0.45);\r\n\r\nf = 2 * sin(pi * mod_cut / sr);\r\nq = max(1 - res, 0.05);\r\n\r\nhigh = osc - low - q * band;\r\nband = band + f * high;\r\nlow  = low  + f * band;\r\nfilt = tanh(low * 1.2);                 // soft saturation\r\n\r\n// ---------- outputs ----------\r\nout1 = filt * amp_env * gain;           // main audio\r\nout2 = amp_env;                         // amplitude envelope (visual / sidechain)\r\nout3 = fenv;                            // filter envelope (visual)\r\nout4 = osc * amp_env * gain;            // dry (filter bypass) – useful for debugging",
                     "fontface": 0,
                     "fontname": "<Monospaced>",
                     "fontsize": 12.0,
@@ -1035,14 +1042,14 @@
             {
                 "patchline": {
                     "destination": [ "obj-28", 1 ],
-                    "order": 0,
+                    "order": 1,
                     "source": [ "obj-2", 0 ]
                 }
             },
             {
                 "patchline": {
                     "destination": [ "obj-28", 0 ],
-                    "order": 1,
+                    "order": 2,
                     "source": [ "obj-2", 0 ]
                 }
             },
@@ -1055,7 +1062,7 @@
             {
                 "patchline": {
                     "destination": [ "obj-36", 0 ],
-                    "order": 2,
+                    "order": 0,
                     "source": [ "obj-2", 0 ]
                 }
             },
