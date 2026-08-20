@@ -1,7 +1,9 @@
-/// RaveTable 2026
-/// 2048 normal resolution
-/// 8192 current industry standard 
-/// rebuild and augmentation of my 2019 RavetTable SoftSynth (C++).
+/*
+    RaveTable 2026
+    2048 normal resolution
+    8192 current industry standard 
+    rebuild and augmentation of my 2019 RavetTable SoftSynth (C++).
+*/
 
 inlets = 2;
 outlets = 3;
@@ -11,6 +13,7 @@ mgraphics.relative_coords = 0;
 mgraphics.autofill = 0;
 
 const sin = Math.sin;
+const abs = Math.abs;
 
 function make_param(...params){
     const [param, param_props] = [{}, ["def", "min", "max", "longname", "shortname"]];
@@ -49,6 +52,9 @@ for (const [key, param_props] of Object.entries(params)) {
     }`);
 }
 
+// update all params, then wavetable (for preset use)
+function mass_parameter_update(params){}
+
 function fill_buffer(bufname, data){
     for (const [idx, value] of data.entries()) {
         RaveTable.buff.poke(1, idx, value);
@@ -58,40 +64,36 @@ function fill_buffer(bufname, data){
 function generate_wavetable(){    
     /*
     this is where the fun stuff happens! port from namesake function in airtracker.
-
     */
-    // sanity_check_all_params() ?  in case i'm offering a dict input for mass param update ( like a preset palette)
 
     function generate_noise(n, seed){
         // seed?
         return Array.from({ length: n }, () => Math.random() * 2 - 1);
-    } 
+    }; 
 
-    // void mix_signal_into_nfsamples(std::vector<RT_Point> &nfsamples, float *noise_samples, float mix){
-    //     int numsamples = nfsamples.size();
-    //     for (int i = 0; i < numsamples; ++i) {
+    // function mix_signal_into_nfsamples(nfsamples, noise_samples, mix){
+    //     for (int i = 0; i < RaveTable.num_samples; i++) {
     //         nfsamples[i].y = float_lerp(nfsamples[i].y, noise_samples[i], mix);
     //     }
     // };
-
+    
+    // function float_constrain(x, x_min, x_max){
+    //     if (x <= x_min) x = x_min;
+    //     else if (x >= x_max) x = x_max;
+    //     return x;
+    // };
+    
+    
+    // function float_fold_constrain(x, x_min, x_max){
+    //     if (x < x_min) {
+    //         const diff = abs(x - x_min);
+    //         x = x_min + diff; } 
+    //     else if (x > x_max) {
+    //         const diff = abs(x - x_max);
+    //         x = x_max - diff; }
+    //     return float_constrain(x, x_min, x_max);
+    // };
     /*
-
-void float_constrain(float& x, float x_min, float x_max){
-    if (x <= x_min) x = x_min;
-    else if (x >= x_max) x = x_max;
-};
-
-void float_fold_constrain(float& x, float x_min, float x_max){
-    if (x < x_min) {
-        float diff = abs(x - x_min);
-        x = x_min + diff;
-    }
-    else if (x > x_max) {
-        float diff = abs(x - x_max);
-        x = x_max -          diff;
-    }
-    float_constrain(x, x_min, x_max);
-};
 
 float float_lerp(float a, float b, float mix){
     float_constrain(mix, 0.0, 1.0);
@@ -171,8 +173,6 @@ float get_denominator_for_multipliers(int width){
 
 };
 */
-
-
     RaveTable.data = []; // reset anyway.
     //RaveTable.data = generate_noise(RaveTable.num_samples, seed);
 
@@ -180,32 +180,31 @@ float get_denominator_for_multipliers(int width){
 
     // apply values to formula for wavetable
     for (let i = 0; i < RaveTable.num_samples; i++){
-        const fy = RaveTable.A01 * sin(fi*i) +
+        var fy = RaveTable.A01 * sin(fi*i) +
                    RaveTable.A02 * sin(2*fi*i) +
                    RaveTable.A03 * sin(3*fi*i) +
                    RaveTable.A04 * sin(4*fi*i);
         fy *= RaveTable.Amp;
                    
         // float_constrain(fy, -1.0, 1.0);  <-- this would be a double foldover
-        float_fold_constrain(fy, -1.0, 1.0);
+        // float_fold_constrain(fy, -1.0, 1.0);
         RaveTable.data.push(fy);
     }
 
-    // insert noise here, noise seed and noise amplitude :)
-    if (gparams[13].real_val > 0.0){
+    // // insert noise here, noise seed and noise amplitude :)
+    // if (gparams[13].real_val > 0.0){
 
-        const mix = gparams[13].real_val;
-        const seed = int(gparams[14].real_val);
-        const shift = gparams[15].real_val;
-        const numspaces = int(map(shift, 0.0, 1.0, float(0), float(numsamples)));
+    //     const seed = int(gparams[14].real_val);
+    //     const shift = gparams[15].real_val;
+    //     const numspaces = int(map(shift, 0.0, 1.0, float(0), float(numsamples)));
 
-        noise_samples = generate_noise(numsamples, seed); // OK
-        shift_float_array(noise_samples, numsamples, numspaces);
-        mix_signal_into_nfsamples(RaveTable.data, noise_samples, mix);  // not implemented yet!
-    }
+    //     noise_samples = generate_noise(numsamples, seed); // OK
+    //     noise_samples = shift_float_array(noise_samples, numsamples, numspaces);
+    //     mix_signal_into_nfsamples(RaveTable.data, noise_samples, RaveTable.NMix);  // implemented yet?
+    // }
     
-    // smoothing
-    if (gparams[16].real_val > 0.0){ unweighted_sliding_average(nfsamples, 9, gparams[16].real_val); }
+    // // smoothing
+    // if (gparams[16].real_val > 0.0){ unweighted_sliding_average(nfsamples, 9, gparams[16].real_val); }
 
     fill_buffer(RaveTable.buff, RaveTable.data);
 };

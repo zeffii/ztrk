@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 497.0, 397.0, 775.0, 780.0 ],
+        "rect": [ 468.0, 493.0, 1346.0, 780.0 ],
         "boxes": [
             {
                 "box": {
@@ -136,7 +136,6 @@
                     "numoutlets": 1,
                     "outlettype": [ "" ],
                     "patching_rect": [ 426.0, 111.0, 53.0, 22.0 ],
-                    "presentation_linecount": 2,
                     "text": "Seed $1"
                 }
             },
@@ -160,7 +159,6 @@
                     "numoutlets": 1,
                     "outlettype": [ "" ],
                     "patching_rect": [ 365.0, 111.0, 53.0, 22.0 ],
-                    "presentation_linecount": 2,
                     "text": "NMix $1"
                 }
             },
