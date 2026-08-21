@@ -2,7 +2,7 @@
 
 basic basic for now.
 
-I decided to get a max/msp license because of gen~ and jsui. The goal is to make a tracker interface that will turn max/msp into a playground where i can make and trigger synths exactly the way i want, and hook them up in a modular way to effects. Rather than moaning about the things that i perceive as limitations in other tools/trackers. My main issue is that i want to be able to control the creative part entirely via a keyboard, or via a scripting interface, if i want to. 
+I decided to get a max/msp license because of gen~ and jsui/v8ui/rnbo. The goal is to make a tracker interface that will turn max/msp into a playground where i can make and trigger synths exactly the way i want, and hook them up in a modular way to effects. Rather than moaning about the things that i perceive as limitations in other tools/trackers. My main issue is that i want to be able to control the creative part entirely via a keyboard, or via a scripting interface, if i want to. 
 
 Some milestones i will need to tackle, in no particular order
 
@@ -33,8 +33,12 @@ Some milestones i will need to tackle, in no particular order
     - [x] copy and paste selection
     - [x] shift content of selection up/down
 - [x] trigger from tick
+- [x] basic kb controller envelope editor
+- [x] basic waveform viewer, selector
+- [x] basic first synth mk2
 - [ ] sequencing patterns
-
+- [ ] keyrepeats, need a tidier solution (has been through several iteration, not satisfying yet)
+- [ ] rewrite ui using char-atlas? or switch to alternative rendering during playback.
 
 
 -----------------
