@@ -26,3 +26,12 @@ to the track with the maxdevice on it, and then set it to 3/4 and 5/6
 
 
 
+### Monitoring a signal.
+
+the `float~` dial will not automatically show you signals that are in spikes, f.ex a (click * number) would produce a click of the value of the number.
+This is too brief to be able to perceive on that ui element, you can sample and hold the signal, and trigger the hold with the same click.
+
+### waveform display
+
+use message `bufftime 20` to update the buffer display every 20ms
+
