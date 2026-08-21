@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ -31958.0, -31915.0, 1352.0, 1272.0 ],
+        "rect": [ 1122.0, 85.0, 1352.0, 1272.0 ],
         "showontab": 1,
         "boxes": [
             {
@@ -30,7 +30,6 @@
                         "classnamespace": "box",
                         "rect": [ 0.0, 26.0, 1352.0, 1216.0 ],
                         "showontab": 1,
-                        "visible": 1,
                         "boxes": [
                             {
                                 "box": {
