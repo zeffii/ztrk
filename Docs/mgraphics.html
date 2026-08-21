@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MGraphics Complete Reference – MaxMSP / v8ui / jsui</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --surface: #1a1d24;
+    --border: #2a2f3a;
+    --text: #e6e8ec;
+    --muted: #9aa3b2;
+    --accent: #6cb6ff;
+    --code-bg: #12151b;
+    --green: #7ee787;
+    --orange: #ffa657;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.55;
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  header h1 { margin: 0 0 0.25rem; font-size: 1.6rem; }
+  header p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1rem;
+  }
+  nav a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.85rem;
+    background: #222833;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+  }
+  nav a:hover { background: #2c3340; }
+  main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+  section { margin-bottom: 3.5rem; }
+  h2 {
+    font-size: 1.45rem;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 0.4rem;
+    margin-top: 0;
+  }
+  h3 { color: var(--orange); margin-top: 1.8rem; }
+  h4 { margin-bottom: 0.3rem; color: var(--green); }
+  code, pre {
+    font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, monospace;
+    font-size: 0.88rem;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem 1.2rem;
+    overflow-x: auto;
+    line-height: 1.45;
+  }
+  .method {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+  }
+  .sig { color: var(--accent); font-weight: 600; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.8rem 0;
+    font-size: 0.92rem;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 0.45rem 0.7rem;
+    text-align: left;
+  }
+  th { background: #222833; }
+  .note {
+    background: #1e2a1e;
+    border-left: 4px solid var(--green);
+    padding: 0.8rem 1rem;
+    margin: 1rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .warn {
+    background: #2a2118;
+    border-left: 4px solid var(--orange);
+    padding: 0.8rem 1rem;
+    margin: 1rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+  ul { padding-left: 1.4rem; }
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    padding: 2rem;
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>MGraphics Complete Reference</h1>
+  <p>MaxMSP • v8ui / jsui / @jspainter • Official API + practical notes</p>
+  <nav>
+    <a href="#init">Init &amp; Basics</a>
+    <a href="#coords">Coordinates</a>
+    <a href="#state">State &amp; Transforms</a>
+    <a href="#paths">Paths</a>
+    <a href="#stroke-fill">Stroke / Fill</a>
+    <a href="#lines">Line Styles &amp; Dashes</a>
+    <a href="#text">Text</a>
+    <a href="#images">Images &amp; SVG</a>
+    <a href="#patterns">Patterns &amp; Gradients</a>
+    <a href="#offscreen">Offscreen</a>
+    <a href="#hit">Hit Testing</a>
+    <a href="#tips">Tips</a>
+  </nav>
+</header>
+
+<main>
+
+<!-- ========== INIT ========== -->
+<section id="init">
+  <h2>1. Initialization &amp; Core Concepts</h2>
+
+  <div class="note">
+    Always call <code>mgraphics.init()</code> in global scope for the main context.
+    For offscreen contexts created with <code>new MGraphics(w, h)</code> you do <strong>not</strong> call <code>init()</code>.
+  </div>
+
+  <pre>mgraphics.init();
+mgraphics.autofill = 0;          // recommended
+mgraphics.relative_coords = 0;   // or 1
+
+function paint() {
+  // your drawing code
+}
+
+// Force a redraw later:
+mgraphics.redraw();</pre>
+
+  <h3>Properties</h3>
+  <table>
+    <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+    <tr><td><code>autofill</code></td><td>0 | 1</td><td>If 1, <code>stroke()</code> also fills the path</td></tr>
+    <tr><td><code>relative_coords</code></td><td>0 | 1</td><td>0 = pixel (top-left origin), 1 = relative (center origin)</td></tr>
+    <tr><td><code>size</code></td><td>[w, h] (read-only)</td><td>Current canvas size</td></tr>
+    <tr><td><code>autopaint</code> / <code>autosketch</code></td><td>0 | 1</td><td>Layer control (normally handled by <code>init()</code>)</td></tr>
+    <tr><td><code>textfieldvisible</code></td><td>0 | 1</td><td>Show text field on click</td></tr>
+  </table>
+</section>
+
+<!-- ========== COORDS ========== -->
+<section id="coords">
+  <h2>2. Coordinate Systems</h2>
+
+  <h3>Absolute (relative_coords = 0)</h3>
+  <ul>
+    <li>Origin (0,0) = top-left</li>
+    <li>Y increases downward</li>
+    <li>Units = pixels</li>
+  </ul>
+
+  <h3>Relative (relative_coords = 1)</h3>
+  <ul>
+    <li>Origin (0,0) = center</li>
+    <li>Y = +1 top, Y = –1 bottom</li>
+    <li>X range depends on aspect ratio (left ≈ –aspect, right ≈ +aspect)</li>
+  </ul>
+
+  <pre>let [w, h] = mgraphics.size;
+let aspect = w / h;   // useful in relative mode</pre>
+</section>
+
+<!-- ========== STATE ========== -->
+<section id="state">
+  <h2>3. State, Transforms &amp; Matrix</h2>
+
+  <div class="method">
+    <div class="sig">save() / restore()</div>
+    Push / pop the entire graphics state (color, matrix, line style, font…).
+  </div>
+
+  <div class="method">
+    <div class="sig">identity_matrix()</div>
+    Reset transform to identity.
+  </div>
+
+  <div class="method">
+    <div class="sig">translate(tx, ty)</div>
+    <div class="sig">scale(sx, sy)</div>
+    <div class="sig">rotate(angleRadians)</div>
+    <div class="sig">transform(xx, xy, yx, yy, x0, y0)</div>
+    <div class="sig">set_matrix(...)</div>
+    <div class="sig">get_matrix()</div>
+  </div>
+
+  <div class="method">
+    <div class="sig">user_to_device([x,y]) → [x,y]</div>
+    <div class="sig">device_to_user([x,y]) → [x,y]</div>
+  </div>
+
+  <div class="method">
+    <div class="sig">scale_source_rgba(...) / translate_source_rgba(...)</div>
+    Modify the current source color without replacing it.
+  </div>
+</section>
+
+<!-- ========== PATHS ========== -->
+<section id="paths">
+  <h2>4. Path Construction</h2>
+
+  <pre>move_to(x, y)
+rel_move_to(dx, dy)
+line_to(x, y)
+rel_line_to(dx, dy)
+curve_to(x1,y1, x2,y2, x3,y3)          // cubic Bézier
+rel_curve_to(...)
+arc(xc, yc, radius, angle1, angle2)    // clockwise
+arc_negative(...)                      // counter-clockwise
+ovalarc(xc, yc, rx, ry, a1, a2)
+rectangle(x, y, w, h)
+rectangle_rounded(x, y, w, h, ovalW, ovalH)
+ellipse(x, y, w, h)
+close_path()
+new_path()
+path_roundcorners(radius)
+copy_path() → MGraphicsPathHandle
+append_path(pathHandle)
+get_current_point() → [x, y]
+fill_extents() → [top, left, bottom, right]</pre>
+</section>
+
+<!-- ========== STROKE / FILL ========== -->
+<section id="stroke-fill">
+  <h2>5. Stroke &amp; Fill</h2>
+
+  <pre>fill()
+fill_preserve()
+fill_with_alpha(alpha)
+fill_preserve_with_alpha(alpha)
+
+stroke()
+stroke_preserve()
+stroke_with_alpha(alpha)
+stroke_preserve_with_alpha(alpha)
+
+paint()                    // paint current source in clip region
+paint_with_alpha(alpha)
+clear_surface()            // erase to transparent</pre>
+</section>
+
+<!-- ========== LINES & DASHES ========== -->
+<section id="lines">
+  <h2>6. Line Styles &amp; Dashed Lines</h2>
+
+  <div class="note">
+    <strong>Dashed lines</strong> are fully supported with <code>set_dash</code>.
+  </div>
+
+  <div class="method">
+    <div class="sig">set_dash(...dashes)</div>
+    Alternating dash and gap lengths.<br>
+    Call with no arguments to return to a solid line.
+    <pre>mgraphics.set_dash(8, 4);          // 8 on, 4 off
+mgraphics.set_dash(10, 3, 2, 3);   // complex pattern
+mgraphics.set_dash();              // solid again</pre>
+  </div>
+
+  <div class="method">
+    <div class="sig">set_line_width(w) / get_line_width()</div>
+    <div class="sig">set_line_cap("butt" | "round" | "square")</div>
+    <div class="sig">set_line_join("miter" | "round" | "bevel")</div>
+    <div class="sig">get_line_cap() / get_line_join()</div>
+  </div>
+</section>
+
+<!-- ========== TEXT ========== -->
+<section id="text">
+  <h2>7. Text</h2>
+
+  <pre>select_font_face(name, "bold"?, "italic"?)
+set_font_size(size)
+font_extents() → [ascent, descent, height]
+text_measure(str) → [width, height]
+
+show_text(str)          // immediate draw (ignores matrix)
+text_path(str)          // adds text outline to current path (transformable)</pre>
+
+  <div class="warn">
+    <code>show_text</code> is not affected by the current transformation matrix.
+    Use <code>text_path</code> + <code>fill</code>/<code>stroke</code> when you need transforms.
+  </div>
+</section>
+
+<!-- ========== IMAGES & SVG ========== -->
+<section id="images">
+  <h2>8. Images &amp; SVG</h2>
+
+  <h3>Images</h3>
+  <pre>image_surface_draw(image, source_rect?)
+image_surface_draw_fast(image)          // no transforms
+
+set_source_surface(image, dx?, dy?)
+pattern_create_for_surface(image) → Pattern</pre>
+
+  <h3>SVG</h3>
+  <pre>// Quick
+mgraphics.svg_render("icon.svg");
+mgraphics.svg_render(svgObj, x, y, w, h, opacity);
+
+// Better (cached + color remapping)
+var svg = new MGraphicsSVG("icon.svg");
+svg.mapcolor([0,0,0,1], [0.5,0.5,0.5,1]);
+svg.mapreset();
+mgraphics.svg_render(svg);</pre>
+
+  <p>MGraphicsSVG properties: <code>loaded</code>, <code>size</code>, <code>viewbox</code>. Methods: <code>setsvg()</code>, <code>mapcolor()</code>, <code>mapreset()</code>.</p>
+</section>
+
+<!-- ========== PATTERNS ========== -->
+<section id="patterns">
+  <h2>9. Patterns &amp; Gradients</h2>
+
+  <pre>var p = mgraphics.pattern_create_linear(x1,y1, x2,y2);
+var p = mgraphics.pattern_create_radial(x1,y1,r1, x2,y2,r2);
+var p = mgraphics.pattern_create_rgba(r,g,b,a);
+var p = mgraphics.pattern_create_for_surface(image);
+
+p.add_color_stop_rgba(offset, r, g, b, a);
+p.translate(tx, ty);
+p.scale(sx, sy);
+p.rotate(angle);
+p.set_matrix(...);
+p.identity_matrix();
+
+mgraphics.set_source(p);</pre>
+
+  <p>Also available: <code>push_group()</code> / <code>pop_group()</code> / <code>pop_group_to_source()</code> for creating patterns from drawing commands.</p>
+</section>
+
+<!-- ========== OFFSCREEN ========== -->
+<section id="offscreen">
+  <h2>10. Offscreen Contexts</h2>
+
+  <pre>var off = new MGraphics(width, height);   // no init() needed
+// draw into off exactly like the main context
+var img = new Image(off);
+mgraphics.image_surface_draw(img);
+
+// or use as pattern
+mgraphics.set_source_surface(img);</pre>
+
+  <div class="note">
+    On HiDPI / Retina displays create the offscreen context at physical resolution
+    (logical size × scale factor) and then scale the pattern down for sharp results.
+  </div>
+</section>
+
+<!-- ========== HIT TESTING ========== -->
+<section id="hit">
+  <h2>11. Hit Testing</h2>
+
+  <pre>mgraphics.in_fill([x, y]) → 1 | 0</pre>
+
+  <p>You can also implement the special functions:</p>
+  <pre>function hittest(x, y) { ... return 1 or 0; }
+function onclick(x, y, ...) { ... }
+function ondrag(...) { ... }
+function onidle(...) / onidleout(...) / onresize(...) / ondblclick(...)</pre>
+</section>
+
+<!-- ========== TIPS ========== -->
+<section id="tips">
+  <h2>12. Practical Tips for Performance</h2>
+  <ul>
+    <li>Prefer pre-rendered glyph atlases / offscreen bitmaps for dense grids (trackers, sequencers).</li>
+    <li>Use <code>set_dash()</code> instead of manually drawing dash segments.</li>
+    <li>Cache SVGs with <code>MGraphicsSVG</code> and reuse them.</li>
+    <li>Minimize path construction inside tight loops; reuse paths with <code>copy_path</code> / <code>append_path</code> when possible.</li>
+    <li>Call <code>mgraphics.redraw()</code> only when something actually changed.</li>
+    <li>For pure geometric dots, a small filled rectangle or ellipse is often faster than text.</li>
+  </ul>
+
+  <h3>Minimal complete example</h3>
+  <pre>mgraphics.init();
+mgraphics.autofill = 0;
+mgraphics.relative_coords = 0;
+
+function paint() {
+  let [w, h] = mgraphics.size;
+
+  // background
+  mgraphics.set_source_rgba(0.12, 0.12, 0.14, 1);
+  mgraphics.rectangle(0, 0, w, h);
+  mgraphics.fill();
+
+  // dashed line
+  mgraphics.set_source_rgba(0.9, 0.6, 0.2, 1);
+  mgraphics.set_line_width(2);
+  mgraphics.set_dash(6, 4);
+  mgraphics.move_to(20, h/2);
+  mgraphics.line_to(w-20, h/2);
+  mgraphics.stroke();
+  mgraphics.set_dash();   // reset
+}</pre>
+</section>
+
+</main>
+
+<footer>
+  Compiled from official Cycling ’74 documentation (docs.cycling74.com)<br>
+  MGraphics API • Max 8 / Max 9 • v8ui / jsui / jspainter<br>
+  Not affiliated with Cycling ’74 – for personal reference use.
+</footer>
+</body>
+</html>
