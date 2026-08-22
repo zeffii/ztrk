@@ -1,0 +1,211 @@
+// Gently Improved Smooth Reverb based on Arguru and FreeVerb
+
+Param predelay(18);
+Param size(0.65);
+Param decay(0.78);
+Param damp(0.35);
+Param mod(0.22);         // very gentle modulation depth
+Param dry(1.0);
+Param wet(0.42);
+Param width(1.0);
+
+// Buffers
+Data combL0(8192); Data combR0(8192);
+Data combL1(8192); Data combR1(8192);
+Data combL2(8192); Data combR2(8192);
+Data combL3(8192); Data combR3(8192);
+
+Data apL(6*2048);
+Data apR(6*2048);
+
+Data posC(4);
+Data posA(6);
+
+History dampL0(0); History dampR0(0);
+History dampL1(0); History dampR1(0);
+History dampL2(0); History dampR2(0);
+History dampL3(0); History dampR3(0);
+
+History lpL(0); History lpR(0);
+History modPhase(0);
+
+// -------------------------------------------------
+ms = samplerate * 0.001;
+
+// Comb delay times
+d0 = 29.7 + size * 38;
+d1 = 37.1 + size * 41;
+d2 = 41.3 + size * 47;
+d3 = 43.7 + size * 53;
+
+d0s = clamp(d0 * ms, 50, 7000);
+d1s = clamp(d1 * ms, 50, 7000);
+d2s = clamp(d2 * ms, 50, 7000);
+d3s = clamp(d3 * ms, 50, 7000);
+
+pd = clamp(predelay * ms, 1, 4000);
+
+fb    = clamp(decay, 0.1, 0.93);
+dampK = clamp(damp, 0.05, 0.9);
+g     = clamp(0.5 + decay * 0.25, 0.4, 0.75);
+
+// Very slow, gentle modulation
+modPhase = modPhase + (0.11 / samplerate);   // ~0.11 Hz
+if (modPhase > 1) modPhase = modPhase - 1;
+modSig = sin(modPhase * 2 * pi);             // smooth sine
+modAmt = mod * 7.5;                          // very small depth
+
+// ========== Comb 0 ==========
+p0 = peek(posC, 0);
+poke(combL0, in1, p0);
+poke(combR0, in2, p0);
+
+rl0 = p0 - d0s - pd + modSig * modAmt;
+rr0 = p0 - d0s - pd - 23 - modSig * modAmt * 0.6;
+rl0 = rl0 < 0 ? rl0 + 8192 : rl0;
+rr0 = rr0 < 0 ? rr0 + 8192 : rr0;
+
+cl0 = peek(combL0, rl0);
+cr0 = peek(combR0, rr0);
+
+dampL0 = cl0 * (1 - dampK) + dampL0 * dampK;
+dampR0 = cr0 * (1 - dampK) + dampR0 * dampK;
+
+poke(combL0, in1 + dampL0 * fb, p0);
+poke(combR0, in2 + dampR0 * fb, p0);
+
+p0 = p0 + 1; if (p0 >= 8192) p0 = 0;
+poke(posC, p0, 0);
+
+// ========== Comb 1 ==========
+p1 = peek(posC, 1);
+poke(combL1, in1, p1);
+poke(combR1, in2, p1);
+
+rl1 = p1 - d1s - pd + modSig * modAmt * 0.8;
+rr1 = p1 - d1s - pd - 29 - modSig * modAmt * 0.5;
+rl1 = rl1 < 0 ? rl1 + 8192 : rl1;
+rr1 = rr1 < 0 ? rr1 + 8192 : rr1;
+
+cl1 = peek(combL1, rl1);
+cr1 = peek(combR1, rr1);
+
+dampL1 = cl1 * (1 - dampK) + dampL1 * dampK;
+dampR1 = cr1 * (1 - dampK) + dampR1 * dampK;
+
+poke(combL1, in1 + dampL1 * fb, p1);
+poke(combR1, in2 + dampR1 * fb, p1);
+
+p1 = p1 + 1; if (p1 >= 8192) p1 = 0;
+poke(posC, p1, 1);
+
+// ========== Comb 2 ==========
+p2 = peek(posC, 2);
+poke(combL2, in1, p2);
+poke(combR2, in2, p2);
+
+rl2 = p2 - d2s - pd - modSig * modAmt * 0.7;
+rr2 = p2 - d2s - pd - 37 + modSig * modAmt * 0.45;
+rl2 = rl2 < 0 ? rl2 + 8192 : rl2;
+rr2 = rr2 < 0 ? rr2 + 8192 : rr2;
+
+cl2 = peek(combL2, rl2);
+cr2 = peek(combR2, rr2);
+
+dampL2 = cl2 * (1 - dampK) + dampL2 * dampK;
+dampR2 = cr2 * (1 - dampK) + dampR2 * dampK;
+
+poke(combL2, in1 + dampL2 * fb, p2);
+poke(combR2, in2 + dampR2 * fb, p2);
+
+p2 = p2 + 1; if (p2 >= 8192) p2 = 0;
+poke(posC, p2, 2);
+
+// ========== Comb 3 ==========
+p3 = peek(posC, 3);
+poke(combL3, in1, p3);
+poke(combR3, in2, p3);
+
+rl3 = p3 - d3s - pd + modSig * modAmt * 1.05;
+rr3 = p3 - d3s - pd - 43 - modSig * modAmt * 0.55;
+rl3 = rl3 < 0 ? rl3 + 8192 : rl3;
+rr3 = rr3 < 0 ? rr3 + 8192 : rr3;
+
+cl3 = peek(combL3, rl3);
+cr3 = peek(combR3, rr3);
+
+dampL3 = cl3 * (1 - dampK) + dampL3 * dampK;
+dampR3 = cr3 * (1 - dampK) + dampR3 * dampK;
+
+poke(combL3, in1 + dampL3 * fb, p3);
+poke(combR3, in2 + dampR3 * fb, p3);
+
+p3 = p3 + 1; if (p3 >= 8192) p3 = 0;
+poke(posC, p3, 3);
+
+// Sum combs
+sumL = (cl0 + cl1 + cl2 + cl3) * 0.25;
+sumR = (cr0 + cr1 + cr2 + cr3) * 0.25;
+
+// ========== Series Allpasses ==========
+l = sumL;
+r = sumR;
+
+apd0 = 12.7 + size * 9;
+apd1 = 9.3  + size * 8;
+apd2 = 7.1  + size * 7;
+apd3 = 5.9  + size * 6;
+apd4 = 4.3  + size * 5;
+apd5 = 3.1  + size * 4;
+
+for (i = 0; i < 6; i += 1) {
+    dly = apd0;
+    if (i == 1) dly = apd1;
+    if (i == 2) dly = apd2;
+    if (i == 3) dly = apd3;
+    if (i == 4) dly = apd4;
+    if (i == 5) dly = apd5;
+
+    dlys = clamp(dly * ms, 20, 1800);
+
+    // tiny modulation on allpasses
+    dlys = dlys + modSig * mod * 2.8;
+
+    base = i * 2048;
+    pos  = peek(posA, i);
+
+    // Left
+    rpl = pos - dlys;
+    rpl = rpl < 0 ? rpl + 2048 : rpl;
+    bl  = peek(apL, base + rpl);
+    tl  = l + g * bl;
+    ol  = bl - g * tl;
+    poke(apL, tl, base + pos);
+
+    // Right
+    rpr = pos - (dlys + 13 + i * 3.5);
+    rpr = rpr < 0 ? rpr + 2048 : rpr;
+    br  = peek(apR, base + rpr);
+    tr  = r + g * br;
+    or_ = br - g * tr;
+    poke(apR, tr, base + pos);
+
+    l = ol;
+    r = or_;
+
+    pos = pos + 1;
+    if (pos >= 2048) pos = 0;
+    poke(posA, pos, i);
+}
+
+// Smoother final absorption
+coeff = exp(-2 * pi * (4200 + (1 - dampK) * 6500) / samplerate);
+lpL = l + (lpL - l) * coeff;
+lpR = r + (lpR - r) * coeff;
+
+// Stereo width
+mid  = (lpL + lpR) * 0.5;
+side = (lpL - lpR) * 0.5 * width;
+
+out1 = in1 * dry + (mid + side) * wet;
+out2 = in2 * dry + (mid - side) * wet;
