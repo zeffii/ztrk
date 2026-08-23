@@ -1,74 +1,31 @@
-    // ============================================================
-    // Envelope reader — reads Buffer EnvPoints (3 header + 2*n pair samples)
-    // and produces an interpolated envelope value over time, with a
-    // sustain point that holds until gate-off, then a release phase.
-    // ============================================================
+Param Duration(170, min=1.0, max=1200);
 
-    // -- buffer is declared externally, referenced via Form B for clarity --
-    Buffer env("EnvPoints");
+History Active(0);
+History AmpValue(0);
+History Elapsed_Samples(0);
+History EnvValue(0);
 
-    // -- params --
-    Param Duration(170, min=1.0, max=1200);   // total ms (incl. sustain + release)
-    Param Amp(1.0, min=0.0, max=1.0);         // amplitude scalar
-    Param SusHold(1.0, min=0.0, max=1.0);     // 0=disable sustain, 1=hold forever
+Buffer Anex("Env1");
 
-    // -- state --
-    History phase(0);      // 0 = idle, 1..N = at/between node (segment index)
-    History seg_time(0);   // ms elapsed within current segment
-    History env_val(0);    // last output value (for retrigger / debug)
-    History gate(0);       // 1 = note on, 0 = note off
+dur = max(mstosamps(Duration), 2);
+theta = 1 / dur;
 
-    // ============================================================
-    // Main
-    // ============================================================
+// TRIGGER
+if (in1 > 0) {
+    Active = 1;
+    Elapsed_Samples = 0;
+    AmpValue = 1;
+    EnvValue = 1;
+}
 
-    n      = peek(env, 0);
-    sus_i  = peek(env, 1);    // 0..n
-    sus_en = peek(env, 2);    // 0 or 1
+// ENVELOPE
+if (Active > 0) {
 
-    // gate comes from in2 (in1 is the trigger impulse)
-    gate = in2 > 0.5;
+    AmpValue = 1 - (Elapsed_Samples / (dur - 1));
+    EnvValue = peek(Anex, theta*Elapsed_Samples, index="phase", interp="cubic");
+    if (Elapsed_Samples >= dur - 1) { AmpValue, Active, EnvValue = 0, 0, 0; }
+    else                            { Elapsed_Samples += 1;    }
+}
 
-    // hard reset on gate-on
-    if (gate && in1 > 0.5) {
-        phase    = 1;
-        seg_time = 0;
-    }
-
-    // -- segment timing: convert node-x (normalized) to ms --
-    x_cur = peek(env, 3 + 2*(phase - 1));
-    x_next = peek(env, 3 + 2*phase);   // phase < n
-    seg_ms = (x_next - x_cur) * Duration;
-
-    // -- compute current y via linear interp within current segment --
-    y_cur  = peek(env, 3 + 2*(phase - 1) + 1);
-    y_next = peek(env, 3 + 2*phase + 1);
-    t_frac = clamp(seg_time / max(seg_ms, 0.001), 0, 1);
-    env_val = y_cur + (y_next - y_cur) * t_frac;
-
-    // -- advance time within segment --
-    seg_time = seg_time + (1000 / samplerate);
-
-    // -- segment transition --
-    if (seg_time >= seg_ms) {
-        seg_time = 0;
-        if (phase == sus_i && sus_en * SusHold > 0.5) {
-            // hold at sustain point — don't advance
-            env_val = y_next;     // (or hold y_cur, depending on semantics)
-            seg_time = seg_ms;     // freeze
-        } else if (phase >= n) {
-            phase = 0;            // end of envelope
-            env_val = 0;
-        } else {
-            phase = phase + 1;
-        }
-    }
-
-    // gate-off → jump to release (or just end)
-    if (!gate && phase != 0) {
-        phase = 0;
-        env_val = 0;
-    }
-
-    out1 = env_val * Amp;
-    out2 = phase / max(n, 1);   // progress 0..1, useful for visualization
+out1 = AmpValue;
+out2 = EnvValue;
