@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Max4Live</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
+<link href="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <span id="markdown-mermaid" aria-hidden="true" data-config="{&quot;darkModeTheme&quot;:&quot;vscode&quot;,&quot;lightModeTheme&quot;:&quot;vscode&quot;,&quot;maxTextSize&quot;:50000,&quot;clickDrag&quot;:&quot;alt&quot;,&quot;showControls&quot;:&quot;onHoverOrFocus&quot;,&quot;resizable&quot;:true,&quot;maxHeight&quot;:&quot;&quot;}"></span>
+				<h2 id="max4live">Max4Live</h2>
+<blockquote>
+<p>Unofficial documentation. max 9 abl 12.4x.</p>
+</blockquote>
+<p>This will be a cookbook with web snippets to see and hear what the various concepts do.</p>
+<h3 id="multichannel-audio-from-max-to-live">multichannel audio from max to live.</h3>
+<pre><code>    [mc.noise~ @chans 8          ]
+      | 
+    [mc.separate~ 2 2            ]
+      |            |            |  
+    [mc.unpack~] [mc.unpack~] [mc.unpack~]
+
+    # each of these will output two signals, left and right
+    # to send them to live, use 
+
+    [plugout~ @chans 8]  or [mc.plugout~]
+
+</code></pre>
+<p>Live by default will output only channel 1 and 2, to get 3/4 and 5/6 add 2 audio channels and set their <code>Audio From</code>,
+to the track with the maxdevice on it, and then set it to 3/4 and 5/6</p>
+<h2 id="analysing-and-debugging-tools">Analysing and Debugging Tools</h2>
+<h3 id="monitoring-a-signal">Monitoring a signal.</h3>
+<blockquote>
+<p>the <code>number~</code> object will not automatically show you signals that are in spikes, f.ex a (click * number) would produce a click of the value of the number.
+This is too brief to be able to perceive on that ui element, you can sample and hold the signal, and trigger the hold with the same click.</p>
+</blockquote>
+<h3 id="waveform-display">waveform display</h3>
+<blockquote>
+<p>use message <code>bufftime 20</code> to update the buffer display every 20ms</p>
+</blockquote>
+<h3 id="gotchas">Gotchas</h3>
+<ul>
+<li>Make sure there is an output source in audio engine, else you might be talking to the wall.</li>
+<li>If you have a diagram, and you plug in numbers exactly like the example shows but the patch behaves differently, usually you will find a <code>integer</code> somewhere that should be a <code>float</code>. (or vice versa)</li>
+</ul>
+<h3 id="stream-line-patching">Stream Line patching</h3>
+<blockquote>
+<p>Holding shift on an inlet, and then moving the mouse to the destination/origin inlet you want to connect to. Keep holding shift, and click the inlet and any other inlets you want to connect with the same destination/orgin.</p>
+</blockquote>
+<h3 id="messages">Messages</h3>
+<blockquote>
+<p>The following will inject the value of the float into the message, and send a bang after the message ( this can save you from having to wire up extra triggers)</p>
+</blockquote>
+<pre><code>[float]
+|
+(offset 0. $1, bang)    &lt;--- message
+|
+[some object]           &lt;- some object might only update if a bang is received
+
+</code></pre>
+<h3 id="gen">Gen~</h3>
+<pre><code class="language-c"><span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">512</span>; i+=<span class="hljs-number">1</span>){
+    s = peek(procedural, i);   <span class="hljs-comment">// not required to specify number of samples, if it is 1.</span>
+    poke(readback, s, i);
+}
+</code></pre>
+<h3 id="debugging-gen-codebox">Debugging Gen~ codebox..</h3>
+<blockquote>
+<p><strong>Check the patch cord before debugging the code.</strong>
+If a Gen <code>inlet</code> appears to be ignoring a signal, temporarily replace the Gen logic with <code>out1 = in1;</code>. If the signal isn't visible at the output, disconnect and recreate the patch cord. Max can occasionally leave a connection in a state where the patch visually appears connected but the signal isn't actually reaching the object.</p>
+</blockquote>
+<p>And perhaps a shorter checklist:</p>
+<ul>
+<li>Is the input actually reaching <code>gen~</code>?</li>
+<li>Temporarily use <code>out1 = in1;</code></li>
+<li>Check the signal with a scope/meter if appropriate.</li>
+<li>Disconnect/reconnect suspicious patch cords.</li>
+<li>Only <strong>then</strong> start debugging <code>History</code>, <code>if</code>, counters, etc.</li>
+</ul>
+<p>That's a particularly useful debugging principle: <strong>prove the signal path before debugging the signal processing.</strong></p>
+
+            <script async src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
+            
+        </body>
+        </html>
