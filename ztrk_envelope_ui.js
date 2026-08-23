@@ -150,12 +150,18 @@ function draw_sustain(gfx, w, h){
         gfx.line_to(x1, h-padding);
         gfx.stroke();
     } else {
-        var dash_segments = dashed_line([x1, padding], [x1, h-padding], 12);
-        for (const [idx, [start, end]] of dash_segments.entries()) {
-            gfx.move_to(...start);
-            gfx.line_to(...end);
-            gfx.stroke();
-        }
+        // var dash_segments = dashed_line([x1, padding], [x1, h-padding], 12);
+        // for (const [idx, [start, end]] of dash_segments.entries()) {
+            //     gfx.move_to(...start);
+            //     gfx.line_to(...end);
+            //     gfx.stroke();
+            // }
+        gfx.set_dash(7, 10);  
+        gfx.move_to(...[x1, padding]);
+        gfx.line_to(...[x1, h-padding]);
+        gfx.stroke();
+        gfx.set_dash(0, 0);  
+
     }
 
 }
