@@ -1,0 +1,24 @@
+Param Duration(170, min=1.0, max=1200);
+
+History Active(0);
+History AmpValue(0);
+History Elapsed_Samples(0);
+
+dur = max(mstosamps(Duration), 2);
+
+// TRIGGER
+if (in1 > 0) {
+    Active = 1;
+    Elapsed_Samples = 0;
+    AmpValue = 1;
+}
+
+// ENVELOPE
+if (Active > 0) {
+
+    AmpValue = 1 - (Elapsed_Samples / (dur - 1));
+    if (Elapsed_Samples >= dur - 1) { AmpValue, Active = 0, 0; }
+    else                            { Elapsed_Samples += 1;    }
+}
+
+out1 = AmpValue;

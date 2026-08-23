@@ -161,7 +161,6 @@ function draw_sustain(gfx, w, h){
         gfx.line_to(...[x1, h-padding]);
         gfx.stroke();
         gfx.set_dash(0, 0);  
-
     }
 
 }
@@ -289,22 +288,46 @@ function fill_buffer(bufname){
 
     const env_as_array = array_from_env(env_nodes, num_samples);
     for (const [idx, value] of env_as_array.entries()) {
-        envbuff.poke(1, idx, value);
+        envbuff.poke(1, idx, value);  // channel 1, index , val
     }
 
 }
 
-function doppler(ratio){
+function fill_buffer_env(bufname){
+    const num_samples = 64;
+    var envbuff = new Buffer(bufname);
+        envbuff.setattr("sr", 1000);
+        envbuff.setattr("chans", 1);
+        envbuff.send("sizeinsamps", num_samples);
 
-    // do a backup first? todo.
-    const approximately_equal = (v1, v2, epsilon = 0.001) => Math.abs(v1 - v2) < epsilon;
-
-    // this function squishes nodes towards the left if ratio < 0.5, towards the right if ratio > 0.5, 0.5 = unchanged.
-    if (approximately_equal(ratio, 0.5)){ /*dont do anything*/ }
-    else if (ratio < 0.5){}
-    else {}
-
+    envbuff.poke(1, 0, (env_nodes.length / 2) );
+    envbuff.poke(1, 1, config.loop_point);
+    envbuff.poke(1, 2, config.looping? 1.0 : 0.0);
+    for (const [idx, [x, y]] of env_nodes.entries()) {
+        var real_index = idx * 2;
+        envbuff.poke(1, 3 + real_index, x);
+        envbuff.poke(1, 3 + real_index+1, y);
+    }
+    
+    var mt_str = [];
+    for (var i = 0; i < num_samples; i+=1){
+        mt_str.push(envbuff.peek(1, i));
+    }
+    // post('[' + mt_str.join(', ') + ']');
 }
+
+
+// function doppler(ratio){
+
+//     // do a backup first? todo.
+//     const approximately_equal = (v1, v2, epsilon = 0.001) => Math.abs(v1 - v2) < epsilon;
+
+//     // this function squishes nodes towards the left if ratio < 0.5, towards the right if ratio > 0.5, 0.5 = unchanged.
+//     if (approximately_equal(ratio, 0.5)){ /*dont do anything*/ }
+//     else if (ratio < 0.5){}
+//     else {}
+
+// }
 
 function key_handler(){
     
