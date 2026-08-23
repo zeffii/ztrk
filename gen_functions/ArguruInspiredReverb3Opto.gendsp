@@ -1,0 +1,158 @@
+// Gently Improved Smooth Reverb based on Arguru and FreeVerb
+
+comb(fb, dampK, modSig, modAmt, pd, posC, in1, in2, bufL, bufR, idx, ds, extraOffs, modCoefL, modCoefR) {
+    History p;
+    History dampL;
+    History dampR;
+
+    p = peek(posC, idx);
+    poke(bufL, in1, p);
+    poke(bufR, in2, p);
+
+    rl = p - ds - pd + modSig * modAmt * modCoefL;
+    rr = p - ds - pd + extraOffs + modSig * modAmt * modCoefR;
+    rl = rl < 0 ? rl + 8192 : rl;
+    rr = rr < 0 ? rr + 8192 : rr;
+
+    cl = peek(bufL, rl);
+    cr = peek(bufR, rr);
+
+    dampL = cl * (1 - dampK) + dampL * dampK;
+    dampR = cr * (1 - dampK) + dampR * dampK;
+
+    poke(bufL, in1 + dampL * fb, p);
+    poke(bufR, in2 + dampR * fb, p);
+
+    p = p + 1;
+    if (p >= 8192) p = 0;
+    poke(posC, p, idx);
+
+    return cl, cr;
+}
+
+Param predelay(18);
+Param size(0.65);
+Param decay(0.78);
+Param damp(0.35);
+Param mod(0.22);         // very gentle modulation depth
+Param dry(1.0);
+Param wet(0.42);
+Param width(1.0);
+
+// Buffers
+Data combL0(8192); Data combR0(8192);
+Data combL1(8192); Data combR1(8192);
+Data combL2(8192); Data combR2(8192);
+Data combL3(8192); Data combR3(8192);
+
+Data apL(6*2048);
+Data apR(6*2048);
+
+Data posC(4);
+Data posA(6);
+
+History dampL0(0); History dampR0(0);
+History dampL1(0); History dampR1(0);
+History dampL2(0); History dampR2(0);
+History dampL3(0); History dampR3(0);
+
+History lpL(0); History lpR(0);
+History modPhase(0);
+
+// -------------------------------------------------
+ms = samplerate * 0.001;
+
+// Comb delay times
+d0 = 29.7 + size * 38;
+d1 = 37.1 + size * 41;
+d2 = 41.3 + size * 47;
+d3 = 43.7 + size * 53;
+
+d0s = clamp(d0 * ms, 50, 7000);
+d1s = clamp(d1 * ms, 50, 7000);
+d2s = clamp(d2 * ms, 50, 7000);
+d3s = clamp(d3 * ms, 50, 7000);
+
+pd    = clamp(predelay * ms, 1, 4000);
+fb    = clamp(decay, 0.1, 0.93);
+dampK = clamp(damp, 0.05, 0.9);
+g     = clamp(0.5 + decay * 0.25, 0.4, 0.75);
+
+// Very slow, gentle modulation
+modPhase = modPhase + (0.11 / samplerate);   // ~0.11 Hz
+if (modPhase > 1) modPhase = modPhase - 1;
+modSig = sin(modPhase * 2 * pi);             // smooth sine
+modAmt = mod * 7.5;                          // very small depth
+
+// ========== Call the 4 combs (4 separate lexical instances) ==========
+cl0, cr0 = comb(fb, dampK, modSig, modAmt, pd, posC, in1, in2, combL0, combR0, 0, d0s, -23,  1.0,   -0.6);
+cl1, cr1 = comb(fb, dampK, modSig, modAmt, pd, posC, in1, in2, combL1, combR1, 1, d1s, -29,  0.8,   -0.5);
+cl2, cr2 = comb(fb, dampK, modSig, modAmt, pd, posC, in1, in2, combL2, combR2, 2, d2s, -37, -0.7,    0.45);
+cl3, cr3 = comb(fb, dampK, modSig, modAmt, pd, posC, in1, in2, combL3, combR3, 3, d3s, -43,  1.05,  -0.55);
+
+// Sum combs
+sumL = (cl0 + cl1 + cl2 + cl3) * 0.25;
+sumR = (cr0 + cr1 + cr2 + cr3) * 0.25;
+
+// ========== Series Allpasses ==========
+l = sumL;
+r = sumR;
+
+apd0 = 12.7 + size * 9;
+apd1 = 9.3  + size * 8;
+apd2 = 7.1  + size * 7;
+apd3 = 5.9  + size * 6;
+apd4 = 4.3  + size * 5;
+apd5 = 3.1  + size * 4;
+
+for (i = 0; i < 6; i += 1) {
+    dly = apd0;
+    if (i == 1) dly = apd1;
+    if (i == 2) dly = apd2;
+    if (i == 3) dly = apd3;
+    if (i == 4) dly = apd4;
+    if (i == 5) dly = apd5;
+
+    dlys = clamp(dly * ms, 20, 1800);
+
+    // tiny modulation on allpasses
+    dlys = dlys + modSig * mod * 2.8;
+
+    base = i * 2048;
+    pos  = peek(posA, i);
+
+    // Left
+    rpl = pos - dlys;
+    rpl = rpl < 0 ? rpl + 2048 : rpl;
+    bl  = peek(apL, base + rpl);
+    tl  = l + g * bl;
+    ol  = bl - g * tl;
+    poke(apL, tl, base + pos);
+
+    // Right
+    rpr = pos - (dlys + 13 + i * 3.5);
+    rpr = rpr < 0 ? rpr + 2048 : rpr;
+    br  = peek(apR, base + rpr);
+    tr  = r + g * br;
+    or_ = br - g * tr;
+    poke(apR, tr, base + pos);
+
+    l = ol;
+    r = or_;
+
+    pos = pos + 1;
+    if (pos >= 2048) pos = 0;
+    poke(posA, pos, i);
+}
+
+// Smoother final absorption
+coeff = exp(-2 * pi * (4200 + (1 - dampK) * 6500) / samplerate);
+lpL = l + (lpL - l) * coeff;
+lpR = r + (lpR - r) * coeff;
+
+// Stereo width
+mid  = (lpL + lpR) * 0.5;
+side = (lpL - lpR) * 0.5 * width;
+
+out1 = in1 * dry + (mid + side) * wet;
+out2 = in2 * dry + (mid - side) * wet;
