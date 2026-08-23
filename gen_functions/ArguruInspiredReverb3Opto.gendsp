@@ -113,9 +113,8 @@ for (i = 0; i < 6; i += 1) {
     if (i == 4) dly = apd4;
     if (i == 5) dly = apd5;
 
-    dlys = clamp(dly * ms, 20, 1800);
-
     // tiny modulation on allpasses
+    dlys = clamp(dly * ms, 20, 1800);
     dlys = dlys + modSig * mod * 2.8;
 
     base = i * 2048;
