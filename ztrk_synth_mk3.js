@@ -27,6 +27,15 @@ mgraphics.autofill = 0;
 outlets = 2;   // 0: bang when buffer updated, 1: param / debug
 inlets  = 1;
 
+config_colors = {
+    background_all: [0.1, 0.12, 0.12, 1],
+    background_waveform: [0.02, 0.14, 0.02, 1],
+    stems: [0.08, 0.2, 0.08, 1],
+    waveform_line: [0.6, 0.98, 0.6, 1],
+    title: [0.7, 0.9, 0.7, 1]
+
+}
+
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
@@ -41,31 +50,23 @@ var LEFT_MARGIN   = 8;
 var RIGHT_MARGIN  = 50;
 
 var params = [
-    // {i:0,  real:0.2,   min:0.0, max:6.0,   name:"Attack",         short:"A"},
-    // {i:1,  real:0.6,   min:0.0, max:6.0,   name:"Decay",          short:"D"},
-    // {i:2,  real:0.5,   min:0.0, max:1.0,   name:"Sustain",        short:"S"},
-    // {i:3,  real:0.2,   min:0.0, max:6.0,   name:"Release",        short:"R"},
-    // {i:4,  real:0.2,   min:0.0, max:6.0,   name:"Filter Attack",  short:"FA"},
-    // {i:5,  real:0.6,   min:0.0, max:6.0,   name:"Filter Decay",   short:"FD"},
-    // {i:6,  real:0.5,   min:0.0, max:1.0,   name:"Filter Sustain", short:"FS"},
-    // {i:7,  real:0.2,   min:0.0, max:6.0,   name:"Filter Release", short:"FR"},
-    {i:8,  real:1.0,   min:0.0, max:4.0,   name:"Amplifier",      short:"Amp"},
-    {i:9,  real:0.5,   min:0.0, max:4.0,   name:"Osc 1 Amp",      short:"A01"},
-    {i:10, real:0.25,  min:0.0, max:4.0,   name:"Osc 2 Amp",      short:"A02"},
-    {i:11, real:0.123, min:0.0, max:4.0,   name:"Osc 3 Amp",      short:"A03"},
-    {i:12, real:0.0625,min:0.0, max:4.0,   name:"Osc 4 Amp",      short:"A04"},
-    {i:13, real:0.0,   min:0.0, max:1.0,   name:"Noise Mix",      short:"NMix"},
-    {i:14, real:1.0,   min:0.0, max:255.0, name:"Noise Seed",     short:"Seed"},
-    {i:15, real:0.0,   min:0.0, max:1.0,   name:"Noise Rot",      short:"Shift"},
-    {i:16, real:0.0,   min:0.0, max:1.0,   name:"Smoothing",      short:"Sm"}
+    {i:0, real:1.0,   min:0.0, max:4.0,   name:"Amplifier",      short:"Amp"},
+    {i:1, real:0.5,   min:0.0, max:4.0,   name:"Osc 1 Amp",      short:"A01"},
+    {i:2, real:0.25,  min:0.0, max:4.0,   name:"Osc 2 Amp",      short:"A02"},
+    {i:3, real:0.123, min:0.0, max:4.0,   name:"Osc 3 Amp",      short:"A03"},
+    {i:4, real:0.0625,min:0.0, max:4.0,   name:"Osc 4 Amp",      short:"A04"},
+    {i:5, real:0.0,   min:0.0, max:1.0,   name:"Noise Mix",      short:"NMix"},
+    {i:6, real:1.0,   min:0.0, max:255.0, name:"Noise Seed",     short:"Seed"},
+    {i:7, real:0.0,   min:0.0, max:1.0,   name:"Noise Rot",      short:"Shift"},
+    {i:8, real:0.0,   min:0.0, max:1.0,   name:"Smoothing",      short:"Sm"}
 ];
 
-var active_slider = 8;
+var active_slider = 0;
 var nfsamples     = [];          // full 2048 {x,y}
 var display_y     = [];          // downsampled for drawing
 var drag_slider   = -1;
-var box_w = 320, box_h = 420;
-var spacer_after  = {4:true, 8:true};
+var box_w = 400, box_h = 370;
+var spacer_after  = {1:true, 5:true};
 
 var buf = null;                  // Max Buffer object
 
@@ -190,31 +191,31 @@ function build_display() {
 function generate_wavetable() {
     var fi = Math.PI * 2 / NUM_SAMPLES;
 
-    for (var i = 8; i < params.length; i++)
+    for (var i = 0; i < params.length; i++)
         params[i].real = float_constrain(params[i].real, params[i].min, params[i].max);
 
     nfsamples = [];
     for (var i = 0; i < NUM_SAMPLES; i++) {
-        var fy = params[9].real  * Math.sin(fi * i) +
-                 params[10].real * Math.sin(2 * fi * i) +
-                 params[11].real * Math.sin(3 * fi * i) +
-                 params[12].real * Math.sin(4 * fi * i);
-        fy *= params[8].real;
+        var fy = params[1].real * Math.sin(fi * i) +
+                 params[2].real * Math.sin(2 * fi * i) +
+                 params[3].real * Math.sin(3 * fi * i) +
+                 params[4].real * Math.sin(4 * fi * i);
+        fy *= params[0].real;
         fy = float_fold_constrain(fy, -1, 1);
         nfsamples.push({x: i, y: fy});
     }
 
-    if (params[13].real > 0) {
-        var mix  = params[13].real;
-        var seed = params[14].real | 0;
-        var numspaces = Math.round(map(params[15].real, 0, 1, 0, NUM_SAMPLES));
+    if (params[5].real > 0) {
+        var mix  = params[5].real;
+        var seed = params[6].real | 0;
+        var numspaces = Math.round(map(params[7].real, 0, 1, 0, NUM_SAMPLES));
         var noise = generate_noise(NUM_SAMPLES, seed);
         noise = shift_float_array(noise, numspaces);
         mix_signal_into_nfsamples(nfsamples, noise, mix);
     }
 
-    if (params[16].real > 0)
-        unweighted_sliding_average(nfsamples, 9, params[16].real);
+    if (params[8].real > 0)
+        unweighted_sliding_average(nfsamples, 9, params[8].real);
 
     build_display();
     write_to_buffer();
@@ -244,15 +245,16 @@ function get_slider_rects() {
 }
 
 function paint() {
+    mgraphics.size = [box_w, box_h];
     var size = mgraphics.size;
-    box_w = size[0]; box_h = size[1];
+    // box_w = size[0]; box_h = size[1];
 
-    mgraphics.set_source_rgba(0.04, 0.12, 0.04, 1);
+    mgraphics.set_source_rgba(...config_colors.background_all);
     mgraphics.rectangle(0, 0, box_w, box_h);
     mgraphics.fill();
 
     // waveform background
-    mgraphics.set_source_rgba(0.02, 0.14, 0.02, 1);
+    mgraphics.set_source_rgba(...config_colors.background_waveform);
     mgraphics.rectangle(1, 1, box_w-2, WT_HEIGHT);
     mgraphics.fill();
 
@@ -263,7 +265,7 @@ function paint() {
     var x_scale = (box_w - 2) / (DISPLAY_PTS - 1);
 
     // stems
-    mgraphics.set_source_rgba(0.08, 0.2, 0.08, 1);
+    mgraphics.set_source_rgba(...config_colors.stems);
     mgraphics.set_line_width(1);
     for (var i = 0; i < display_y.length; i++) {
         var px = 1 + i * x_scale;
@@ -274,7 +276,7 @@ function paint() {
     }
 
     // waveform line
-    mgraphics.set_source_rgba(0.6, 0.98, 0.6, 1);
+    mgraphics.set_source_rgba(...config_colors.waveform_line);
     mgraphics.set_line_width(1.5);
     mgraphics.move_to(1, y_off + display_y[0] * y_mult);
     for (var i = 1; i < display_y.length; i++)
@@ -282,7 +284,7 @@ function paint() {
     mgraphics.stroke();
 
     // title
-    mgraphics.set_source_rgba(0.7, 0.9, 0.7, 1);
+    mgraphics.set_source_rgba(...config_colors.title);
     mgraphics.select_font_face("Arial");
     mgraphics.set_font_size(11);
     mgraphics.move_to(6, WT_HEIGHT + 16);
@@ -337,7 +339,7 @@ function ondrag(x, y) {
     var rects = get_slider_rects();
     var rc = rects[drag_slider];
     params[drag_slider].real = slider_x_to_real(params[drag_slider], x-(rc.x+2), rc.track_w);
-    if (drag_slider >= 8) generate_wavetable();
+    if (drag_slider >= 0) generate_wavetable();
     mgraphics.redraw();
     outlet(1, "param", drag_slider, params[drag_slider].real);
 }

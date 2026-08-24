@@ -12,7 +12,8 @@ const theme_colors = {
     active_node: [0.96, 0.7, 0.7, 1.0],
     node: [0.6, 0.3, 0.3, 1.0],
     info_text: [0.3, 0.6, 0.97, 1.0],
-    loop_line_color: [0.9, 0.5, 0.5, 1.0]
+    loop_line_color: [0.9, 0.5, 0.5, 1.0],
+    loop_phase_line_color: [0.3, 0.5, 0.5, 1.0]
 };
 
 const padding = 17;
@@ -34,7 +35,8 @@ const config = {
     coarse_delta: 0.05,
     looping: false,       // implement pingpong between two points later! 
     loop_point: -1,
-    use_dashes: true
+    use_dashes: true,
+    sustain_phase: -1.0
 };
 
 const DELETE = 127;
@@ -140,6 +142,19 @@ function draw_sustain(gfx, w, h){
         gfx.stroke();
         gfx.set_dash(0, 0);  
     }
+}
+function draw_loop_phase(gfx, w, h){
+    // this might be a hack.. but, let's have the option anyway.
+    // this is just an indicator of a sustain point which doesn't lie on a node
+    if (config.sustain_phase >= 0.0 && config.sustain_phase <= 1.0){
+        var [x1, y1] = absolute_coord(config.sustain_phase, 0.0, w, h);
+        gfx.set_source_rgba(...theme_colors.loop_phase_line_color);
+        gfx.set_dash(7, 10);  
+        gfx.move_to(...[x1, padding]);
+        gfx.line_to(...[x1, h-padding]);
+        gfx.stroke();
+        gfx.set_dash(0, 0);  
+    }
 
 }
 
@@ -185,6 +200,7 @@ function paint() {
         draw_bounding_rect(gfx, w, h);
         draw_lines(gfx, w, h);
         draw_sustain(gfx, w, h);
+        draw_loop_phase(gfx, w, h);
         draw_nodes(gfx, w, h);
         if (config.g_in_edit_mode){
             draw_node_info(gfx, w, h);
@@ -221,6 +237,24 @@ function write(msg){
     if (msg === 'nodes'){
         outlet(0, ...env_nodes);
     }
+}
+
+function stringToEnvNodes(str) {
+    const nums = str.trim().split(/\s+/).map(Number);
+    const env_nodes = [];
+    for (let i = 0; i < nums.length; i += 2) {
+        env_nodes.push([nums[i], nums[i + 1]]);
+    }
+    return env_nodes;
+}
+
+function read_nodestr(args){
+    env_nodes.length = 0;
+    const new_nodes = stringToEnvNodes(args);
+    for (const coords of new_nodes) {
+        env_nodes.push(coords);
+    }
+    refresh(); 
 }
 
 function array_from_env(path, n) {
@@ -293,6 +327,11 @@ function fill_buffer_env(bufname){
         mt_str.push(envbuff.peek(1, i));
     }
     // post('[' + mt_str.join(', ') + ']');
+}
+
+function set_sustain_phase(value){
+    config.sustain_phase = value;
+    refresh(); 
 }
 
 

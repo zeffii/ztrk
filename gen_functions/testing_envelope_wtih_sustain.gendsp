@@ -1,0 +1,112 @@
+Param Duration(170, min=1.0, max=1200);
+
+History Active(0);
+History AmpValue(0);
+History Elapsed_Samples(0);
+
+Buffer Anex("Env1");
+
+dur = max(mstosamps(Duration), 2);
+theta = 1 / dur;
+
+// TRIGGER
+if (in1 > 0) {
+    Active = 1;
+    Elapsed_Samples = 0;
+    AmpValue = 1;
+}
+
+// ENVELOPE
+if (Active > 0) {
+
+    AmpValue = peek(Anex, theta*Elapsed_Samples, index="phase", interp="cubic");
+    if (Elapsed_Samples >= dur - 1) { AmpValue, Active = 0, 0; }
+    else                            { Elapsed_Samples += 1;    }
+}
+
+out1 = AmpValue;
+
+======
+
+Param Duration(170, min=1.0, max=1200);
+Param SustainPhase(0, min=0, max=1.0);
+History Active(0);
+History AmpValue(0);
+History Elapsed_Samples(0);
+History Velocity(0);
+History Releasing(0);
+Buffer Anex("Env1");
+dur = max(mstosamps(Duration), 2);
+sus_pos = SustainPhase * dur;
+voice_volume = (1 / 127) * in1;
+
+// TRIGGER (velocity 1..127 = on, 0 = off)
+if (in1 > 0) {
+    Active = 1;
+    Releasing = 0;
+    Elapsed_Samples = 0;
+    Velocity = in1;
+}
+// RELEASE on velocity 0
+if (in1 == 0 && Active > 0 && Releasing == 0) {
+    Releasing = 1;
+}
+
+// ENVELOPE
+if (Active > 0) {
+    phase = min(Elapsed_Samples, dur - 1);
+    if (Releasing == 0) {
+        // attack through sustain point
+        read_pos = min(phase, sus_pos);
+    } else {
+        // continue from sustain point to end
+        read_pos = sus_pos + phase;
+        if (read_pos >= dur) read_pos = dur - 1;
+        Elapsed_Samples += 1;
+    }
+    AmpValue = peek(Anex, read_pos / (dur - 1), index="phase", interp="cubic");
+    if (read_pos >= dur - 1) { AmpValue = 0; Active = 0; Releasing = 0; }
+    if (Releasing == 0) Elapsed_Samples += 1;
+}
+out1 = AmpValue * voice_volume;
+
+
+
+
+======
+
+
+Param Duration(170, min=1.0, max=1200);
+Param SustainPhase(0, min-0, max=1);       // what part of the envelope will sustain.
+History Active(0);
+History AmpValue(0);
+History Elapsed_Samples(0);
+Buffer Anex("Env1");
+
+// the time we want all envelope stages to complete.
+// ignore whether we are sustaining or not.
+dur = max(mstosamps(Duration), 2);
+
+theta = 1 / dur;
+voice_volume = (1 / 128) * in1;
+
+// TRIGGER
+if (in1 > 0) {
+    Active = 1;
+    Elapsed_Samples = 0;
+    AmpValue = 1;
+}
+
+// ENVELOPE
+if (Active > 0) {
+
+    AmpValue = peek(Anex, theta*Elapsed_Samples, index="phase", interp="cubic");
+    if (Elapsed_Samples >= dur - 1) { AmpValue, Active = 0, 0; }
+    else                            { Elapsed_Samples += 1;    }
+}
+
+if (in1 == 0){
+
+}
+
+out1 = AmpValue * voice_volume;
