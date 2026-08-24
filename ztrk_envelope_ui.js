@@ -74,22 +74,6 @@ function midpoint(a, b){
     return [round4((a[0]+b[0]) / 2.0), round4((a[1]+b[1]) / 2.0)];
 }
 
-function dashed_line([x1, y1], [x2, y2], dash_count) {
-
-    dash_count = Math.max(1, dash_count);
-    const dashes = [];
-
-    for (let i = 0; i < dash_count; i++) {
-        const start_t = i / dash_count;
-        const end_t = (i + 0.5) / dash_count;
-        const start = [x1 + (x2 - x1) * start_t, y1 + (y2 - y1) * start_t];
-        const end = [x1 + (x2 - x1) * end_t, y1 + (y2 - y1) * end_t];
-        dashes.push([start, end]);
-    }
-
-    return dashes;
-}
-
 function fill_background(gfx, w, h){
     gfx.set_source_rgba(...theme_colors.main_bg_color);
     gfx.rectangle(0, 0, w, h);
@@ -150,12 +134,6 @@ function draw_sustain(gfx, w, h){
         gfx.line_to(x1, h-padding);
         gfx.stroke();
     } else {
-        // var dash_segments = dashed_line([x1, padding], [x1, h-padding], 12);
-        // for (const [idx, [start, end]] of dash_segments.entries()) {
-            //     gfx.move_to(...start);
-            //     gfx.line_to(...end);
-            //     gfx.stroke();
-            // }
         gfx.set_dash(7, 10);  
         gfx.move_to(...[x1, padding]);
         gfx.line_to(...[x1, h-padding]);
@@ -167,18 +145,19 @@ function draw_sustain(gfx, w, h){
 
 function draw_node_help(gfx, w, h){
     const help_lines = [
-        "          Spacebar : Enter edit mode",
-        "         LR Arrows : Select next or previous node",
-        "       CTRL+Arrows : Move current node around slowly",
-        " CTRL+SHIFT+Arrows : Move current node around faster",        
-        "                 S : Enable sustain mode on current node",
-        "                 X : Remove current node",
-        "                 H : Show/Hide this message",
-        "                 Z : Insert Node to the right, unless last node",
-        "          messages : <move_node idx x y>  - for procedural node moving",
-        "                     <display_help>       - Same as H",
-        "                     <write nodes>        - to inlet 0, as a list",
-        "                     <preset idx>         - not implemented yet"
+        " Keyboard Interaction:",
+        " Spacebar:     Enter edit mode",
+        " LR Arrows:    Select next or previous node",
+        " CTRL+Arrows:  Move current node around slowly (add shift to accelerate)",
+        " S: Sustain current node   X: Remove current node",
+        " H: toggle this message    Z: Insert Node to the right, unless last node",
+        "",
+        " messages:",
+        " <move_node idx x y>  - for procedural node moving",
+        " <fill_buffer buffername>     - send 512 samples env to named buffer",
+        " <fill_buffer_env buffername> - send config to buffer of 64 samples.",
+        "",
+        " for more read the source, or docs",
     ];
     gfx.set_source_rgba(...theme_colors.info_text);
     var [text_width, text_height] = gfx.text_measure("X");

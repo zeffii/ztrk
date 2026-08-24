@@ -613,17 +613,17 @@
                     "bgcolor": [ 0.695464505564228, 0.695464333773592, 0.695464378532954, 1.0 ],
                     "fontname": "Consolas",
                     "id": "obj-70",
-                    "linecount": 43,
+                    "linecount": 33,
                     "maxclass": "comment",
                     "numinlets": 1,
                     "numoutlets": 0,
-                    "patching_rect": [ 622.580672621727, 459.13980519771576, 449.0, 625.0 ],
+                    "patching_rect": [ 695.7742419242859, 414.0, 449.0, 470.0 ],
                     "saved_attribute_attributes": {
                         "bgcolor": {
                             "expression": "themecolor.live_surface_bg"
                         }
                     },
-                    "text": "Wavetable Synth Voice  –  2048-sample buffer \"synth_wt\"\nInlets:\n   in1 = frequency (Hz)\n   in2 = gate (0 or 1)\nParams (or set via messages / UI):\n   A D S R          – amplitude envelope\n   FA FD FS FR      – filter envelope\n   cutoff           – base filter frequency (Hz)\n   res              – resonance (0..1-ish, careful >0.9)\n   fenv_amt         – how much filter env modulates cutoff (0..1+)\n   gain             – final output gain\n\n============================================================\n\n[kslider] or [makenote 100 500] or your tracker\n    │\n    ├─ note → [mtof] ──────────────────────────────→ in1 of gen~\n    └─ gate (0/1) ─────────────────────────────────→ in2 of gen~\n\n[v8ui  (your synth_mk1 script)]\n    │  (outlet 1: \"param\" idx value)\n    └─→ [route param] → [select 0 1 2 3 4 5 6 7 …]\n                           │\n                           └─→ [pak …] or individual [set A $1( etc.\n                                 messages into the gen~ :\n\n[gen~]  ← receive messages:\n    A $1, D $1, S $1, R $1,\n    FA $1, FD $1, FS $1, FR $1,\n    cutoff $1, res $1, fenv_amt $1, gain $1\n\n[gen~] → [*~ 0.5] → [dac~]\n\n=============================================================\n\n[v8ui]\n|\n[route param]\n|\n[sel 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16]\n|  |  |  |  |  |  |  |  …\n[set A $1(  [set D $1(  … etc.   →  [gen~]\n",
+                    "text": "Wavetable Synth Voice  –  2048-sample buffer \"synth_wt\"\nInlets:\n   in1 = frequency (Hz)\n   in2 = gate (0 or 1)\nParams (or set via messages / UI):\n   A D S R          – amplitude envelope\n   FA FD FS FR      – filter envelope\n   cutoff           – base filter frequency (Hz)\n   res              – resonance (0..1-ish, careful >0.9)\n   fenv_amt         – how much filter env modulates cutoff (0..1+)\n   gain             – final output gain\n\n============================================================\n\n[kslider] or [makenote 100 500] or your tracker\n    │\n    ├─ note → [mtof] ──────────────────────────────→ in1 of gen~\n    └─ gate (0/1) ─────────────────────────────────→ in2 of gen~\n\n[v8ui  (your synth_mk1 script)]\n    │  (outlet 1: \"param\" idx value)\n    └─→ [route param] → [select 0 1 2 3 4 5 6 7 …]\n                           │\n                           └─→ [pak …] or individual [set A $1( etc.\n                                 messages into the gen~ :\n\n[gen~]  ← receive messages:\n    A $1, D $1, S $1, R $1,\n    FA $1, FD $1, FS $1, FR $1,\n    cutoff $1, res $1, fenv_amt $1, gain $1\n\n[gen~] → [*~ 0.5] → [dac~]",
                     "textcolor": [ 0.0, 0.0, 0.0, 1.0 ]
                 }
             },
