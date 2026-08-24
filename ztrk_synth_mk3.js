@@ -269,7 +269,7 @@ function paint() {
     mgraphics.set_line_width(1);
     for (var i = 0; i < display_y.length; i++) {
         var px = 1 + i * x_scale;
-        var py = y_off + display_y[i] * y_mult;
+        var py = y_off - display_y[i] * y_mult;
         mgraphics.move_to(px, py);
         mgraphics.line_to(px, WT_HEIGHT + 1);
         mgraphics.stroke();
@@ -278,9 +278,9 @@ function paint() {
     // waveform line
     mgraphics.set_source_rgba(...config_colors.waveform_line);
     mgraphics.set_line_width(1.5);
-    mgraphics.move_to(1, y_off + display_y[0] * y_mult);
+    mgraphics.move_to(1, y_off - display_y[0] * y_mult);
     for (var i = 1; i < display_y.length; i++)
-        mgraphics.line_to(1 + i * x_scale, y_off + display_y[i] * y_mult);
+        mgraphics.line_to(1 + i * x_scale, y_off - display_y[i] * y_mult);
     mgraphics.stroke();
 
     // title
