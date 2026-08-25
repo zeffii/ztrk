@@ -7,9 +7,6 @@ mgraphics.relative_coords = 0;
 mgraphics.autofill = 0;
 
 // ---------------------------------------------------------------------
-// Same config shape as before. Colors stay as normalized RGBA arrays
-// since that's what mgraphics.set_source_rgba() expects directly.
-// ---------------------------------------------------------------------
 var config = {
     params: {
         mod:      0,
@@ -22,25 +19,22 @@ var config = {
         width:    1
     },
     colors: {
-        bg:      [0.05, 0.06, 0.08, 1],
-        fg:      [0.85, 0.90, 0.95, 1],
-        LCD_bg:  [0.078, 0.651, 0.788, 1],
-        LCD_bg2: [0.082, 0.71, 0.86, 1],
-        LCD_fg:  [0.863, 0.933, 1.0,  1],
-        active:  [0.30, 0.90, 0.98, 1],
-        linetype1: [0.85, 0.90, 0.95, 1]
+        bg:        [0.05, 0.06, 0.08, 1],
+        fg:        [0.85, 0.90, 0.95, 1],
+        LCD_bg:    [0.078, 0.651, 0.788, 1],
+        LCD_bg2:   [0.082, 0.71, 0.86, 1],
+        LCD_fg:    [0.863, 0.933, 1.0,  1],
+        active:    [0.30, 0.90, 0.98, 1],
+        linetype1: [0.85, 0.90, 0.95, 1],
+        timeline:  [0.75, 0.88, 0.95, 0.55]   // slightly dimmer for the axis
     },
     font: {
-        // This must match a font family actually installed on the machine
-        // running the patch — mgraphics has no equivalent of loading a
-        // .ttf file at runtime the way a browser's FontFace API does.
         family: ["VCR-JP", "normal", "normal"],
         size:   8
     }
 };
 
-// Inlet 0: accept a list [paramName, value] to update the readout live
-// e.g. sending "decay 1.20" from the patch updates that row and repaints.
+// ---------------------------------------------------------------------
 function anything() {
     var name = messagename;
     if (config.params.hasOwnProperty(name) && arguments.length > 0) {
@@ -49,9 +43,6 @@ function anything() {
     }
 }
 
-// ---------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------
 function clamp(v, lo, hi) {
     return Math.max(lo, Math.min(hi, v));
 }
@@ -61,21 +52,25 @@ function lerp(a, b, t) {
 }
 
 // ---------------------------------------------------------------------
-// Reverb tail
+// Logarithmic time → x mapping
+// t is in milliseconds
+// ---------------------------------------------------------------------
+function timeToX(t, x0, axisWidth, tMin, tMax) {
+    t = clamp(t, tMin, tMax);
+    var logMin = Math.log(tMin);
+    var logMax = Math.log(tMax);
+    var logT   = Math.log(t);
+    return x0 + ((logT - logMin) / (logMax - logMin)) * axisWidth;
+}
+
 // ---------------------------------------------------------------------
 function draw_reverb_tail(gfx, color, length, curve_amount, offsetX, offsetY) {
-    // color        : [r, g, b, a]  (0–1 range)
-    // length       : horizontal length of the tail in pixels
-    // curve_amount : 0 → almost linear, 1 → strong early decay
-    // offsetX/Y    : position of the start of the tail
-
     curve_amount = clamp(curve_amount, 0, 1);
 
     var h = mgraphics.size[1];
     var startY = h * 0.18;
-    var endY   = h * 0.82;
+    var endY   = h * 0.72;          // leave a bit more room at the bottom for the timeline
 
-    // Control points (relative to the start of the tail)
     var cp1x = length * (0.15 + 0.25 * curve_amount);
     var cp1y = startY + (endY - startY) * (0.55 + 0.35 * curve_amount);
 
@@ -97,7 +92,44 @@ function draw_reverb_tail(gfx, color, length, curve_amount, offsetX, offsetY) {
 }
 
 // ---------------------------------------------------------------------
-// LCD vignette
+// Log-scale timeline
+// Shows 100 ms at the start of the envelope area, then progressively
+// more time in the same horizontal space.
+// ---------------------------------------------------------------------
+function drawLogTimeline(gfx, x0, y, axisWidth, tMin, tMax) {
+    gfx.set_source_rgba(...config.colors.timeline);
+    gfx.set_line_width(1);
+
+    // baseline
+    gfx.move_to(x0, y);
+    gfx.line_to(x0 + axisWidth, y);
+    gfx.stroke();
+
+    // ticks + labels every 100 ms
+    gfx.select_font_face(...config.font.family);
+    gfx.set_font_size(7);
+
+    var lastLabelX = -999;
+
+    for (var t = 100; t <= tMax; t += 100) {
+        var x = timeToX(t, x0, axisWidth, tMin, tMax);
+
+        // tick
+        var tickH = (t % 500 === 0) ? 6 : 3;
+        gfx.move_to(x, y);
+        gfx.line_to(x, y + tickH);
+        gfx.stroke();
+
+        // label (avoid overlap)
+        if (x - lastLabelX > 28) {
+            var label = (t >= 1000) ? (t / 1000).toFixed(1) + "s" : t + "";
+            gfx.move_to(x - 6, y + 14);
+            gfx.show_text(label);
+            lastLabelX = x;
+        }
+    }
+}
+
 // ---------------------------------------------------------------------
 function drawLcdVignette(gfx, w, h) {
     const p = gfx.pattern_create_radial(150, 0, 240, 0, 200, 0);
@@ -110,13 +142,11 @@ function drawLcdVignette(gfx, w, h) {
 }
 
 // ---------------------------------------------------------------------
-// Main paint
-// ---------------------------------------------------------------------
 function paint() {
     var gfx = this.mgraphics;
     var [width, height] = gfx.size;
 
-    // --- backlight fill ---
+    // --- backlight ---
     drawLcdVignette(gfx, width, height);
 
     // --- text readout ---
@@ -143,18 +173,16 @@ function paint() {
     }
 
     // -----------------------------------------------------------------
-    // Reactive reverb tail
+    // Reactive reverb tail + log timeline
     // -----------------------------------------------------------------
     var p = config.params;
 
-    // map parameters → visual
     var tailLength   = lerp(90, width - 170, clamp(p.size * 0.65 + p.decay * 0.35, 0, 1));
-    var curveAmt     = lerp(0.35, 0.92, clamp(p.decay, 0, 1));          // longer decay → slightly gentler curve
+    var curveAmt     = lerp(0.35, 0.92, clamp(p.decay, 0, 1));
     var tailAlpha    = lerp(0.25, 0.95, clamp(p.wet, 0, 1));
     var predelayGap  = lerp(6, 55, clamp(p.predelay / 100, 0, 1));
     var stereoSpread = lerp(0, 14, clamp(p.width, 0, 1));
 
-    // base colour from your LCD palette, with wet controlling alpha
     var colL = [
         config.colors.linetype1[0],
         config.colors.linetype1[1],
@@ -169,13 +197,20 @@ function paint() {
     ];
 
     var baseX = 150 + predelayGap;
-    var baseY = 4;
+    var baseY = 0;
 
-    // Left channel tail
+    // tails
     draw_reverb_tail(gfx, colL, tailLength, curveAmt, baseX, baseY - stereoSpread * 0.5);
-
-    // Right channel tail (slightly shorter + offset for width)
     draw_reverb_tail(gfx, colR, tailLength * 0.96, curveAmt * 0.97, baseX + 3, baseY + stereoSpread * 0.5);
+
+    // ----- log timeline -----
+    // Start of the envelope area shows 100 ms.
+    // Equal x-distance = progressively larger time steps.
+    var tMin = 100;                     // leftmost time (ms)
+    var tMax = 3000;                    // rightmost time (ms) – feel free to raise/lower
+    var axisY = height - 22;
+
+    drawLogTimeline(gfx, baseX, axisY, tailLength, tMin, tMax);
 }
 
 function onresize() {
