@@ -38,7 +38,7 @@ Some milestones i will need to tackle, in no particular order
 - [x] basic first synth mk2
 - [ ] sequencing patterns
 - [ ] keyrepeats, need a tidier solution (has been through several iteration, not satisfying yet)
-- [ ] rewrite ui using char-atlas? or switch to alternative rendering during playback.
+
 
 
 -----------------
