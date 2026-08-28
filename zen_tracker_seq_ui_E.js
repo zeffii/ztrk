@@ -92,6 +92,7 @@ const found_in = (list, value) => (list.indexOf(value) !== -1);
 const set_rgb = (color, dimming) => {
     mgraphics.set_source_rgba(color.r / dimming, color.g / dimming, color.b / dimming, 1);
 }
+
 // - multi line utils
 
 function color_from_kind(kind) { 
@@ -100,7 +101,6 @@ function color_from_kind(kind) {
     if (kind === "gen") return theme_colors.def_gen_color;
     return theme_colors.def_gen_color;
 }
-
 
 function next_pname(){
     // dumb incrementing label, patterns should be named eventually.
@@ -221,13 +221,19 @@ function key_handler(){
     const UKEY = ASCII(USER_KEY);
 
     if (SELECTOR === CTRL){
-        if (UKEY === 'C'){ clone_pattern(); return; }
-        if (UKEY === 'S'){ slice_pattern_at_playhead(); return; }
+        switch(UKEY) {
+            case 'C': clone_pattern(); return;
+            case 'S': slice_pattern_at_playhead(); return;
+        }
+        return;
     }
 
     if (SELECTOR === ALT){
-        if (USER_KEY === UP_KEY){ move_pattern_lane(-1); return; }
-        if (USER_KEY === DOWN_KEY){ move_pattern_lane(1); return; }
+        switch(USER_KEY) {
+            case UP_KEY: move_pattern_lane(-1); return;
+            case DOWN_KEY: move_pattern_lane(1); return;
+        }
+        return;
     }
 
     if (found_in([MINUS1, PLUS1], USER_KEY)){
@@ -235,9 +241,9 @@ function key_handler(){
         return;
     }
 
-    if (UKEY === 'I'){
-        insert_pattern_at_cursor();
-        return;
+    switch(UKEY) {
+        case "I": insert_pattern_at_cursor(); return;
+        case "X": remove_pattern_at_cursor(); return;
     }
 
     if (USER_KEY === ENTER){
@@ -411,6 +417,22 @@ function insert_pattern_at_cursor(){
     var color = RGBA_2_RGB(color_from_kind(kind));
     var new_pattern = {pname: next_pname3(), trk: trk, start: start, length: 64, color: color};  
     sequencer_config[trk].patterns.push(new_pattern);
+    mgraphics.redraw();
+}
+
+function remove_pattern_at_cursor(){
+    var trk = g_tcaret.col;
+    var start = tick_from_row(g_tcaret.row);
+
+    // find the pattern under the cursor.
+    var found_idx = -1;
+    for (const [pidx, pattern] of sequencer_config[trk].patterns.entries()) {
+        if (pattern.start == start) {
+            found_idx = pidx;
+            break;
+        }
+    }
+    if (found_idx >= 0){ sequencer_config[trk].patterns.splice(found_idx, 1); }
     mgraphics.redraw();
 }
 
