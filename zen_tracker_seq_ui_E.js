@@ -73,8 +73,6 @@ sequencer_config[2].patterns.push(sequence_data[2]);
 sequencer_config[2].patterns.push(sequence_data[5]);
 
 
-
-
 // - one liner utils.
 
 const kind_from_column = (col) => sequencer_config[col].kind;
@@ -100,6 +98,18 @@ function color_from_kind(kind) {
     if (kind === "fx") return theme_colors.def_fx_color;
     if (kind === "gen") return theme_colors.def_gen_color;
     return theme_colors.def_gen_color;
+}
+
+function find_pattern_under_cursor(trk, start){
+
+    var found_idx = -1;
+    for (const [pidx, pattern] of sequencer_config[trk].patterns.entries()) {
+        if (pattern.start == start) {
+            found_idx = pidx;
+            break;
+        }
+    }
+    return found_idx;
 }
 
 function next_pname(){
@@ -358,15 +368,13 @@ function slice_pattern_at_playhead(){
         start: global_tick,
         length: second_length,
         color: p.color.slice(),
-        kind: p.kind
     };
 
     p.length = first_length;
     sequence_data.push(second_half);
 
     slice_pattern_content_dummy(p, second_half); // <- stub, see below
-
-    post('sliced pattern ' + p.pname + ' at tick ' + global_tick + '\n');
+    // post('sliced pattern ' + p.pname + ' at tick ' + global_tick + '\n');
     mgraphics.redraw();
 }
 
@@ -414,6 +422,11 @@ function insert_pattern_at_cursor(){
     var trk = g_tcaret.col;
     var kind = kind_from_column(trk);
     var start = tick_from_row(g_tcaret.row);
+
+    // don't allow adding pattern in the place of an existing pattern.
+    var found_idx = find_pattern_under_cursor(trk, start);
+    if (found_idx >= 0) return;
+
     var color = RGBA_2_RGB(color_from_kind(kind));
     var new_pattern = {pname: next_pname3(), trk: trk, start: start, length: 64, color: color};  
     sequencer_config[trk].patterns.push(new_pattern);
@@ -424,14 +437,7 @@ function remove_pattern_at_cursor(){
     var trk = g_tcaret.col;
     var start = tick_from_row(g_tcaret.row);
 
-    // find the pattern under the cursor.
-    var found_idx = -1;
-    for (const [pidx, pattern] of sequencer_config[trk].patterns.entries()) {
-        if (pattern.start == start) {
-            found_idx = pidx;
-            break;
-        }
-    }
+    var found_idx = find_pattern_under_cursor(trk, start);
     if (found_idx >= 0){ sequencer_config[trk].patterns.splice(found_idx, 1); }
     mgraphics.redraw();
 }
@@ -449,9 +455,11 @@ function insert_patterns_in_selection(){
     var created = 0;
     var skipped = 0;
     for (var col = rect.col_lo; col <= rect.col_hi; col++){
+
+        // dont add patterns ontop of existing
         if (pattern_overlaps(col, start, length)){
             skipped += 1;
-            continue; // a pattern's already sitting in this lane's slot, leave it alone
+            continue;
         }
         var fresh = {
             pname: next_pname(),
