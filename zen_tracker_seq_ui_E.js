@@ -11,7 +11,8 @@ var theme_colors = {
     def_gen_color: [0.2, 0.4, 0.5, 1.0],
     def_fx_color: [0.9, 0.34, 0.3, 1.0],
     time_markers: [0.4, 0.9, 1.0, 1.0],
-    ticks_column: [0.4, 0.9, 1.0, 1.0]
+    ticks_column: [0.4, 0.9, 1.0, 1.0],
+    bg_color: [0.1, 0.2, 0.4, 1.0]
 }
 
 var settings_font_size = 12;
@@ -55,10 +56,10 @@ var sequencer_config = [
 var sequence_data = [
     {pname: "01", trk: 0, start: 0, length: 30, color: [0.2, 0.4, 0.5]},
     {pname: "02", trk: 1, start: 16, length: 48, color: [0.2, 0.4, 0.5]},
-    {pname: "03", trk: 2, start: 64, length: 64, color: [0.2, 0.4, 0.5]},
+    {pname: "03", trk: 2, start: 64, length: 64, color: [0.9, 0.34, 0.3]},
     {pname: "04", trk: 0, start: 128, length: 64, color: [0.2, 0.4, 0.5]},
     {pname: "05", trk: 1, start: 192, length: 16, color: [0.2, 0.4, 0.5]},
-    {pname: "06", trk: 2, start: 256, length: 16, color: [0.2, 0.4, 0.5]},
+    {pname: "06", trk: 2, start: 256, length: 16, color: [0.9, 0.34, 0.3]},
     {pname: "07", trk: 0, start: 288, length: 32, color: [0.2, 0.4, 0.5]}
 ];
 
@@ -455,6 +456,14 @@ function slice_pattern_content_dummy(first_half, second_half){
 
 // - DRAWING.
 
+function draw_backgroun(w, h){
+    var col = theme_colors.bg_color;
+    var dimming  = 1.5;
+    mgraphics.set_source_rgba(col[0]/dimming, col[1]/dimming, col[2]/dimming, 1);
+    mgraphics.rectangle(0, 0, w, h);
+    mgraphics.fill();
+}
+
 function draw_current_tick(){
     var tick_distance = charheight / 16;
     var lineh = (global_tick * tick_distance) - charheight + 3.5;
@@ -579,35 +588,31 @@ function draw_patterns(){
     var xoffset = (0.46 * charwidth);
 
     for (const [idx, track] of sequencer_config.entries()) {
-
         for (const [pidx, pattern] of track.patterns.entries()) {
-            // pattern = sequence_data[pattern_idx];
 
             var [cr, cg, cb] = pattern.color; 
 
+            // Pattern Rect
             mgraphics.set_source_rgba(cr, cg, cb, 1);
-            if (track.kind === "fx"){
-                set_rgb({r:0.9 ,g: 0.34, b: 0.3}, 1.2);    
-            }
-
             var rect_start_x = side_width + (track.trk * trk_width) - xoffset;
             var rect_start_y = ((pattern.start/16) * charheight) - yoffset;
             mgraphics.rectangle(rect_start_x, rect_start_y, trk_width, ((pattern.length / 16) * charheight) );
             mgraphics.fill();
 
+            // Outline Rect  ( i'm not happy about the outline colour being locked.. it's OK for now. _
             set_rgb(color, 0.7);
-            if (track.kind === "fx"){
-                set_rgb({r:0.9 ,g: 0.34, b: 0.2}, 0.5);    
-            }        
+            if (track.kind === "fx"){ set_rgb({r:0.9 ,g: 0.34, b: 0.2}, 0.5); }        
             mgraphics.rectangle(rect_start_x, rect_start_y, trk_width, ((pattern.length / 16) * charheight) );
             mgraphics.stroke();
 
-            if (pidx == g_selected_pattern_idx){
-                set_rgb({r:1.0, g:1.0, b:1.0}, 1.0);
-                mgraphics.rectangle(rect_start_x, rect_start_y, trk_width, ((pattern.length / 16) * charheight) );
-                mgraphics.stroke();
-            }
+            // selected rect, note used at the moment.
+            // if (pidx == g_selected_pattern_idx){
+            //     set_rgb({r:1.0, g:1.0, b:1.0}, 1.0);
+            //     mgraphics.rectangle(rect_start_x, rect_start_y, trk_width, ((pattern.length / 16) * charheight) );
+            //     mgraphics.stroke();
+            // }
 
+            // pattern name
             set_rgb({r:0.82, g:0.82, b:0.82}, 1.0);
             mgraphics.move_to(rect_start_x + xoffset, rect_start_y + yoffset);
             mgraphics.show_text(pattern.pname);
@@ -627,12 +632,7 @@ function paint(){
     trk_width = mgraphics.text_measure('|    Λ    ')[0];
     side_width = mgraphics.text_measure('tick  ')[0];
 
-    // --- dark background ---
-    var dimming  = 1.5;
-    mgraphics.set_source_rgba(0.1/dimming, 0.2/dimming, 0.4/dimming, 1);  // almost black
-    mgraphics.rectangle(0, 0, w, h);
-    mgraphics.fill();
-    
+    draw_backgroun(w, h);
     draw_edit_mode_indicator(h);
 
     mgraphics.translate(30, 50);
