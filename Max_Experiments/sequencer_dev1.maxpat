@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 59.0, 214.0, 799.0, 1081.0 ],
+        "rect": [ 1125.0, 157.0, 588.0, 1081.0 ],
         "boxes": [
             {
                 "box": {
@@ -157,7 +157,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 330.0, 325.0, 56.0, 25.0 ],
-                                    "text": "30",
+                                    "text": "120",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -235,7 +235,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 187.0, 154.0, 22.0 ],
-                                    "text": "126",
+                                    "text": "7",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -269,7 +269,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 373.0, 154.0, 22.0 ],
-                                    "text": "keys 30 126 512 -9",
+                                    "text": "keys 120 7 0 120",
                                     "varname": "input_keys[1]"
                                 }
                             },

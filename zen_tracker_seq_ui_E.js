@@ -419,6 +419,8 @@ function pattern_overlaps(trk, start, length){
 }
 
 function insert_pattern_at_cursor(){
+    // should be able to reuse this to also insert existing patterns 
+
     var trk = g_tcaret.col;
     var kind = kind_from_column(trk);
     var start = tick_from_row(g_tcaret.row);
@@ -486,7 +488,7 @@ function slice_pattern_content_dummy(first_half, second_half){
 
 // - DRAWING.
 
-function draw_backgroun(w, h){
+function draw_background(w, h){
     var col = theme_colors.bg_color;
     var dimming  = 1.5;
     mgraphics.set_source_rgba(col[0]/dimming, col[1]/dimming, col[2]/dimming, 1);
@@ -650,6 +652,23 @@ function draw_patterns(){
     }    
 }
 
+function draw_pattern_menu(gfx, charheight, charwidth, trk_width, side_width){
+    var trk = g_tcaret.col;
+    var start = tick_from_row(g_tcaret.row);
+
+    var num_patterns = sequencer_config[trk].patterns.length;
+    if (num_patterns <= 0){ return; }
+    
+    var yoffset = (0.75 * charheight);
+    var xoffset = (0.46 * charwidth);
+    gfx.set_source_rgba(0.2, 0.2, 0.2, 1);
+    var rect_start_x = side_width + (trk * trk_width) - xoffset;
+    var rect_start_y = ((start/16) * charheight) - yoffset;
+    gfx.rectangle(rect_start_x, rect_start_y, trk_width, (num_patterns * charheight) );
+    gfx.fill();
+
+}
+
 function paint(){
 
     // --- constants ---
@@ -662,7 +681,7 @@ function paint(){
     trk_width = mgraphics.text_measure('|    Λ    ')[0];
     side_width = mgraphics.text_measure('tick  ')[0];
 
-    draw_backgroun(w, h);
+    draw_background(w, h);
     draw_edit_mode_indicator(h);
 
     mgraphics.translate(30, 50);
@@ -674,6 +693,8 @@ function paint(){
     draw_ticks_column(charheight);
     draw_current_tick();
     draw_track_cursor();
+
+    // if (g_display_pattern_menu) draw_pattern_menu(gfx, charheight, charwidth, trk_width, side_width);
 };
 
 // -- MOUSE HANDLING
