@@ -62,7 +62,7 @@ var sequence_data = [
     {pname: "07", trk: 0, start: 288, length: 32, color: [0.2, 0.4, 0.5]}
 ];
 
-// simulate adding data at runtime.
+// - simulate adding data at runtime.
 sequencer_config[0].patterns.push(sequence_data[0]);
 sequencer_config[0].patterns.push(sequence_data[3]);
 sequencer_config[0].patterns.push(sequence_data[6]);
@@ -72,17 +72,11 @@ sequencer_config[2].patterns.push(sequence_data[2]);
 sequencer_config[2].patterns.push(sequence_data[5]);
 
 
-const kind_from_column = (col) => sequencer_config[col].kind;
 
-function color_from_kind(kind) { 
-    // quick defaults.
-    if (kind === "fx") return theme_colors.def_fx_color;
-    if (kind === "gen") return theme_colors.def_gen_color;
-    return theme_colors.def_gen_color;
-}
 
 // - one liner utils.
 
+const kind_from_column = (col) => sequencer_config[col].kind;
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 const ASCII = (key) => String.fromCharCode(key).toUpperCase();
 const fmt4 = (n) => ('0000' + Math.floor(Math.abs(n))).slice(-4) + ' '; 
@@ -92,10 +86,20 @@ const RGBA_2_RGB = (col) => col.slice(0, 3);
 const tick_from_row = (row) => row * 16;
 const found_in = (list, value) => (list.indexOf(value) !== -1);
 
+// - setter functions.. maybe factor out.
 
 const set_rgb = (color, dimming) => {
     mgraphics.set_source_rgba(color.r / dimming, color.g / dimming, color.b / dimming, 1);
 }
+// - multi line utils
+
+function color_from_kind(kind) { 
+    // quick defaults.
+    if (kind === "fx") return theme_colors.def_fx_color;
+    if (kind === "gen") return theme_colors.def_gen_color;
+    return theme_colors.def_gen_color;
+}
+
 
 function next_pname(){
     // dumb incrementing label, patterns should be named eventually.
@@ -118,7 +122,7 @@ function moveCaret(dc, dr) {
     // post(`caret col ${g_tcaret.col}, row ${g_tcaret.row}`);
 }
 
-// -- Message handling.  (they can also be called by key handler )
+// - Message handling.  (they can also be called by key handler )
 
 function loop(mode){
     g_looping = mode;
@@ -168,7 +172,7 @@ function msg_int(tick){
     mgraphics.redraw();
 }
 
-// -- KEY handling.
+// - KEY handling.
 
 function keys(a1, a2, a3, a4){
     if (inlet !== 1) return; // keypresses arrive on the cold 2nd inlet, not the hot one
@@ -256,7 +260,7 @@ function key_handler(){
     }
 }
 
-// --- hit testing : inverse of the rect math used in paint() ---
+// - hit testing : inverse of the rect math used in paint() ---
 
 function tick_from_y(y){
     var yoffset = (0.75 * charheight);
@@ -285,7 +289,8 @@ function hit_test(x, y){
     return null;
 }
 
-// --- editing actions ---
+// - editing actions
+
 // these all operate on g_selected_pattern_idx. hooked up for real where the
 // math is trivial (clone / move lane / extend); left dummy where the actual
 // pattern *content* would need to be touched, since that lives outside this UI.
@@ -360,7 +365,7 @@ function slice_pattern_at_playhead(){
 
 
 
-// -- BEHAVIOURS
+// - BEHAVIOURS
 
 function start_selection(){
     if (!g_selection_active){
@@ -448,7 +453,7 @@ function slice_pattern_content_dummy(first_half, second_half){
     // whatever was under the playhead. For now this is just a hook.
 }
 
-// ------- DRAWING.
+// - DRAWING.
 
 function draw_current_tick(){
     var tick_distance = charheight / 16;
@@ -629,8 +634,7 @@ function paint(){
     mgraphics.fill();
     
     draw_edit_mode_indicator(h);
-    
-    // sequence info
+
     mgraphics.translate(30, 50);
     draw_horizontal_time_markers(charheight);
     draw_looping_indicators();
