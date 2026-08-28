@@ -53,14 +53,24 @@ var sequencer_config = [
 
 // user should be allowed to overwrite colors, but for now they will be taken by default from the type of track.
 var sequence_data = [
-    {pname: "01", trk: 0, start: 0, length: 30, color: [0.2, 0.4, 0.5], kind: "gen"},
-    {pname: "02", trk: 1, start: 16, length: 48, color: [0.2, 0.4, 0.5], kind: "gen"},
-    {pname: "03", trk: 2, start: 64, length: 64, color: [0.2, 0.4, 0.5], kind: "fx"},
-    {pname: "04", trk: 0, start: 128, length: 64, color: [0.2, 0.4, 0.5], kind: "gen"},
-    {pname: "05", trk: 1, start: 192, length: 16, color: [0.2, 0.4, 0.5], kind: "gen"},
-    {pname: "06", trk: 2, start: 256, length: 16, color: [0.2, 0.4, 0.5], kind: "fx"},
-    {pname: "07", trk: 0, start: 288, length: 32, color: [0.2, 0.4, 0.5], kind: "gen"}
+    {pname: "01", trk: 0, start: 0, length: 30, color: [0.2, 0.4, 0.5]},
+    {pname: "02", trk: 1, start: 16, length: 48, color: [0.2, 0.4, 0.5]},
+    {pname: "03", trk: 2, start: 64, length: 64, color: [0.2, 0.4, 0.5]},
+    {pname: "04", trk: 0, start: 128, length: 64, color: [0.2, 0.4, 0.5]},
+    {pname: "05", trk: 1, start: 192, length: 16, color: [0.2, 0.4, 0.5]},
+    {pname: "06", trk: 2, start: 256, length: 16, color: [0.2, 0.4, 0.5]},
+    {pname: "07", trk: 0, start: 288, length: 32, color: [0.2, 0.4, 0.5]}
 ];
+
+// simulate adding data at runtime.
+sequencer_config[0].patterns.push(sequence_data[0]);
+sequencer_config[0].patterns.push(sequence_data[3]);
+sequencer_config[0].patterns.push(sequence_data[6]);
+sequencer_config[1].patterns.push(sequence_data[1]);
+sequencer_config[1].patterns.push(sequence_data[4]);
+sequencer_config[2].patterns.push(sequence_data[2]);
+sequencer_config[2].patterns.push(sequence_data[5]);
+
 
 const kind_from_column = (col) => sequencer_config[col].kind;
 
@@ -71,15 +81,34 @@ function color_from_kind(kind) {
     return theme_colors.def_gen_color;
 }
 
+// - one liner utils.
+
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 const ASCII = (key) => String.fromCharCode(key).toUpperCase();
 const fmt4 = (n) => ('0000' + Math.floor(Math.abs(n))).slice(-4) + ' '; 
 const fmt3 = (n) => ('000' + Math.floor(Math.abs(n))).slice(-3) + ' '; 
 const asRGBobj = (col) => ({r: col[0], g: col[1], b: col[2]});
 const RGBA_2_RGB = (col) => col.slice(0, 3);
+const tick_from_row = (row) => row * 16;
+const found_in = (list, value) => (list.indexOf(value) !== -1);
+
 
 const set_rgb = (color, dimming) => {
     mgraphics.set_source_rgba(color.r / dimming, color.g / dimming, color.b / dimming, 1);
+}
+
+function next_pname(){
+    // dumb incrementing label, patterns should be named eventually.
+    var pname = fmt4(g_next_pname_counter).trim();
+    g_next_pname_counter += 1;
+    return pname;
+}
+
+function next_pname3(){
+    // dumb incrementing label, patterns should be named eventually.
+    var pname = fmt3(g_next_pname_counter).trim();
+    g_next_pname_counter += 1;
+    return pname;
 }
 
 function moveCaret(dc, dr) {
@@ -88,6 +117,8 @@ function moveCaret(dc, dr) {
     mgraphics.redraw();
     // post(`caret col ${g_tcaret.col}, row ${g_tcaret.row}`);
 }
+
+// -- Message handling.  (they can also be called by key handler )
 
 function loop(mode){
     g_looping = mode;
@@ -137,24 +168,7 @@ function msg_int(tick){
     mgraphics.redraw();
 }
 
-function next_pname(){
-    // dumb incrementing label, patterns should be named eventually.
-    var pname = fmt4(g_next_pname_counter).trim();
-    g_next_pname_counter += 1;
-    return pname;
-}
-
-function next_pname3(){
-    // dumb incrementing label, patterns should be named eventually.
-    var pname = fmt3(g_next_pname_counter).trim();
-    g_next_pname_counter += 1;
-    return pname;
-}
-
-function found_in(list, value){ return list.indexOf(value) !== -1; }
-
-// --- keyboard input, same shape as the pattern editor's keys()/key_handler --
-// only ever acts while the mouse is over this ui (see onidle/onidleout below)
+// -- KEY handling.
 
 function keys(a1, a2, a3, a4){
     if (inlet !== 1) return; // keypresses arrive on the cold 2nd inlet, not the hot one
@@ -344,9 +358,9 @@ function slice_pattern_at_playhead(){
     mgraphics.redraw();
 }
 
-function tick_from_row(row){
-    return row * 16;
-}
+
+
+// -- BEHAVIOURS
 
 function start_selection(){
     if (!g_selection_active){
@@ -385,12 +399,12 @@ function pattern_overlaps(trk, start, length){
 }
 
 function insert_pattern_at_cursor(){
-    var kind = kind_from_column(g_tcaret.col);
+    var trk = g_tcaret.col;
+    var kind = kind_from_column(trk);
     var start = tick_from_row(g_tcaret.row);
     var color = RGBA_2_RGB(color_from_kind(kind));
-    var trk = g_tcaret.col;
-    var new_pattern = {pname: next_pname3(), trk: trk, start: start, length: 64, color: color, kind: kind};
-    sequence_data.push(new_pattern);
+    var new_pattern = {pname: next_pname3(), trk: trk, start: start, length: 64, color: color};  
+    sequencer_config[trk].patterns.push(new_pattern);
     mgraphics.redraw();
 }
 
@@ -398,8 +412,7 @@ function insert_patterns_in_selection(){
     var rect = get_selection_rect();
     if (rect === null) return;
 
-    // "starting in the place i initiated the selection rectangle" -- the
-    // anchor's row is the start tick no matter which way the caret grew
+    // the anchor's row is the start tick no matter which way the caret grew
     // the region; length is just the row span in ticks.
     var span_rows = Math.abs(g_tcaret.row - g_sel_anchor.row) + 1;
     var start = tick_from_row(g_sel_anchor.row);
@@ -435,7 +448,9 @@ function slice_pattern_content_dummy(first_half, second_half){
     // whatever was under the playhead. For now this is just a hook.
 }
 
-function display_current_tick(){
+// ------- DRAWING.
+
+function draw_current_tick(){
     var tick_distance = charheight / 16;
     var lineh = (global_tick * tick_distance) - charheight + 3.5;
     set_rgb({r:0.95 ,g: 0.44, b: 0.4}, 0.9);
@@ -558,37 +573,40 @@ function draw_patterns(){
     var yoffset = (0.75 * charheight);
     var xoffset = (0.46 * charwidth);
 
-    for (pattern_idx in sequence_data){
-        pattern = sequence_data[pattern_idx];
-        var [cr, cg, cb] = pattern.color; 
+    for (const [idx, track] of sequencer_config.entries()) {
 
-        mgraphics.set_source_rgba(cr, cg, cb, 1);
-        if (pattern.kind === "fx"){
-            set_rgb({r:0.9 ,g: 0.34, b: 0.3}, 1.2);    
-        }
+        for (const [pidx, pattern] of track.patterns.entries()) {
+            // pattern = sequence_data[pattern_idx];
 
-        var rect_start_x = side_width + (pattern.trk * trk_width) - xoffset;
-        var rect_start_y = ((pattern.start/16) * charheight) - yoffset;
-        mgraphics.rectangle(rect_start_x, rect_start_y, trk_width, ((pattern.length / 16) * charheight) );
-        mgraphics.fill();
+            var [cr, cg, cb] = pattern.color; 
 
-        set_rgb(color, 0.7);
-        if (pattern.kind === "fx"){
-            set_rgb({r:0.9 ,g: 0.34, b: 0.2}, 0.5);    
-        }        
-        mgraphics.rectangle(rect_start_x, rect_start_y, trk_width, ((pattern.length / 16) * charheight) );
-        mgraphics.stroke();
+            mgraphics.set_source_rgba(cr, cg, cb, 1);
+            if (track.kind === "fx"){
+                set_rgb({r:0.9 ,g: 0.34, b: 0.3}, 1.2);    
+            }
 
-        if (pattern_idx == g_selected_pattern_idx){
-            set_rgb({r:1.0, g:1.0, b:1.0}, 1.0);
+            var rect_start_x = side_width + (track.trk * trk_width) - xoffset;
+            var rect_start_y = ((pattern.start/16) * charheight) - yoffset;
+            mgraphics.rectangle(rect_start_x, rect_start_y, trk_width, ((pattern.length / 16) * charheight) );
+            mgraphics.fill();
+
+            set_rgb(color, 0.7);
+            if (track.kind === "fx"){
+                set_rgb({r:0.9 ,g: 0.34, b: 0.2}, 0.5);    
+            }        
             mgraphics.rectangle(rect_start_x, rect_start_y, trk_width, ((pattern.length / 16) * charheight) );
             mgraphics.stroke();
+
+            if (pidx == g_selected_pattern_idx){
+                set_rgb({r:1.0, g:1.0, b:1.0}, 1.0);
+                mgraphics.rectangle(rect_start_x, rect_start_y, trk_width, ((pattern.length / 16) * charheight) );
+                mgraphics.stroke();
+            }
+
+            set_rgb({r:0.82, g:0.82, b:0.82}, 1.0);
+            mgraphics.move_to(rect_start_x + xoffset, rect_start_y + yoffset);
+            mgraphics.show_text(pattern.pname);
         }
-
-        set_rgb({r:0.82, g:0.82, b:0.82}, 1.0);
-        mgraphics.move_to(rect_start_x + xoffset, rect_start_y + yoffset);
-        mgraphics.show_text(pattern.pname);
-
     }    
 }
 
@@ -620,9 +638,11 @@ function paint(){
     draw_patterns();
     draw_header();
     draw_ticks_column(charheight);
-    display_current_tick();
+    draw_current_tick();
     draw_track_cursor();
 };
+
+// -- MOUSE HANDLING
 
 // mgraphics calls onidle continuously while the mouse is over the ui (click
 // or not), and onidleout once when it leaves -- gates keys() via g_mouse_on_rect.
