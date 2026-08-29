@@ -2,6 +2,7 @@ autowatch = 1;
 outlets = 2;
 inlets = 2;
 
+
 mgraphics.init();
 mgraphics.relative_coords = 0;
 mgraphics.autofill = 0;
@@ -24,15 +25,17 @@ var global_tick = 0;
 
 var g_in_edit_mode = 0;
 var g_display_pattern_menu = 0;
-var g_looping = 0;
+var g_looping = false;
 var g_loop_start = 0;
 var g_loop_end = 128;
 var [rows, cols] = [64, 3];
 var g_tcaret = {row:0, col:0};
 
-// selection / editing state
+// selection / editing state / pattern identity.
 var g_selected_pattern_idx = -1;
 var g_next_pname_counter = 8; // bump this whenever a clone/slice creates a new pattern
+var g_uid_tiebreak = 0;
+const next_pattern_uid = () => `${Date.now()}_${g_uid_tiebreak++}`;
 
 // a pending selection *rectangle*, in caret index-space (row/col), not px.
 // Shift commences it (anchor = current caret), then plain arrow presses
@@ -46,37 +49,52 @@ var g_sel_anchor = {row: 0, col: 0};
 var g_mouse_on_rect = false;
 var g_key_codes = [];
 
-// display patterns placeholder structure
-var sequencer_config = [
-    {trk: 0, trk_name: "gen.00", trk_symbol: "Λ", kind: "gen", patterns: []},
-    {trk: 1, trk_name: "gen.01", trk_symbol: "Λ", kind: "gen", patterns: []},
-    {trk: 2, trk_name: "fx.01",  trk_symbol: "φ", kind: "fx", patterns: []}
-];
+// just to test initial state.
+var uid_01 = next_pattern_uid();
+var uid_04 = next_pattern_uid();
+var uid_07 = next_pattern_uid();
+var uid_02 = next_pattern_uid();
+var uid_05 = next_pattern_uid();
+var uid_03 = next_pattern_uid();
+var uid_06 = next_pattern_uid();
 
-// user should be allowed to overwrite colors, but for now they will be taken by default from the type of track.
-var sequence_data = [
-    {pname: "01", trk: 0, start: 0, length: 30, color: [0.2, 0.4, 0.5]},
-    {pname: "02", trk: 1, start: 16, length: 48, color: [0.2, 0.4, 0.5]},
-    {pname: "03", trk: 2, start: 64, length: 64, color: [0.9, 0.34, 0.3]},
-    {pname: "04", trk: 0, start: 128, length: 64, color: [0.2, 0.4, 0.5]},
-    {pname: "05", trk: 1, start: 192, length: 16, color: [0.2, 0.4, 0.5]},
-    {pname: "06", trk: 2, start: 256, length: 16, color: [0.9, 0.34, 0.3]},
-    {pname: "07", trk: 0, start: 288, length: 32, color: [0.2, 0.4, 0.5]}
-];
+
+var sequencer_config = {
+    tracks: [
+        {trk: 0, trk_name: "gen.00", trk_symbol: "Λ", kind: "gen", patterns: []},
+        {trk: 1, trk_name: "gen.01", trk_symbol: "Λ", kind: "gen", patterns: []},
+        {trk: 2, trk_name: "fx.01",  trk_symbol: "φ", kind: "fx", patterns: []}
+    ],
+    patterns: [   /*  This is the pool of patterns to pick from for each machine / trk */
+        {trk: 0, patterns: [
+            {pname: "01", puid: uid_01, length: 32, color: [0.2, 0.4, 0.5], data: []},   // 0
+            {pname: "04", puid: uid_04, length: 64, color: [0.2, 0.4, 0.5], data: []},   // 128
+            {pname: "07", puid: uid_07, length: 32, color: [0.2, 0.4, 0.5], data: []}    // 288
+        ]},
+        {trk: 1, patterns: [
+            {pname: "02", puid: uid_02, length: 48, color: [0.2, 0.4, 0.5], data: []},   // 16
+            {pname: "05", puid: uid_05, length: 16, color: [0.2, 0.4, 0.5], data: []}    // 192
+        ]},
+        {trk: 2, patterns: [
+            {pname: "03", puid: uid_03, length: 64, color: [0.9, 0.34, 0.3], data: []},  // 64
+            {pname: "06", puid: uid_06, length: 16, color: [0.9, 0.34, 0.3], data: []}   // 256
+
+        ]}
+    ]
+};
 
 // - simulate adding data at runtime.
-sequencer_config[0].patterns.push(sequence_data[0]);
-sequencer_config[0].patterns.push(sequence_data[3]);
-sequencer_config[0].patterns.push(sequence_data[6]);
-sequencer_config[1].patterns.push(sequence_data[1]);
-sequencer_config[1].patterns.push(sequence_data[4]);
-sequencer_config[2].patterns.push(sequence_data[2]);
-sequencer_config[2].patterns.push(sequence_data[5]);
-
+add_pattern(0, 0,   uid_01);
+add_pattern(0, 128, uid_04);
+add_pattern(0, 288, uid_07);
+add_pattern(1, 16,  uid_02);
+add_pattern(1, 192, uid_05);
+add_pattern(2, 64,  uid_03);
+add_pattern(2, 256, uid_06);
 
 // - one liner utils.
 
-const kind_from_column = (col) => sequencer_config[col].kind;
+const kind_from_column = (col) => sequencer_config.tracks[col].kind;
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 const ASCII = (key) => String.fromCharCode(key).toUpperCase();
 const fmt4 = (n) => ('0000' + Math.floor(Math.abs(n))).slice(-4) + ' '; 
@@ -88,9 +106,7 @@ const found_in = (list, value) => (list.indexOf(value) !== -1);
 
 // - setter functions.. maybe factor out.
 
-const set_rgb = (color, dimming) => {
-    mgraphics.set_source_rgba(color.r / dimming, color.g / dimming, color.b / dimming, 1);
-}
+const set_rgb = (c, d /*color, dimming*/) => { mgraphics.set_source_rgba(c.r / d, c.g / d, c.b / d, 1); }
 
 // - multi line utils
 
@@ -101,10 +117,33 @@ function color_from_kind(kind) {
     return theme_colors.def_gen_color;
 }
 
+function make_new_pattern(machine_trk, length){};
+
+function getPattrByPUID(track, puid){
+    for (const [idx, pattern] of track.patterns.entries()) {
+        if (pattern.puid === puid)
+            return pattern;
+    }
+    return null;
+}
+
+function add_pattern(machine_trk, start, puid){
+    pattern = getPattrByPUID(sequencer_config.patterns[machine_trk], puid);
+    if (pattern === null) { 
+        post(`failed to located pattern by uid ${puid}`)
+        return;
+    }
+    var mpattern = {pname: pattern.pname, puid: puid, start: start, length: pattern.length, color: pattern.color};
+    sequencer_config.tracks[machine_trk].patterns.push(mpattern);
+};
+
+function delete_pattern(P_uid){}
+function remove_pattern_from_sequencer(){};
+
 function find_pattern_under_cursor(trk, start){
 
     var found_idx = -1;
-    for (const [pidx, pattern] of sequencer_config[trk].patterns.entries()) {
+    for (const [pidx, pattern] of sequencer_config.tracks[trk].patterns.entries()) {
         if (pattern.start == start) {
             found_idx = pidx;
             break;
@@ -257,6 +296,13 @@ function key_handler(){
         case "X": remove_pattern_at_cursor(); return;
         case "I": {
             g_display_pattern_menu = !g_display_pattern_menu; 
+            mgraphics.redraw();
+            return;
+        }
+        case "B": loop_start(g_tcaret.row*16); return;
+        case "E": loop_end(g_tcaret.row*16); return;
+        case "L": {
+            g_looping = !g_looping;
             mgraphics.redraw();
             return;
         }
@@ -436,8 +482,14 @@ function insert_pattern_at_cursor(){
     if (found_idx >= 0) return;
 
     var color = RGBA_2_RGB(color_from_kind(kind));
-    var new_pattern = {pname: next_pname3(), trk: trk, start: start, length: 64, color: color};  
-    sequencer_config[trk].patterns.push(new_pattern);
+    
+    // two steps,
+    // 1  add to pattern list for the machine/track
+    // 2  add to the sequence editor at insertion point
+    const new_puid = next_pattern_uid();
+    var new_pattern = {pname: next_pname3(), puid: new_puid, length: 64, color: color, data: []};  
+    sequencer_config.patterns[trk].patterns.push(new_pattern);
+    add_pattern(trk, start, new_puid);
     mgraphics.redraw();
 }
 
@@ -513,7 +565,7 @@ function draw_current_tick(){
 
 function draw_looping_indicators(){
 
-    if (g_looping === 1){
+    if (g_looping){
         var loop_start_y = -10.5 + ((g_loop_start / 16.0) * charheight);
         var loop_end_y = -10.5 + ((g_loop_end / 16.0 ) * charheight);
         set_rgb({r: 0.2, g: 0.6, b:0.9}, 1.3);
@@ -577,7 +629,7 @@ function draw_header(){
     mgraphics.set_source_rgba(0.4, 0.9, 1.0, 1);
 
     // track tokens for every track
-    for (const [idx, track] of sequencer_config.entries()) {
+    for (const [idx, track] of sequencer_config.tracks.entries()) {
         symbol_tracks += ("|" + centered(    track.trk_symbol, 9));
         name_tracks   += ("|" +  clipped(" " + track.trk_name, 9));
     }
@@ -625,12 +677,9 @@ function draw_patterns(){
     var yoffset = (0.75 * charheight);
     var xoffset = (0.46 * charwidth);
 
-    for (const [idx, track] of sequencer_config.entries()) {
+    for (const [idx, track] of sequencer_config.tracks.entries()) {
         
         //const order = patterns.map((_, i) => i).sort((a, b) => patterns[a].start - patterns[b].start);
-
-        //for (const i of order) {
-        //    const pattern = patterns[i];
 
         for (const [pidx, pattern] of track.patterns.entries()) {
 
@@ -668,7 +717,7 @@ function draw_pattern_menu(gfx, charheight, charwidth, trk_width, side_width){
     var trk = g_tcaret.col;
     var start = tick_from_row(g_tcaret.row);
 
-    var num_patterns = sequencer_config[trk].patterns.length;
+    var num_patterns = sequencer_config.patterns[trk].patterns.length;
     if (num_patterns <= 0){ return; }
     
     var yoffset = (0.75 * charheight);
@@ -679,6 +728,13 @@ function draw_pattern_menu(gfx, charheight, charwidth, trk_width, side_width){
     var rect_start_y = ((start/16) * charheight) - yoffset;
     gfx.rectangle(rect_start_x, rect_start_y, trk_width, (num_patterns * charheight) );
     gfx.fill();
+
+    // list the patterns
+    gfx.set_source_rgba(0.7, 0.7, 0.7, 1);
+    for (const [idx, pattern] of sequencer_config.patterns[trk].patterns.entries()){
+        gfx.move_to(rect_start_x + xoffset, rect_start_y + yoffset + (idx * charheight));
+        gfx.show_text(pattern.pname);
+    }
 
 }
 
@@ -699,7 +755,7 @@ function paint(){
 
     mgraphics.translate(30, 50);
     draw_horizontal_time_markers(charheight);
-    draw_looping_indicators();
+    draw_looping_indicators();  // start: α   , end: Ω
     draw_selection_rect();
     draw_patterns();
     draw_header();
