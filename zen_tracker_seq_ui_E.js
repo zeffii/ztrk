@@ -25,6 +25,7 @@ var global_tick = 0;
 
 var g_in_edit_mode = 0;
 var g_display_pattern_menu = 0;
+var selected_pattern_in_menu = 0;
 var g_looping = false;
 var g_loop_start = 0;
 var g_loop_end = 128;
@@ -170,6 +171,12 @@ function moveCaret(dc, dr) {
     // post(`caret col ${g_tcaret.col}, row ${g_tcaret.row}`);
 }
 
+function change_selected_pattern_in_menu(dir){
+    // this may have to track the last used index per track, to avoid out of bounds indexing.
+    selected_pattern_in_menu += dir;
+    mgraphics.redraw();
+}
+
 // - Message handling.  (they can also be called by key handler )
 
 function loop(mode){
@@ -268,6 +275,15 @@ function key_handler(){
     const UKEY = ASCII(USER_KEY);
 
     if (SELECTOR === CTRL){
+
+        if (g_display_pattern_menu){
+            switch(USER_KEY) {
+                case UP_KEY: change_selected_pattern_in_menu(-1); return;
+                case DOWN_KEY: change_selected_pattern_in_menu(+1); return;
+            }
+            return;
+        }
+
         switch(UKEY) {
             case 'C': clone_pattern(); return;
             case 'S': slice_pattern_at_playhead(); return;
@@ -289,7 +305,7 @@ function key_handler(){
     }
 
     switch(UKEY) {
-        case "N": insert_pattern_at_cursor(); return;
+        case "N": insert_pattern_at_cursor(true, null); return; // new empty pattern.
         case "X": remove_pattern_at_cursor(); return;
         case "I": {
             g_display_pattern_menu = !g_display_pattern_menu; 
@@ -306,7 +322,15 @@ function key_handler(){
     }
 
     if (USER_KEY === ENTER){
-        insert_patterns_in_selection();
+        if (g_display_pattern_menu){
+            var trk = g_tcaret.col;
+            if (selected_pattern_in_menu < sequencer_config.patterns[trk].patterns.length){
+                var pattern = sequencer_config.patterns[trk].patterns[selected_pattern_in_menu];
+                insert_pattern_at_cursor(false, pattern);
+            }
+            return;
+        } 
+        else { insert_patterns_in_selection(); }
         return;
     }
 
@@ -467,7 +491,7 @@ function pattern_overlaps(trk, start, length){
     return false;
 }
 
-function insert_pattern_at_cursor(){
+function insert_pattern_at_cursor(new_pattern_flag, pattern){
     // should be able to reuse this to also insert existing patterns 
 
     var trk = g_tcaret.col;
@@ -480,13 +504,19 @@ function insert_pattern_at_cursor(){
 
     var color = RGBA_2_RGB(color_from_kind(kind));
     
-    // two steps,
-    // 1  add to pattern list for the machine/track
-    // 2  add to the sequence editor at insertion point
-    const new_puid = next_pattern_uid();
-    var new_pattern = {pname: next_pname3(), puid: new_puid, length: 64, color: color, data: []};  
-    sequencer_config.patterns[trk].patterns.push(new_pattern);
-    add_pattern(trk, start, new_puid);
+    if (new_pattern_flag){
+        // two steps,
+        // 1  add to pattern list for the machine/track
+        // 2  add to the sequence editor at insertion point
+        const new_puid = next_pattern_uid();
+        var new_pattern = {pname: next_pname3(), puid: new_puid, length: 64, color: color, data: []};  
+        sequencer_config.patterns[trk].patterns.push(new_pattern);
+        add_pattern(trk, start, new_puid);
+    } else {
+        post('here!');
+        add_pattern(trk, start, pattern.puid);
+    }
+
     mgraphics.redraw();
 }
 
@@ -681,10 +711,8 @@ function draw_patterns(){
         const ordered = track.patterns.slice().sort((a, b) => a.start - b.start);
         for (const pattern of ordered){
 
-            var [cr, cg, cb] = pattern.color; 
-
             // Pattern Rect
-            mgraphics.set_source_rgba(cr, cg, cb, 1);
+            mgraphics.set_source_rgba(...pattern.color, 1);
             var rect_start_x = side_width + (track.trk * trk_width) - xoffset;
             var rect_start_y = ((pattern.start/16) * charheight) - yoffset;
             mgraphics.rectangle(rect_start_x, rect_start_y, trk_width, ((pattern.length / 16) * charheight) );
@@ -695,13 +723,6 @@ function draw_patterns(){
             if (track.kind === "fx"){ set_rgb({r:0.9 ,g: 0.34, b: 0.2}, 0.5); }        
             mgraphics.rectangle(rect_start_x, rect_start_y, trk_width, ((pattern.length / 16) * charheight) );
             mgraphics.stroke();
-
-            // selected rect, note used at the moment.
-            // if (pidx == g_selected_pattern_idx){
-            //     set_rgb({r:1.0, g:1.0, b:1.0}, 1.0);
-            //     mgraphics.rectangle(rect_start_x, rect_start_y, trk_width, ((pattern.length / 16) * charheight) );
-            //     mgraphics.stroke();
-            // }
 
             // pattern name
             set_rgb({r:0.82, g:0.82, b:0.82}, 1.0);
@@ -728,10 +749,12 @@ function draw_pattern_menu(gfx, charheight, charwidth, trk_width, side_width){
     gfx.fill();
 
     // list the patterns
-    gfx.set_source_rgba(0.7, 0.7, 0.7, 1);
     for (const [idx, pattern] of sequencer_config.patterns[trk].patterns.entries()){
+        var highlight = (selected_pattern_in_menu === idx) ? [0.86, 0.86, 0.86, 1] : [0.7, 0.7, 0.7, 1];
+        var indicator = (selected_pattern_in_menu === idx) ? " ←" : "";
+        gfx.set_source_rgba(...highlight);
         gfx.move_to(rect_start_x + xoffset, rect_start_y + yoffset + (idx * charheight));
-        gfx.show_text(pattern.pname);
+        gfx.show_text(pattern.pname + indicator);
     }
 
 }
