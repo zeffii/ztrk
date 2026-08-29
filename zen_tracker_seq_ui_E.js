@@ -386,69 +386,69 @@ function hit_test(x, y){
 // pattern *content* would need to be touched, since that lives outside this UI.
 
 function clone_pattern(){
-    if (g_selected_pattern_idx < 0) return;
-    var src = sequence_data[g_selected_pattern_idx];
-    var clone = {
-        pname: next_pname(),
-        trk: src.trk,
-        start: src.start + src.length,
-        length: src.length,
-        color: src.color.slice(),
-        kind: src.kind
-    };
-    sequence_data.push(clone);
-    g_selected_pattern_idx = sequence_data.length - 1;
-    post('cloned pattern ' + src.pname + ' -> ' + clone.pname + '\n');
-    mgraphics.redraw();
+    // if (g_selected_pattern_idx < 0) return;
+    // var src = sequence_data[g_selected_pattern_idx];
+    // var clone = {
+    //     pname: next_pname(),
+    //     trk: src.trk,
+    //     start: src.start + src.length,
+    //     length: src.length,
+    //     color: src.color.slice(),
+    //     kind: src.kind
+    // };
+    // sequence_data.push(clone);
+    // g_selected_pattern_idx = sequence_data.length - 1;
+    // post('cloned pattern ' + src.pname + ' -> ' + clone.pname + '\n');
+    // mgraphics.redraw();
 }
 
 function move_pattern_lane(direction){
-    if (g_selected_pattern_idx < 0) return;
-    var p = sequence_data[g_selected_pattern_idx];
-    var new_trk = p.trk + direction;
-    if (new_trk < 0) return; // no upper clamp yet, lane count isn't fixed here
-    p.trk = new_trk;
-    post('moved pattern ' + p.pname + ' to lane ' + p.trk + '\n');
-    mgraphics.redraw();
+    // if (g_selected_pattern_idx < 0) return;
+    // var p = sequence_data[g_selected_pattern_idx];
+    // var new_trk = p.trk + direction;
+    // if (new_trk < 0) return; // no upper clamp yet, lane count isn't fixed here
+    // p.trk = new_trk;
+    // post('moved pattern ' + p.pname + ' to lane ' + p.trk + '\n');
+    // mgraphics.redraw();
 }
 
 function extend_pattern(delta_ticks){
-    if (g_selected_pattern_idx < 0) return;
-    var p = sequence_data[g_selected_pattern_idx];
-    var new_length = p.length + delta_ticks;
-    if (new_length < 16) new_length = 16; // floor at one row-group
-    p.length = new_length;
-    post('resized pattern ' + p.pname + ' to length ' + p.length + '\n');
-    mgraphics.redraw();
+    // if (g_selected_pattern_idx < 0) return;
+    // var p = sequence_data[g_selected_pattern_idx];
+    // var new_length = p.length + delta_ticks;
+    // if (new_length < 16) new_length = 16; // floor at one row-group
+    // p.length = new_length;
+    // post('resized pattern ' + p.pname + ' to length ' + p.length + '\n');
+    // mgraphics.redraw();
 }
 
 function slice_pattern_at_playhead(){
-    if (g_selected_pattern_idx < 0) return;
-    var p = sequence_data[g_selected_pattern_idx];
-    if (global_tick <= p.start || global_tick >= (p.start + p.length)){
-        post('playhead is outside the selected pattern, nothing to slice\n');
-        return;
-    }
+    // if (g_selected_pattern_idx < 0) return;
+    // var p = sequence_data[g_selected_pattern_idx];
+    // if (global_tick <= p.start || global_tick >= (p.start + p.length)){
+    //     post('playhead is outside the selected pattern, nothing to slice\n');
+    //     return;
+    // }
 
-    // sequencing-side split is real: two entries with start/length.
-    // the actual row data each half should contain is a dummy for now..
-    var first_length = global_tick - p.start;
-    var second_length = p.length - first_length;
+    // // sequencing-side split is real: two entries with start/length.
+    // // the actual row data each half should contain is a dummy for now..
+    // var first_length = global_tick - p.start;
+    // var second_length = p.length - first_length;
 
-    var second_half = {
-        pname: next_pname(),
-        trk: p.trk,
-        start: global_tick,
-        length: second_length,
-        color: p.color.slice(),
-    };
+    // var second_half = {
+    //     pname: next_pname(),
+    //     trk: p.trk,
+    //     start: global_tick,
+    //     length: second_length,
+    //     color: p.color.slice(),
+    // };
 
-    p.length = first_length;
-    sequence_data.push(second_half);
+    // p.length = first_length;
+    // sequence_data.push(second_half);
 
-    slice_pattern_content_dummy(p, second_half); // <- stub, see below
-    // post('sliced pattern ' + p.pname + ' at tick ' + global_tick + '\n');
-    mgraphics.redraw();
+    // slice_pattern_content_dummy(p, second_half); // <- stub, see below
+    // // post('sliced pattern ' + p.pname + ' at tick ' + global_tick + '\n');
+    // mgraphics.redraw();
 }
 
 
@@ -483,16 +483,15 @@ function get_selection_rect(){
 }
 
 function pattern_overlaps(trk, start, length){
-    for (var i = 0; i < sequence_data.length; i++){
-        var p = sequence_data[i];
-        if (p.trk !== trk) continue;
-        if (start < (p.start + p.length) && (start + length) > p.start) return true;
-    }
-    return false;
+    // for (var i = 0; i < sequence_data.length; i++){
+    //     var p = sequence_data[i];
+    //     if (p.trk !== trk) continue;
+    //     if (start < (p.start + p.length) && (start + length) > p.start) return true;
+    // }
+    // return false;
 }
 
 function insert_pattern_at_cursor(new_pattern_flag, pattern){
-    // should be able to reuse this to also insert existing patterns 
 
     var trk = g_tcaret.col;
     var kind = kind_from_column(trk);
@@ -502,21 +501,18 @@ function insert_pattern_at_cursor(new_pattern_flag, pattern){
     var found_idx = find_pattern_under_cursor(trk, start);
     if (found_idx >= 0) return;
 
-    var color = RGBA_2_RGB(color_from_kind(kind));
-    
     if (new_pattern_flag){
         // two steps,
         // 1  add to pattern list for the machine/track
         // 2  add to the sequence editor at insertion point
+        var color = RGBA_2_RGB(color_from_kind(kind));
         const new_puid = next_pattern_uid();
         var new_pattern = {pname: next_pname3(), puid: new_puid, length: 64, color: color, data: []};  
         sequencer_config.patterns[trk].patterns.push(new_pattern);
         add_pattern(trk, start, new_puid);
     } else {
-        post('here!');
         add_pattern(trk, start, pattern.puid);
     }
-
     mgraphics.redraw();
 }
 
@@ -530,39 +526,39 @@ function remove_pattern_at_cursor(){
 }
 
 function insert_patterns_in_selection(){
-    var rect = get_selection_rect();
-    if (rect === null) return;
+    // var rect = get_selection_rect();
+    // if (rect === null) return;
 
-    // the anchor's row is the start tick no matter which way the caret grew
-    // the region; length is just the row span in ticks.
-    var span_rows = Math.abs(g_tcaret.row - g_sel_anchor.row) + 1;
-    var start = tick_from_row(g_sel_anchor.row);
-    var length = span_rows * 16;
+    // // the anchor's row is the start tick no matter which way the caret grew
+    // // the region; length is just the row span in ticks.
+    // var span_rows = Math.abs(g_tcaret.row - g_sel_anchor.row) + 1;
+    // var start = tick_from_row(g_sel_anchor.row);
+    // var length = span_rows * 16;
 
-    var created = 0;
-    var skipped = 0;
-    for (var col = rect.col_lo; col <= rect.col_hi; col++){
+    // var created = 0;
+    // var skipped = 0;
+    // for (var col = rect.col_lo; col <= rect.col_hi; col++){
 
-        // dont add patterns ontop of existing
-        if (pattern_overlaps(col, start, length)){
-            skipped += 1;
-            continue;
-        }
-        var fresh = {
-            pname: next_pname(),
-            trk: col,
-            start: start,
-            length: length,
-            color: [0.2, 0.4, 0.5],
-            kind: "gen"
-        };
-        sequence_data.push(fresh);
-        created += 1;
-    }
+    //     // dont add patterns ontop of existing
+    //     if (pattern_overlaps(col, start, length)){
+    //         skipped += 1;
+    //         continue;
+    //     }
+    //     var fresh = {
+    //         pname: next_pname(),
+    //         trk: col,
+    //         start: start,
+    //         length: length,
+    //         color: [0.2, 0.4, 0.5],
+    //         kind: "gen"
+    //     };
+    //     sequence_data.push(fresh);
+    //     created += 1;
+    // }
 
-    post('inserted ' + created + ' pattern(s), skipped ' + skipped + ' occupied lane(s)\n');
-    cancel_selection();
-    mgraphics.redraw();
+    // post('inserted ' + created + ' pattern(s), skipped ' + skipped + ' occupied lane(s)\n');
+    // cancel_selection();
+    // mgraphics.redraw();
 }
 
 function slice_pattern_content_dummy(first_half, second_half){
@@ -606,17 +602,17 @@ function draw_looping_indicators(){
 }
 
 function draw_selection_rect(){
-    if (!g_selection_active) return;
+    // if (!g_selection_active) return;
 
-    var rect = get_selection_rect();
-    var cx = side_width + (rect.col_lo * trk_width);
-    var cy = (rect.row_lo * charheight);
-    var w = ((rect.col_hi - rect.col_lo + 1) * trk_width) - 3;
-    var h = ((rect.row_hi - rect.row_lo + 1) * charheight) * -1; // rows grow downward, same sign convention as draw_track_cursor
+    // var rect = get_selection_rect();
+    // var cx = side_width + (rect.col_lo * trk_width);
+    // var cy = (rect.row_lo * charheight);
+    // var w = ((rect.col_hi - rect.col_lo + 1) * trk_width) - 3;
+    // var h = ((rect.row_hi - rect.row_lo + 1) * charheight) * -1; // rows grow downward, same sign convention as draw_track_cursor
 
-    set_rgb({r:1.0, g:1.0, b:1.0}, 1.0);
-    mgraphics.rectangle(cx - 2, cy + 3, w, h * 0.9);
-    mgraphics.stroke();
+    // set_rgb({r:1.0, g:1.0, b:1.0}, 1.0);
+    // mgraphics.rectangle(cx - 2, cy + 3, w, h * 0.9);
+    // mgraphics.stroke();
 }
 
 function draw_track_cursor(){
