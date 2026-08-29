@@ -23,6 +23,7 @@ var side_width = 0;
 var global_tick = 0;
 
 var g_in_edit_mode = 0;
+var g_display_pattern_menu = 0;
 var g_looping = 0;
 var g_loop_start = 0;
 var g_loop_end = 128;
@@ -252,8 +253,13 @@ function key_handler(){
     }
 
     switch(UKEY) {
-        case "I": insert_pattern_at_cursor(); return;
+        case "N": insert_pattern_at_cursor(); return;
         case "X": remove_pattern_at_cursor(); return;
+        case "I": {
+            g_display_pattern_menu = !g_display_pattern_menu; 
+            mgraphics.redraw();
+            return;
+        }
     }
 
     if (USER_KEY === ENTER){
@@ -620,6 +626,12 @@ function draw_patterns(){
     var xoffset = (0.46 * charwidth);
 
     for (const [idx, track] of sequencer_config.entries()) {
+        
+        //const order = patterns.map((_, i) => i).sort((a, b) => patterns[a].start - patterns[b].start);
+
+        //for (const i of order) {
+        //    const pattern = patterns[i];
+
         for (const [pidx, pattern] of track.patterns.entries()) {
 
             var [cr, cg, cb] = pattern.color; 
@@ -662,7 +674,8 @@ function draw_pattern_menu(gfx, charheight, charwidth, trk_width, side_width){
     var yoffset = (0.75 * charheight);
     var xoffset = (0.46 * charwidth);
     gfx.set_source_rgba(0.2, 0.2, 0.2, 1);
-    var rect_start_x = side_width + (trk * trk_width) - xoffset;
+    // display the rectangle to the right of the track cursor.
+    var rect_start_x = side_width + ((trk+1) * trk_width) - xoffset;
     var rect_start_y = ((start/16) * charheight) - yoffset;
     gfx.rectangle(rect_start_x, rect_start_y, trk_width, (num_patterns * charheight) );
     gfx.fill();
@@ -694,7 +707,7 @@ function paint(){
     draw_current_tick();
     draw_track_cursor();
 
-    // if (g_display_pattern_menu) draw_pattern_menu(gfx, charheight, charwidth, trk_width, side_width);
+    if (g_display_pattern_menu) draw_pattern_menu(gfx, charheight, charwidth, trk_width, side_width);
 };
 
 // -- MOUSE HANDLING
