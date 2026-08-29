@@ -58,7 +58,6 @@ var uid_05 = next_pattern_uid();
 var uid_03 = next_pattern_uid();
 var uid_06 = next_pattern_uid();
 
-
 var sequencer_config = {
     tracks: [
         {trk: 0, trk_name: "gen.00", trk_symbol: "Λ", kind: "gen", patterns: []},
@@ -78,7 +77,6 @@ var sequencer_config = {
         {trk: 2, patterns: [
             {pname: "03", puid: uid_03, length: 64, color: [0.9, 0.34, 0.3], data: []},  // 64
             {pname: "06", puid: uid_06, length: 16, color: [0.9, 0.34, 0.3], data: []}   // 256
-
         ]}
     ]
 };
@@ -94,19 +92,18 @@ add_pattern(2, 256, uid_06);
 
 // - one liner utils.
 
-const kind_from_column = (col) => sequencer_config.tracks[col].kind;
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 const ASCII = (key) => String.fromCharCode(key).toUpperCase();
 const fmt4 = (n) => ('0000' + Math.floor(Math.abs(n))).slice(-4) + ' '; 
 const fmt3 = (n) => ('000' + Math.floor(Math.abs(n))).slice(-3) + ' '; 
+
 const asRGBobj = (col) => ({r: col[0], g: col[1], b: col[2]});
 const RGBA_2_RGB = (col) => col.slice(0, 3);
+const set_rgb = (c, d /*color, dimming*/) => { mgraphics.set_source_rgba(c.r / d, c.g / d, c.b / d, 1); }
+
+const kind_from_column = (col) => sequencer_config.tracks[col].kind;
 const tick_from_row = (row) => row * 16;
 const found_in = (list, value) => (list.indexOf(value) !== -1);
-
-// - setter functions.. maybe factor out.
-
-const set_rgb = (c, d /*color, dimming*/) => { mgraphics.set_source_rgba(c.r / d, c.g / d, c.b / d, 1); }
 
 // - multi line utils
 
@@ -128,7 +125,7 @@ function getPattrByPUID(track, puid){
 }
 
 function add_pattern(machine_trk, start, puid){
-    pattern = getPattrByPUID(sequencer_config.patterns[machine_trk], puid);
+    var pattern = getPattrByPUID(sequencer_config.patterns[machine_trk], puid);
     if (pattern === null) { 
         post(`failed to located pattern by uid ${puid}`)
         return;
@@ -498,7 +495,7 @@ function remove_pattern_at_cursor(){
     var start = tick_from_row(g_tcaret.row);
 
     var found_idx = find_pattern_under_cursor(trk, start);
-    if (found_idx >= 0){ sequencer_config[trk].patterns.splice(found_idx, 1); }
+    if (found_idx >= 0){ sequencer_config.tracks[trk].patterns.splice(found_idx, 1); }
     mgraphics.redraw();
 }
 
@@ -678,10 +675,11 @@ function draw_patterns(){
     var xoffset = (0.46 * charwidth);
 
     for (const [idx, track] of sequencer_config.tracks.entries()) {
-        
-        //const order = patterns.map((_, i) => i).sort((a, b) => patterns[a].start - patterns[b].start);
 
-        for (const [pidx, pattern] of track.patterns.entries()) {
+        // ordered display based on start values, earlier starts are rendered first.
+        // patterns should cut off playing patterns, this is a way to visualize that.
+        const ordered = track.patterns.slice().sort((a, b) => a.start - b.start);
+        for (const pattern of ordered){
 
             var [cr, cg, cb] = pattern.color; 
 
