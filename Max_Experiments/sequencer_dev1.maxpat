@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 123.0, 85.0, 936.0, 790.0 ],
+        "rect": [ 89.0, 367.0, 936.0, 978.0 ],
         "boxes": [
             {
                 "box": {
@@ -17,7 +17,7 @@
                     "maxclass": "newobj",
                     "numinlets": 1,
                     "numoutlets": 0,
-                    "patching_rect": [ 504.0, 218.0, 32.0, 22.0 ],
+                    "patching_rect": [ 503.0, 134.0, 32.0, 22.0 ],
                     "text": "print"
                 }
             },
@@ -27,7 +27,7 @@
                     "maxclass": "newobj",
                     "numinlets": 1,
                     "numoutlets": 0,
-                    "patching_rect": [ 568.0, 198.0, 32.0, 22.0 ],
+                    "patching_rect": [ 567.0, 114.0, 32.0, 22.0 ],
                     "text": "print"
                 }
             },
@@ -602,7 +602,7 @@
                             }
                         ]
                     },
-                    "patching_rect": [ 5.0, 162.0, 88.0, 22.0 ],
+                    "patching_rect": [ 4.0, 78.0, 88.0, 22.0 ],
                     "text": "p KeyHandler3"
                 }
             },
@@ -615,7 +615,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 5.0, 236.0, 459.0, 590.0 ],
+                    "patching_rect": [ 4.0, 152.0, 459.0, 590.0 ],
                     "textfile": {
                         "filename": "zen_tracker_seq_ui_E.js",
                         "flags": 0,

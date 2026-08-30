@@ -2,7 +2,6 @@ autowatch = 1;
 outlets = 2;
 inlets = 2;
 
-
 mgraphics.init();
 mgraphics.relative_coords = 0;
 mgraphics.autofill = 0;
@@ -13,7 +12,8 @@ var theme_colors = {
     def_fx_color: [0.9, 0.34, 0.3, 1.0],
     time_markers: [0.4, 0.9, 1.0, 1.0],
     ticks_column: [0.4, 0.9, 1.0, 1.0],
-    bg_color: [0.1, 0.2, 0.4, 1.0]
+    bg_color: [0.1, 0.2, 0.4, 1.0],
+    header_text: [0.4, 0.9, 1.0, 1]
 }
 
 var settings_font_size = 12;
@@ -23,9 +23,10 @@ var trk_width = 0;
 var side_width = 0;
 var global_tick = 0;
 
+var g_song_name = "Demo Song";
+var g_song_folder = null;
 var g_in_edit_mode = 0;
 var g_display_pattern_menu = 0;
-var selected_pattern_in_menu = 0;
 var g_looping = false;
 var g_loop_start = 0;
 var g_loop_end = 128;
@@ -33,6 +34,7 @@ var [rows, cols] = [64, 3];
 var g_tcaret = {row:0, col:0};
 
 // selection / editing state / pattern identity.
+var selected_pattern_in_menu = 0;
 var g_selected_pattern_idx = -1;
 var g_next_pname_counter = 8; // bump this whenever a clone/slice creates a new pattern
 var g_uid_tiebreak = 0;
@@ -61,7 +63,7 @@ var uid_06 = next_pattern_uid();
 
 var sequencer_config = {
     tracks: [
-        {trk: 0, trk_name: "gen.00", trk_symbol: "Λ", kind: "gen", patterns: []},
+        {trk: 0, trk_name: "gen.00", trk_symbol: "Λ", kind: "gen", patterns: []},    // will just contain references with a puid (see add_pattern)
         {trk: 1, trk_name: "gen.01", trk_symbol: "Λ", kind: "gen", patterns: []},
         {trk: 2, trk_name: "fx.01",  trk_symbol: "φ", kind: "fx", patterns: []}
     ],
@@ -158,7 +160,7 @@ function find_pattern_under_cursor(trk, start){
     return found_idx;
 }
 
-function next_pname(){
+function next_pname4(){
     // dumb incrementing label, patterns should be named eventually.
     var pname = fmt4(g_next_pname_counter).trim();
     g_next_pname_counter += 1;
@@ -202,33 +204,61 @@ function loop_end(tick){
     mgraphics.redraw();
 }
 
-function command(instruction){
-    if (instruction === 'export_sequence_data'){
-        post('Exporting Sequence Data\n');
-        var outputDict = new Dict('sequence_dict');
-
-        // compose sequencer dict from sequencer list:
-        var sequence_data_dict = {};
-        for (pattern_idx in sequence_data){
-            sequence_data_dict[pattern_idx] = sequence_data[pattern_idx];
-        }
-        outputDict.parse(JSON.stringify(sequence_data_dict));
-        outlet(1, "dictionary", outputDict.name);
-    }
-    if (instruction === 'get_pmarkup'){
-        // var markup = this.patcher.getnamed("TrackerView").getnamed("pattern_markup").getvalueof
-        // post(markup.length);
-    }
-    // editing commands, reachable from a keyboard shortcut object upstream
-    if (instruction === 'clone_pattern'){ clone_pattern(); }
-    if (instruction === 'move_pattern_up'){ move_pattern_lane(-1); }
-    if (instruction === 'move_pattern_down'){ move_pattern_lane(1); }
-    if (instruction === 'extend_pattern'){ extend_pattern(16); }
-    if (instruction === 'shrink_pattern'){ extend_pattern(-16); }
-    if (instruction === 'slice_pattern'){ slice_pattern_at_playhead(); }
-    if (instruction === 'create_pattern_from_selection'){ insert_patterns_in_selection(); }
-    if (instruction === 'cancel_selection'){ cancel_selection(); }
+function song_name(name){
+    g_song_name = name;
+    post(g_song_name);
+    mgraphics.redraw();
 }
+
+function set_output_dir(full_path){
+    g_song_folder = full_path;
+    post(g_song_folder);
+    mgraphics.redraw();
+}
+
+
+function command(instruction) {
+    switch (instruction) {
+        case 'export_sequence_data': {
+            post('Exporting Sequence Data\n');
+            var outputDict = new Dict('sequence_dict');
+            outputDict.parse(JSON.stringify(sequencer_config));
+            outlet(1, "dictionary", outputDict.name);
+            break;
+        }
+        case 'save': {
+            var filename = getSafeDatetimeFilename(g_song_name);
+            var output_dir = g_song_folder;
+            if (output_dir !== null){
+                // as output_dir ends in slash, simple concat may suffice x-platform.
+                const fullPath = output_dir + filename + ".json";   
+                post('writing', fullPath);
+                // var content = JSON.stringify(sequencer_config);          // if g_export_indent === false
+                var content = JSON.stringify(sequencer_config, null, 2);    // if g_export_indent === true
+                save(fullPath, content);
+            } else {
+                post('specify output directory using message: set_output_dir $1    , where $1 is the directory including terminating slash')
+            }
+            break;
+        }
+        case 'get_pmarkup': {
+            // var markup = this.patcher.getnamed("TrackerView").getnamed("pattern_markup").getvalueof
+            // post(markup.length);
+            break;
+        }
+        // editing commands, reachable from a keyboard shortcut object upstream
+        case 'clone_pattern': clone_pattern(); break;
+        case 'move_pattern_up': move_pattern_lane(-1); break;
+        case 'move_pattern_down': move_pattern_lane(1); break;
+        case 'extend_pattern': extend_pattern(16); break;
+        case 'shrink_pattern': extend_pattern(-16); break;
+        case 'slice_pattern': slice_pattern_at_playhead(); break;
+        case 'create_pattern_from_selection': insert_patterns_in_selection(); break;
+        case 'cancel_selection': cancel_selection(); break;
+        default: post("unknown command, seek help"); return;
+    }
+}
+
 
 function msg_int(tick){
     global_tick = tick;
@@ -250,11 +280,14 @@ function key_handler(){
     var SHIFT = 512;
     var ALT = 2048;
     var CTRL = 4352;
+    var CTRL_ALT = 6400;
 
     var ENTER = 13;
     var ESCAPE = 27;
     var SPACE = 32;
 
+    var CTRL_ALT_S = 223;   // these have different USER_KEYS when combined with the two modifiers.
+    var CTRL_ALT_O = 243;
     var [UP_KEY, DOWN_KEY] = [30, 31];
     var [LEFT_KEY, RIGHT_KEY] = [28, 29];
     var [MINUS1, PLUS1] = [45, 61]; // reuse the pattern editor's octave keys for length
@@ -263,17 +296,18 @@ function key_handler(){
     var SELECTOR = g_key_codes[2];
     var USER_KEY = g_key_codes[0];
 
-    // space toggles edit mode itself, so it has to work regardless of
-    // whether we're already in edit mode -- everything else below requires it.
+    // space toggles edit mode
     if (USER_KEY === SPACE){
         g_in_edit_mode = !g_in_edit_mode;
         mgraphics.redraw();
         return;
     }
 
+    // if not in edit mode, ignore all other input.
     if (!g_in_edit_mode) return;
 
     if (SELECTOR === SHIFT){
+        // stub implementation.
         // a bare shift press commences (or just reaffirms) the selection
         // anchor at wherever the caret currently sits.
         start_selection();
@@ -283,7 +317,7 @@ function key_handler(){
     const UKEY = ASCII(USER_KEY);
 
     if (SELECTOR === CTRL){
-
+        post(UKEY);
         if (g_display_pattern_menu){
             switch(USER_KEY) {
                 case UP_KEY: change_selected_pattern_in_menu(-1); return;
@@ -291,10 +325,11 @@ function key_handler(){
             }
             return;
         }
-
-        switch(UKEY) {
-            case 'C': clone_pattern(); return;
-            case 'S': slice_pattern_at_playhead(); return;
+    }
+    if (SELECTOR === CTRL_ALT){
+        switch(USER_KEY) {
+            case CTRL_ALT_S: command('save'); return;
+            case CTRL_ALT_O: command('open_dir_selector_dialog'); return;
         }
         return;
     }
@@ -306,12 +341,12 @@ function key_handler(){
         }
         return;
     }
-
+    
     if (found_in([MINUS1, PLUS1], USER_KEY)){
         extend_pattern(USER_KEY === MINUS1 ? -16 : 16);
         return;
     }
-
+    
     switch(UKEY) {
         case "N": insert_pattern_at_cursor(true, null); return; // new empty pattern.
         case "X": remove_pattern_at_cursor(); return;
@@ -327,6 +362,8 @@ function key_handler(){
             mgraphics.redraw();
             return;
         }
+        case 'C': clone_pattern(); return;
+        case 'S': slice_pattern_at_playhead(); return;
     }
 
     if (USER_KEY === ENTER){
@@ -653,7 +690,7 @@ function draw_header(){
     // start tokens
     var symbol_tracks = "     "
     var name_tracks   = "tick "
-    mgraphics.set_source_rgba(0.4, 0.9, 1.0, 1);
+    mgraphics.set_source_rgba(...theme_colors.header_text);
 
     // track tokens for every track
     for (const [idx, track] of sequencer_config.tracks.entries()) {
@@ -759,6 +796,12 @@ function draw_pattern_menu(gfx, charheight, charwidth, trk_width, side_width){
 
 }
 
+function draw_songname(gfx, h){
+    gfx.set_source_rgba(...theme_colors.header_text);
+    gfx.move_to(10, h-2);
+    gfx.show_text(`${g_song_name} @ ${g_song_folder}`);
+}
+
 function paint(){
 
     // --- constants ---
@@ -773,6 +816,7 @@ function paint(){
 
     draw_background(w, h);
     draw_edit_mode_indicator(h);
+    draw_songname(gfx, h);
 
     mgraphics.translate(30, 50);
     draw_horizontal_time_markers(charheight);
@@ -814,4 +858,48 @@ function onclick(x, y, button, cmd, shift, capslock, option, ctrl){
     // g_pending_selection = null;
     // g_selected_pattern_idx = hit.idx;
     // mgraphics.redraw();
+}
+
+// - FILE IO Util Funcs.
+
+function getSafeDatetimeFilename(baseName, date = new Date()) {
+  // Format the date as DD-MM-YYYY-HH-mm
+  const pad = (n) => n.toString().padStart(2, '0');
+  const dateStr = `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${date.getFullYear()}-${pad(date.getHours())}-${pad(date.getMinutes())}`;
+    
+  const rawFilename = `${baseName}-${dateStr}`; // combine
+  return makeFilenameSafe(rawFilename);         // sanitize
+}
+
+function makeFilenameSafe(str, maxLength = 255) {
+  // Replace reserved characters with underscores
+  let safeStr = str.replace(/[\/|\\:*?"<>|]/g, '_');
+  
+  // Replace spaces with underscores for readability
+  safeStr = safeStr.replace(/\s+/g, '_');
+  
+  // Trim leading/trailing underscores
+  safeStr = safeStr.trim('_');
+  
+  // Handle Windows reserved names (case-insensitive)
+  const reservedNames = new Set(['con', 'prn', 'aux', 'nul', 'com1', 'com2', 'com3', 'lpt1', 'lpt2', 'lpt3']);
+  if (reservedNames.has(safeStr.toLowerCase())) {
+    safeStr += '_';
+  }
+  
+  // Truncate to max length
+  if (safeStr.length > maxLength) {
+    safeStr = safeStr.slice(0, maxLength);
+  }
+  
+  return safeStr;
+}
+
+function save(filepath, content) {
+    var f = new File(filepath, "write", "TEXT");
+    if (f.isopen) {
+        f.open();
+        f.writestring(content);
+        f.close();
+    }
 }
