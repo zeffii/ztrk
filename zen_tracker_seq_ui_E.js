@@ -149,11 +149,32 @@ function delete_pattern(puid){}
 function remove_pattern_from_sequencer(){};
 
 function find_pattern_under_cursor(trk, start){
-
+    // this just finds a pattern if the cursor is at the same `start` 
+    // as an existing pattern in that track
     var found_idx = -1;
     for (const [pidx, pattern] of sequencer_config.tracks[trk].patterns.entries()) {
         if (pattern.start == start) {
             found_idx = pidx;
+            break;
+        }
+    }
+    return found_idx;
+}
+
+function find_any_pattern_under_cursor(trk, cursor){
+    // slightly more elaborate pattern finder, will check all patterns in the track
+    // if any of the patterns has a condition where the cursor falls within start + length
+    // then this is the pattern we want to slice.
+    // we should search in reverse, from bottom of track to top :)
+    var found_idx = -1;
+    var patterns = sequencer_config.tracks[trk].patterns;
+    for (let i = patterns.length - 1; i >= 0; i--) {
+        var pattern = patterns[i];
+        var pattern_end = pattern.start + pattern.length;
+        // post(`cursor ${cursor}, pattern.start ${pattern.start}, pattern.end ${pattern_end}`);
+        if ((cursor > pattern.start) && (cursor < pattern_end)) {
+            found_idx = i;
+            post('found:' , pattern.pname, found_idx);
             break;
         }
     }
@@ -444,8 +465,12 @@ function extend_pattern(delta_ticks){
 
 function slice_pattern_at_cursor(){
     // this will use g_tcaret.row as the slice point, instead of a playhead
+    var trk = g_tcaret.col;
+    var start = tick_from_row(g_tcaret.row);
+    var found_idx = find_any_pattern_under_cursor(trk, start);
 
-    // if (g_selected_pattern_idx < 0) return;
+    if (found_idx < 0) return; // no patternmouse under cursor?
+
     // var p = sequence_data[g_selected_pattern_idx];
     // if (global_tick <= p.start || global_tick >= (p.start + p.length)){
     //     post('playhead is outside the selected pattern, nothing to slice\n');
