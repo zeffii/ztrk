@@ -115,7 +115,15 @@ function color_from_kind(kind) {
     return theme_colors.def_gen_color;
 }
 
-function make_new_pattern(machine_trk, length){};
+function make_new_pattern(machine_trk, length){
+    // two steps,
+    // 1  add to pattern list for the machine/track
+    // 2  add to the sequence editor at insertion point
+    var kind = kind_from_column(machine_trk);
+    var color = RGBA_2_RGB(color_from_kind(kind));
+    const new_puid = next_pattern_uid();
+    return {pname: next_pname3(), puid: new_puid, length: length, color: color, data: []};
+};
 
 function getPattrByPUID(track, puid){
     for (const [idx, pattern] of track.patterns.entries()) {
@@ -135,7 +143,7 @@ function add_pattern(machine_trk, start, puid){
     sequencer_config.tracks[machine_trk].patterns.push(mpattern);
 };
 
-function delete_pattern(P_uid){}
+function delete_pattern(puid){}
 function remove_pattern_from_sequencer(){};
 
 function find_pattern_under_cursor(trk, start){
@@ -327,6 +335,7 @@ function key_handler(){
             if (selected_pattern_in_menu < sequencer_config.patterns[trk].patterns.length){
                 var pattern = sequencer_config.patterns[trk].patterns[selected_pattern_in_menu];
                 insert_pattern_at_cursor(false, pattern);
+                g_display_pattern_menu = !g_display_pattern_menu;
             }
             return;
         } 
@@ -494,22 +503,17 @@ function pattern_overlaps(trk, start, length){
 function insert_pattern_at_cursor(new_pattern_flag, pattern){
 
     var trk = g_tcaret.col;
-    var kind = kind_from_column(trk);
     var start = tick_from_row(g_tcaret.row);
 
     // don't allow adding pattern in the place of an existing pattern.
     var found_idx = find_pattern_under_cursor(trk, start);
     if (found_idx >= 0) return;
 
+    // contains some redundant code. i know.
     if (new_pattern_flag){
-        // two steps,
-        // 1  add to pattern list for the machine/track
-        // 2  add to the sequence editor at insertion point
-        var color = RGBA_2_RGB(color_from_kind(kind));
-        const new_puid = next_pattern_uid();
-        var new_pattern = {pname: next_pname3(), puid: new_puid, length: 64, color: color, data: []};  
+        var new_pattern = make_new_pattern(trk, 64);
         sequencer_config.patterns[trk].patterns.push(new_pattern);
-        add_pattern(trk, start, new_puid);
+        add_pattern(trk, start, new_pattern.puid);
     } else {
         add_pattern(trk, start, pattern.puid);
     }
