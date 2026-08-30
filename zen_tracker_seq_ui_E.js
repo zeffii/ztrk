@@ -464,37 +464,27 @@ function extend_pattern(delta_ticks){
 }
 
 function slice_pattern_at_cursor(){
-    // this will use g_tcaret.row as the slice point, instead of a playhead
+
     var trk = g_tcaret.col;
-    var start = tick_from_row(g_tcaret.row);
-    var found_idx = find_any_pattern_under_cursor(trk, start);
+    var cursor = tick_from_row(g_tcaret.row);
+    var found_idx = find_any_pattern_under_cursor(trk, cursor);
 
-    if (found_idx < 0) return; // no patternmouse under cursor?
+    if (found_idx < 0) return; // no pattern under cursor?
 
-    // var p = sequence_data[g_selected_pattern_idx];
-    // if (global_tick <= p.start || global_tick >= (p.start + p.length)){
-    //     post('playhead is outside the selected pattern, nothing to slice\n');
-    //     return;
-    // }
+    var pattern_to_slice = sequencer_config.tracks[trk].patterns[found_idx];
+    var pattern_a_start = pattern_to_slice.start;
+    var pattern_a_length = cursor - pattern_to_slice.start;
+    var pattern_b_start = cursor;
+    var pattner_b_length = pattern_to_slice.length - pattern_a_length;
 
-    // // sequencing-side split is real: two entries with start/length.
-    // // the actual row data each half should contain is a dummy for now..
-    // var first_length = global_tick - p.start;
-    // var second_length = p.length - first_length;
+    /*
+    [ ] copy puid of found pattern
+    [ ] remove pattern from track ( do not delete )
+    [ ] create new pattern of a_length ( later include the data ), plase it at a_start
+    [ ] create new pattern of b_length ( later include the data ), plase it as b_start
 
-    // var second_half = {
-    //     pname: next_pname(),
-    //     trk: p.trk,
-    //     start: global_tick,
-    //     length: second_length,
-    //     color: p.color.slice(),
-    // };
+    */
 
-    // p.length = first_length;
-    // sequence_data.push(second_half);
-
-    // slice_pattern_content_dummy(p, second_half); // <- stub, see below
-    // // post('sliced pattern ' + p.pname + ' at tick ' + global_tick + '\n');
     // mgraphics.redraw();
 }
 
