@@ -182,8 +182,18 @@ function moveCaret(dc, dr) {
 }
 
 function change_selected_pattern_in_menu(dir){
-    // this may have to track the last used index per track, to avoid out of bounds indexing.
+    // this will have to track the last used index per track, to avoid out of bounds indexing.
     selected_pattern_in_menu += dir;
+    mgraphics.redraw();
+}
+
+function toggle_pattern_menu_visibility(){
+    g_display_pattern_menu = !g_display_pattern_menu; 
+    mgraphics.redraw();
+}
+
+function toggle_looping(){
+    g_looping = !g_looping;
     mgraphics.redraw();
 }
 
@@ -226,21 +236,7 @@ function command(instruction) {
             outlet(1, "dictionary", outputDict.name);
             break;
         }
-        case 'save': {
-            var filename = getSafeDatetimeFilename(g_song_name);
-            var output_dir = g_song_folder;
-            if (output_dir !== null){
-                // as output_dir ends in slash, simple concat may suffice x-platform.
-                const fullPath = output_dir + filename + ".json";   
-                post('writing', fullPath);
-                // var content = JSON.stringify(sequencer_config);          // if g_export_indent === false
-                var content = JSON.stringify(sequencer_config, null, 2);    // if g_export_indent === true
-                save(fullPath, content);
-            } else {
-                post('specify output directory using message: set_output_dir $1    , where $1 is the directory including terminating slash')
-            }
-            break;
-        }
+        case 'save': crate_fullpath_and_save(); break;
         case 'get_pmarkup': {
             // var markup = this.patcher.getnamed("TrackerView").getnamed("pattern_markup").getvalueof
             // post(markup.length);
@@ -248,11 +244,8 @@ function command(instruction) {
         }
         // editing commands, reachable from a keyboard shortcut object upstream
         case 'clone_pattern': clone_pattern(); break;
-        case 'move_pattern_up': move_pattern_lane(-1); break;
-        case 'move_pattern_down': move_pattern_lane(1); break;
         case 'extend_pattern': extend_pattern(16); break;
         case 'shrink_pattern': extend_pattern(-16); break;
-        case 'slice_pattern': slice_pattern_at_playhead(); break;
         case 'create_pattern_from_selection': insert_patterns_in_selection(); break;
         case 'cancel_selection': cancel_selection(); break;
         default: post("unknown command, seek help"); return;
@@ -317,7 +310,6 @@ function key_handler(){
     const UKEY = ASCII(USER_KEY);
 
     if (SELECTOR === CTRL){
-        post(UKEY);
         if (g_display_pattern_menu){
             switch(USER_KEY) {
                 case UP_KEY: change_selected_pattern_in_menu(-1); return;
@@ -335,10 +327,10 @@ function key_handler(){
     }
 
     if (SELECTOR === ALT){
-        switch(USER_KEY) {
-            case UP_KEY: move_pattern_lane(-1); return;
-            case DOWN_KEY: move_pattern_lane(1); return;
-        }
+        // switch(USER_KEY) {
+        //     case UP_KEY: move_pattern_lane(-1); return;
+        //     case DOWN_KEY: move_pattern_lane(1); return;
+        // }
         return;
     }
     
@@ -350,20 +342,12 @@ function key_handler(){
     switch(UKEY) {
         case "N": insert_pattern_at_cursor(true, null); return; // new empty pattern.
         case "X": remove_pattern_at_cursor(); return;
-        case "I": {
-            g_display_pattern_menu = !g_display_pattern_menu; 
-            mgraphics.redraw();
-            return;
-        }
+        case "I": toggle_pattern_menu_visibility(); return;
         case "B": loop_start(g_tcaret.row*16); return;
         case "E": loop_end(g_tcaret.row*16); return;
-        case "L": {
-            g_looping = !g_looping;
-            mgraphics.redraw();
-            return;
-        }
+        case "L": toggle_looping(); return;
         case 'C': clone_pattern(); return;
-        case 'S': slice_pattern_at_playhead(); return;
+        case 'S': slice_pattern_at_cursor(); return;
     }
 
     if (USER_KEY === ENTER){
@@ -448,16 +432,6 @@ function clone_pattern(){
     // mgraphics.redraw();
 }
 
-function move_pattern_lane(direction){
-    // if (g_selected_pattern_idx < 0) return;
-    // var p = sequence_data[g_selected_pattern_idx];
-    // var new_trk = p.trk + direction;
-    // if (new_trk < 0) return; // no upper clamp yet, lane count isn't fixed here
-    // p.trk = new_trk;
-    // post('moved pattern ' + p.pname + ' to lane ' + p.trk + '\n');
-    // mgraphics.redraw();
-}
-
 function extend_pattern(delta_ticks){
     // if (g_selected_pattern_idx < 0) return;
     // var p = sequence_data[g_selected_pattern_idx];
@@ -468,7 +442,9 @@ function extend_pattern(delta_ticks){
     // mgraphics.redraw();
 }
 
-function slice_pattern_at_playhead(){
+function slice_pattern_at_cursor(){
+    // this will use g_tcaret.row as the slice point, instead of a playhead
+
     // if (g_selected_pattern_idx < 0) return;
     // var p = sequence_data[g_selected_pattern_idx];
     // if (global_tick <= p.start || global_tick >= (p.start + p.length)){
@@ -606,6 +582,7 @@ function slice_pattern_content_dummy(first_half, second_half){
     // TODO: once pattern row-data lives somewhere addressable from here,
     // copy/split the underlying rows so second_half actually starts with
     // whatever was under the playhead. For now this is just a hook.
+    // pattern name will be  "pname A" and "pname B"
 }
 
 // - DRAWING.
@@ -902,4 +879,19 @@ function save(filepath, content) {
         f.writestring(content);
         f.close();
     }
+}
+
+function crate_fullpath_and_save(){
+    var filename = getSafeDatetimeFilename(g_song_name);
+    var output_dir = g_song_folder;
+    if (output_dir !== null){
+        // as output_dir ends in slash, simple concat may suffice x-platform.
+        const fullPath = output_dir + filename + ".json";   
+        post('writing', fullPath);
+        // var content = JSON.stringify(sequencer_config);          // if g_export_indent === false
+        var content = JSON.stringify(sequencer_config, null, 2);    // if g_export_indent === true
+        save(fullPath, content);
+    } else {
+        post('specify output directory using message: set_output_dir $1    , where $1 is the directory including terminating slash')
+    }    
 }
