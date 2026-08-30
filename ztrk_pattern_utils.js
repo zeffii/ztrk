@@ -380,7 +380,7 @@ function getRotatedIndex(that, old_idx){
 
     var tempval = (old_idx + that.pattern_row_shift) % that.pattern_markup.length;
     if (tempval < 0){
-        tempval = tempval + this.pattern_markup.length;
+        tempval = tempval + this.pattern_markup.length;   // (this.) might have to become (that.)
     }
     return tempval;
 }
