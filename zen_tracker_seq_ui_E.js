@@ -475,17 +475,32 @@ function slice_pattern_at_cursor(){
     var pattern_a_start = pattern_to_slice.start;
     var pattern_a_length = cursor - pattern_to_slice.start;
     var pattern_b_start = cursor;
-    var pattner_b_length = pattern_to_slice.length - pattern_a_length;
+    var pattern_b_length = pattern_to_slice.length - pattern_a_length;
 
     /*
-    [ ] copy puid of found pattern
-    [ ] remove pattern from track ( do not delete )
-    [ ] create new pattern of a_length ( later include the data ), plase it at a_start
-    [ ] create new pattern of b_length ( later include the data ), plase it as b_start
+    tracks[trk].pattern[0] will resemble 
+    {pname: pattern.pname, puid: puid, start: start, length: pattern.length, color: pattern.color};
 
+    [x] copy puid of found pattern
+    [x] remove pattern from track ( do not delete )
+    [x] create new pattern of a_length ( later include the data ), place it at a_start
+    [x] create new pattern of b_length ( later include the data ), place it as b_start
     */
+    
+    sequencer_config.tracks[trk].patterns.splice(found_idx, 1); // remove indexed pattern from track list.
 
-    // mgraphics.redraw();
+    var puid = pattern_to_slice.puid
+    var basename = pattern_to_slice.pname;
+    var pattern_a = make_new_pattern(trk, pattern_a_length);
+    var pattern_b = make_new_pattern(trk, pattern_b_length);
+    pattern_a.pname = basename + ":A";
+    pattern_b.pname = basename + ":B";
+    sequencer_config.patterns[trk].patterns.push(pattern_a);
+    sequencer_config.patterns[trk].patterns.push(pattern_b);
+    add_pattern(trk, pattern_a_start, pattern_a.puid);
+    add_pattern(trk, pattern_b_start, pattern_b.puid);
+    
+    mgraphics.redraw();
 }
 
 
