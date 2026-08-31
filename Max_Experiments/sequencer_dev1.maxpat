@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 89.0, 367.0, 936.0, 978.0 ],
+        "rect": [ 89.0, 367.0, 1404.0, 978.0 ],
         "boxes": [
             {
                 "box": {
@@ -66,7 +66,7 @@
                     "outlettype": [ "", "int", "", "" ],
                     "parameter_enable": 0,
                     "patching_rect": [ 314.0, 44.0, 100.0, 28.0 ],
-                    "text": "erre"
+                    "text": "erre2"
                 }
             },
             {
@@ -237,7 +237,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 330.0, 325.0, 56.0, 25.0 ],
-                                    "text": "115",
+                                    "text": "30",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -315,7 +315,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 187.0, 154.0, 22.0 ],
-                                    "text": "1",
+                                    "text": "126",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -349,7 +349,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 373.0, 154.0, 22.0 ],
-                                    "text": "keys 115 1 0 115",
+                                    "text": "keys 30 126 512 -9",
                                     "varname": "input_keys[1]"
                                 }
                             },

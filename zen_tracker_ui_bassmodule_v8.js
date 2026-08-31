@@ -2,6 +2,18 @@
 
 You will always move in the direction of your strongest thought -- so make it a good one.
 what remains after fear, is my true form.
+
+special thanks to:
+- federico foderaro (jsui / v8ui)
+- Philip Meyer ( signal based sequencing )
+- axers fall (gen)
+- Wellenfront Max Lab (mc)
+- starakajian
+- Andrew Robinson
+- matt wright
+- claud, grok, chatgpt, qwen.
+
+without these folks, this tracker would have taken much longer to make.
 */
 
 include("ztrk_pattern_utils.js");
@@ -171,6 +183,18 @@ class Tracker  {
             post('malformed pattern object, or empty..probably empty');
             return;
         }
+
+        // // --- receive: Max calls this automatically when a "dictionary <name>" message arrives ---
+        //     var d = new Dict(dict_name);
+        //     var payload = JSON.parse(d.stringify()); // fully independent copy, no ties to d
+        //     d.freepeer();                            // free now that we own our own copy
+
+        //     if ("editing_puid" in payload) {
+        //         handle_pattern_edit(payload.editing_puid, payload.data);
+        //     }
+        //     // add more `else if ("key" in payload)` branches as new message shapes appear
+        // }
+
 
         // this could inspect the pattern string data to see if it is empty (only dots and spaces) notify user
 

@@ -162,10 +162,10 @@ function find_pattern_under_cursor(trk, start){
     return found_idx;
 }
 
-function find_any_pattern_under_cursor(trk, cursor){
+function find_any_pattern_under_cursor(trk, cursor, inclusive = false){
     // slightly more elaborate pattern finder, will check all patterns in the track
     // if any of the patterns has a condition where the cursor falls within start + length
-    // then this is the pattern we want to slice.
+    // then this is the pattern we want to slice (or navigate to, if inclusive).
     // we should search in reverse, from bottom of track to top :)
     var found_idx = -1;
     var patterns = sequencer_config.tracks[trk].patterns;
@@ -173,7 +173,10 @@ function find_any_pattern_under_cursor(trk, cursor){
         var pattern = patterns[i];
         var pattern_end = pattern.start + pattern.length;
         // post(`cursor ${cursor}, pattern.start ${pattern.start}, pattern.end ${pattern_end}`);
-        if ((cursor > pattern.start) && (cursor < pattern_end)) {
+        var hit = inclusive
+            ? (cursor >= pattern.start) && (cursor < pattern_end)
+            : (cursor > pattern.start) && (cursor < pattern_end);
+        if (hit) {
             found_idx = i;
             post('found:' , pattern.pname, found_idx);
             break;
@@ -273,6 +276,17 @@ function command(instruction) {
         default: post("unknown command, seek help"); return;
     }
 }
+
+//  I O 
+
+// function send_dict_out(outlet_index, obj) {
+//     var d = new Dict();               // auto-named, one-shot
+//     d.parse(JSON.stringify(obj));     // load the payload as dict content
+//     outlet(outlet_index, "dictionary", d.name); // Max convention for passing a dict by name
+//     d.freepeer();                     // dict content is now owned by Max's dict system,
+//                                        // safe to free our JS-side peer immediately
+// }
+
 
 
 function msg_int(tick){
@@ -872,36 +886,32 @@ function onclick(x, y, button, cmd, shift, capslock, option, ctrl){
 // - FILE IO Util Funcs.
 
 function getSafeDatetimeFilename(baseName, date = new Date()) {
-  // Format the date as DD-MM-YYYY-HH-mm
-  const pad = (n) => n.toString().padStart(2, '0');
-  const dateStr = `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${date.getFullYear()}-${pad(date.getHours())}-${pad(date.getMinutes())}`;
-    
-  const rawFilename = `${baseName}-${dateStr}`; // combine
-  return makeFilenameSafe(rawFilename);         // sanitize
+    // Format the date as DD-MM-YYYY-HH-mm
+    const pad = (n) => n.toString().padStart(2, '0');
+    const dateStr = `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${date.getFullYear()}-${pad(date.getHours())}-${pad(date.getMinutes())}`;
+    const rawFilename = `${baseName}-${dateStr}`; // combine
+    return makeFilenameSafe(rawFilename);         // sanitize
 }
 
 function makeFilenameSafe(str, maxLength = 255) {
-  // Replace reserved characters with underscores
-  let safeStr = str.replace(/[\/|\\:*?"<>|]/g, '_');
+    // Replace reserved characters with underscores
+    let safeStr = str.replace(/[\/|\\:*?"<>|]/g, '_');
   
-  // Replace spaces with underscores for readability
-  safeStr = safeStr.replace(/\s+/g, '_');
+    safeStr = safeStr.replace(/\s+/g, '_'); // space to underscore
+    safeStr = safeStr.trim('_');          // trim leading/trailing underscores
   
-  // Trim leading/trailing underscores
-  safeStr = safeStr.trim('_');
+    // Handle Windows reserved names (case-insensitive)
+    const reservedNames = new Set(['con', 'prn', 'aux', 'nul', 'com1', 'com2', 'com3', 'lpt1', 'lpt2', 'lpt3']);
+    if (reservedNames.has(safeStr.toLowerCase())) {
+        safeStr += '_';
+    }
   
-  // Handle Windows reserved names (case-insensitive)
-  const reservedNames = new Set(['con', 'prn', 'aux', 'nul', 'com1', 'com2', 'com3', 'lpt1', 'lpt2', 'lpt3']);
-  if (reservedNames.has(safeStr.toLowerCase())) {
-    safeStr += '_';
-  }
+    // Truncate to max length
+    if (safeStr.length > maxLength) {
+        safeStr = safeStr.slice(0, maxLength);
+    }
   
-  // Truncate to max length
-  if (safeStr.length > maxLength) {
-    safeStr = safeStr.slice(0, maxLength);
-  }
-  
-  return safeStr;
+    return safeStr;
 }
 
 function save(filepath, content) {
