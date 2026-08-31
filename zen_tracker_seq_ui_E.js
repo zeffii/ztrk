@@ -23,6 +23,7 @@ var trk_width = 0;
 var side_width = 0;
 var global_tick = 0;
 
+var g_env = get_environment(); post(g_env);
 var g_song_name = "Demo Song";
 var g_song_folder = null;
 var g_in_edit_mode = 0;
@@ -806,7 +807,8 @@ function draw_pattern_menu(gfx, charheight, charwidth, trk_width, side_width){
 function draw_songname(gfx, h){
     gfx.set_source_rgba(...theme_colors.header_text);
     gfx.move_to(10, h-2);
-    gfx.show_text(`${g_song_name} @ ${g_song_folder}`);
+    var abbreviated_folder_structure = shortenPath(g_song_folder);
+    gfx.show_text(`${g_song_name} @ ${abbreviated_folder_structure}`);
 }
 
 function paint(){
@@ -924,4 +926,18 @@ function crate_fullpath_and_save(){
     } else {
         post('specify output directory using message: set_output_dir $1    , where $1 is the directory including terminating slash')
     }    
+}
+
+function shortenPath(path, keepLast = 3) {
+    if (!path) return '<no folder chosen yet>';
+    const sep = path.includes('\\') ? '\\' : '/';
+    const parts = path.split(/[\\/]/).filter(Boolean);
+    if (parts.length <= keepLast) return parts.join(sep);
+    return '...' + sep + parts.slice(-keepLast).join(sep);
+}
+
+function get_environment(){
+    if (max.os === "macintosh") return "Mac";
+    if (max.os === "windows") return "Win";
+    return "Gibson"
 }
