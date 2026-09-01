@@ -115,11 +115,15 @@ class Tracker  {
         ggg    = signed (-20 .. +20)  NOT IMPLEMENTED
         */
 
+        post('markup.descriptors.track', markup.descriptors.track);
+
         var pattern = [];
         var param_track = [];
         for (var i=0; i < Object.keys(markup.descriptors.track).length; i++){
             param_track.push(markup.descriptors.track[i][0]);
+            post('yay', i);
         }
+        post('param_trck', param_track);
 
         var lexical_descriptor = param_track.join(' ');
         markup.lexical_track = lexical_descriptor;
@@ -174,34 +178,37 @@ class Tracker  {
     dictionary(dictName) {
         // this is called when a dictionary is passed into the object, it should probably do some update?
         // expect error here.
-        var inputDict = new Dict(dictName);
-        var jsObject = JSON.parse(inputDict.stringify());
+        var d = new Dict(dictName);
+        var payload = JSON.parse(d.stringify());
+        d.freepeer();  // free now that we own our own copy of thet passed dict
 
         const isEmpty = (obj) => Object.keys(obj).length === 0;
 
-        if (isEmpty(jsObject)){
+        if (isEmpty(payload)){
             post('malformed pattern object, or empty..probably empty');
             return;
         }
 
-        // // --- receive: Max calls this automatically when a "dictionary <name>" message arrives ---
-        //     var d = new Dict(dict_name);
-        //     var payload = JSON.parse(d.stringify()); // fully independent copy, no ties to d
-        //     d.freepeer();                            // free now that we own our own copy
-
-        //     if ("editing_puid" in payload) {
-        //         handle_pattern_edit(payload.editing_puid, payload.data);
-        //     }
-        //     // add more `else if ("key" in payload)` branches as new message shapes appear
-        // }
-
-
-        // this could inspect the pattern string data to see if it is empty (only dots and spaces) notify user
-
-        this.pattern_markup = jsObject;
+        if ("editing_puid" in payload) {
+            post('sent to editing puid')
+            this.handle_received_pattern(payload);
+            return;
+        }
+        
+        // here some default behaviour
+        this.pattern_markup = payload;
         this.faux_pattern = this.pattern_markup.data;
         this.mgraphics.redraw();
         //this.push_to_buffers();
+        this.write_buffers(this);
+    }
+
+    handle_received_pattern(payload){
+        post('handleing received pattern');
+        this.pattern_markup = payload.pattern_markup;
+        this.faux_pattern = this.make_empty_pattern(payload.pattern_markup);
+        this.pattern_markup.data = this.faux_pattern;
+        this.mgraphics.redraw();
         this.write_buffers(this);
     }
 

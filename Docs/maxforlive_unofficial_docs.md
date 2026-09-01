@@ -79,3 +79,20 @@ And perhaps a shorter checklist:
 * Only **then** start debugging `History`, `if`, counters, etc.
 
 That's a particularly useful debugging principle: **prove the signal path before debugging the signal processing.**
+
+## v8ui
+
+This applies to the v8 and js objects in general, you define the number of inlets and outlets manually at the top
+```js
+
+inlets = 3
+outlets = 2
+
+```
+and you send information to them like 
+
+```js
+// outlet indices are zero based.
+outlet(1, "dictionary", outputDict.name);
+
+```

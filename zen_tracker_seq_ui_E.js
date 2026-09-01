@@ -64,9 +64,9 @@ var uid_06 = next_pattern_uid();
 
 var sequencer_config = {
     tracks: [
-        {trk: 0, trk_name: "gen.00", trk_symbol: "Λ", kind: "gen", patterns: []},    // will just contain references with a puid (see add_pattern)
-        {trk: 1, trk_name: "gen.01", trk_symbol: "Λ", kind: "gen", patterns: []},
-        {trk: 2, trk_name: "fx.01",  trk_symbol: "φ", kind: "fx", patterns: []}
+        {trk: 0, trk_name: "gen.00", machine: "notes4+", trk_symbol: "Λ", kind: "gen", patterns: []},    // will just contain references with a puid (see add_pattern)
+        {trk: 1, trk_name: "gen.01", machine: "notes5+", trk_symbol: "Λ", kind: "gen", patterns: []},
+        {trk: 2, trk_name: "fx.01",  machine: "FX2+", trk_symbol: "φ", kind: "fx", patterns: []}
     ],
     patterns: [   /*  This is the pool of patterns to pick from for each machine / trk */
         {trk: 0, patterns: [
@@ -82,7 +82,26 @@ var sequencer_config = {
             {pname: "03", puid: uid_03, length: 64, color: [0.9, 0.34, 0.3], data: []},  // 64
             {pname: "06", puid: uid_06, length: 16, color: [0.9, 0.34, 0.3], data: []}   // 256
         ]}
-    ]
+    ],
+    machines: {
+        "notes4+": [
+            ['nnn', 'Note 0', 0],      ['hh', 'Volume 0', 0],       ['hh', 'Duration 0', 0],
+            ['nnn', 'Note 1', 0],      ['hh', 'Volume 1', 0],       ['hh', 'Duration 1', 0],
+            ['nnn', 'Note 2', 0],      ['hh', 'Volume 2', 0],       ['hh', 'Duration 2', 0],
+            ['nnn', 'Note 3', 0],      ['hh', 'Volume 3', 0],       ['hh', 'Duration 3', 0]
+        ],
+        "notes5+": [
+            ['nnn', 'Note 0', 0],      ['hh', 'Volume 0', 0],       ['hh', 'Duration 0', 0],
+            ['nnn', 'Note 1', 0],      ['hh', 'Volume 1', 0],       ['hh', 'Duration 1', 0],
+            ['nnn', 'Note 2', 0],      ['hh', 'Volume 2', 0],       ['hh', 'Duration 2', 0],
+            ['nnn', 'Note 3', 0],      ['hh', 'Volume 3', 0],       ['hh', 'Duration 3', 0],
+            ['nnn', 'Note 4', 0],      ['hh', 'Volume 4', 0],       ['hh', 'Duration 4', 0]
+        ],
+        "FX2+": [
+            ['b', 'Trigger 1', 0],     ['b', 'Trigger 2', 0],       ['b', 'Trigger 3', 0],       ['b', 'Trigger 4', 0],
+            ['ffxxyy', 'Effect 1', 1],  ['ffxxyy', 'Effect 2', 1]
+        ]
+    }
 };
 
 // - simulate adding data at runtime.
@@ -251,6 +270,32 @@ function set_output_dir(full_path){
     mgraphics.redraw();
 }
 
+function send_pattern_to_tracker(){
+
+    const trk = g_tcaret.col;
+    const start = tick_from_row(g_tcaret.row);
+    const found_idx = find_any_pattern_under_cursor(trk, start, true);
+    
+    if (found_idx < 0) {
+        post("no pattern under cursor!");
+        return;
+    }
+    var pattern = sequencer_config.tracks[trk].patterns[found_idx];
+    var machine_name = sequencer_config.tracks[trk].machine;
+    var pattern_exchange_markup = {
+        editing_puid: 1,
+        length: pattern.length,
+        descriptors: {track: sequencer_config.machines[machine_name]},
+        data: [],
+        lexical_track: ""
+    };
+
+    post('Telling Tracker to show pattern \n');
+    var outputDict = new Dict('pattern_markup_dict');
+    outputDict.parse(JSON.stringify(pattern_exchange_markup));
+    outlet(1, "dictionary", outputDict.name);
+}
+
 
 function command(instruction) {
     switch (instruction) {
@@ -396,7 +441,10 @@ function key_handler(){
             }
             return;
         } 
-        else { insert_patterns_in_selection(); }
+        else { 
+            send_pattern_to_tracker(); 
+        }
+        // else { insert_patterns_in_selection(); }
         return;
     }
 
