@@ -203,13 +203,24 @@ class Tracker  {
         this.write_buffers(this);
     }
 
+    update_v8_boxsize(lexical_track){
+        var gfx = this.mgraphics;
+        var [w, h] = gfx.size;
+        var new_width = (this.charwidth * (lexical_track.length + 6)) + this.start_x;
+        //gfx.size(new_width, h);
+        box.size(new_width, h);
+    }
+
     handle_received_pattern(payload){
         post('handleing received pattern');
         this.pattern_markup = payload;
         this.faux_pattern = this.make_empty_pattern(payload);
         this.pattern_markup.data = this.faux_pattern;
+        this.cols = this.pattern_markup.lexical_track.length;
         this.rows = this.pattern_markup.length;
-        this.cols = this.pattern_markup.lexical_track.length;        
+
+        this.update_v8_boxsize(this.pattern_markup.lexical_track);  // i prefer to auto update.. maybe if its too long it should snip.
+
         this.mgraphics.redraw();
         this.write_buffers(this);
     }

@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 617.0, 241.0, 1367.0, 1109.0 ],
+        "rect": [ 474.0, 203.0, 1367.0, 1109.0 ],
         "boxes": [
             {
                 "box": {
@@ -1373,7 +1373,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 4.0, 152.0, 459.0, 590.0 ],
+                    "patching_rect": [ 5.0, 154.0, 459.0, 590.0 ],
                     "textfile": {
                         "filename": "zen_tracker_seq_ui_E.js",
                         "flags": 0,
@@ -1387,6 +1387,7 @@
             {
                 "patchline": {
                     "destination": [ "obj-2", 0 ],
+                    "midpoints": [ 454.5, 752.0, 480.0, 752.0, 480.0, 149.0, 504.5, 149.0 ],
                     "source": [ "obj-1", 1 ]
                 }
             },
