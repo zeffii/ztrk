@@ -196,67 +196,45 @@ class Tracker  {
         this.pattern_markup = payload;
         this.faux_pattern = this.pattern_markup.data;
         this.mgraphics.redraw();
-        //this.push_to_buffers();
         this.write_buffers(this);
+        // gfx_refresh_and_write_buffers_and_dispatch({send_back: false})
+    }
+
+    gfx_refresh_and_write_buffers_and_dispatch(command){
+        this.mgraphics.redraw();
+        this.write_buffers(this);
+        if (command.send_back) {
+            // send back to sequencer with update.
+        }
     }
 
     update_v8_boxsize(num_characters){
         var gfx = this.mgraphics;
         var [w, h] = gfx.size;
-        // this.get_text_width_and_height();
-        // this.text_w
         var new_width = (this.charwidth * (num_characters + 6)) + this.start_x;
-        //gfx.size(new_width, h);
         box.size(new_width, h);
     }
 
     handle_received_pattern(payload){
-        post('handleing received pattern');
+
         this.pattern_markup = payload;
         this.faux_pattern = this.make_empty_pattern(payload);
         this.pattern_markup.data = this.faux_pattern;
         this.cols = this.pattern_markup.lexical_track.length;
         this.rows = this.pattern_markup.length;
-
         this.update_v8_boxsize(this.cols);
 
         this.mgraphics.redraw();
         this.write_buffers(this);
+        // gfx_refresh_and_write_buffers_and_dispatch({send_back: false})
+
     }
-
-    // command(instruction){
-
-    //     if (instruction === 'export_pattern'){
-    //         post('Exporting Pattern\n');
-    //         var outputDict = new Dict('pattern_data');
-            
-    //         this.pattern_markup.data = this.faux_pattern;
-    //         outputDict.parse(JSON.stringify(this.pattern_markup));
-    //         this.outlet(2, "dictionary", outputDict.name);
-    //     }
-    //     switch (instruction) {
-    //         case 'push_to_clip':
-    //             push_to_live();
-    //             post('here!');
-    //             return;
-    //         case 'matrixmode=0':
-    //             post('setting matrixmode to False data');
-    //             return;
-    //         case 'matrixmode=1':
-    //             post('setting matrixmode to True data');
-    //             return;
-    //         default: break;
-    //     }
-
-    // }
 
     /*  ------- Local Util Functions ------------- */
 
 
     set_rgb(color, dimming){
-
         this.mgraphics.set_source_rgba(color.r / dimming, color.g / dimming, color.b / dimming, 1);
-
     }
 
     asRGB(r, g, b, a){ return {r:r, g:g, b:b}};
@@ -404,6 +382,7 @@ class Tracker  {
         }
     }
 
+    // remove this function.
     push_to_buffers(){
         if (this.BufferMode === 1){
             post('entered push to buffers function');
@@ -458,6 +437,7 @@ class Tracker  {
             this.push_to_live();
             this.push_to_buffers();
             this.refresh();
+            // gfx_refresh_and_write_buffers_and_dispatch({send_back: true});
             return true;
         }
         return false;
@@ -550,6 +530,7 @@ class Tracker  {
             this.push_to_live();
             this.push_to_buffers();
             this.refresh();
+            // gfx_refresh_and_write_buffers_and_dispatch({send_back: true});
             return true;
         }
         return false;
@@ -608,6 +589,7 @@ class Tracker  {
             this.push_to_live();
             this.push_to_buffers();
             this.refresh();
+            // gfx_refresh_and_write_buffers_and_dispatch({send_back: true});
             return true;
         }
         return false;
@@ -651,6 +633,7 @@ class Tracker  {
             this.push_to_live();
             this.push_to_buffers();
             this.refresh();
+            // gfx_refresh_and_write_buffers_and_dispatch({send_back: true});
             return true;
         }
         return false;
@@ -725,6 +708,7 @@ class Tracker  {
             this.push_to_live();
             this.push_to_buffers();
             this.refresh();
+            // gfx_refresh_and_write_buffers_and_dispatch({send_back: true});
         }
     }
 
@@ -778,6 +762,8 @@ class Tracker  {
                 pattern[caret_row] = replaceAt(pattern[caret_row], lower_index, '..', 2);
                 this.push_to_buffers();
             }
+
+            // if (update){ // gfx_refresh_and_write_buffers_and_dispatch({send_back: true}); }
         }    
 
     }
@@ -797,6 +783,7 @@ class Tracker  {
 
                 pattern[shifted_row] = replaceAt(current_rowB, caret.col, key_infoB, 1);
                 this.push_to_buffers();
+                
             }
         }
 
@@ -1276,6 +1263,7 @@ class Tracker  {
 
             // we can restrict this to redraw iff there are updates, but for now this is convenient.
             this.mgraphics.redraw();
+            // gfx_refresh_and_write_buffers_and_dispatch({send_back: true});
         }
     }
 
@@ -1572,7 +1560,7 @@ class Tracker  {
         this.draw_track_descriptor();
         this.draw_scrollbars();
         this.draw_toprow();
-        // post('success');
+
     }
 
     /* -------- Mouse Handling ------------ */
