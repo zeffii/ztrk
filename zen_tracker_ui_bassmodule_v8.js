@@ -217,7 +217,7 @@ class Tracker  {
     handle_received_pattern(payload){
 
         this.pattern_markup = payload;
-        this.faux_pattern = this.make_empty_pattern(payload);
+        this.faux_pattern = this.make_empty_pattern(payload);  // at the moment this assumes empty patterns coming in.
         this.pattern_markup.data = this.faux_pattern;
         this.cols = this.pattern_markup.lexical_track.length;
         this.rows = this.pattern_markup.length;
