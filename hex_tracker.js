@@ -41,22 +41,22 @@ var pattern_markup = {
 
 
 function sendOutlet(port, ...args) {
-  try {
-    outlet(port, ...args);
-  } catch (e) {
-    post("SAFE OUTLET ERROR: " + e + "\n");
-    post("Args were: " + args.join(", ") + "\n");
-  }
+    try {
+        outlet(port, ...args);
+    } catch (e) {
+        post("SAFE OUTLET ERROR: " + e + "\n");
+        post("Args were: " + args.join(", ") + "\n");
+    }
 }
 
 function write_buffers(tracker){
-	var pattern_length = tracker.pattern_markup.length;
+    var pattern_length = tracker.pattern_markup.length;
     var ch1 = new Buffer("ch1");
-    
+
     // var env = new Buffer("env");
     // ch1.send("setsize", pattern_length);
     // var source_sample = foo.peek(1, i, 1);
-    
+
     ch1.setattr("sr", 1000);
     ch1.setattr("chans", 24);
     ch1.send("sizeinsamps", pattern_length);
@@ -66,11 +66,11 @@ function write_buffers(tracker){
     // 	ch1.poke(1, i, 1/32*i + Math.random());  
     //}
     for (var row = 0; row < array2d.length; row++){
-    	for (var col = 0; col < array2d[0].length; col++){
-    		var celld = array2d[row][col];
+        for (var col = 0; col < array2d[0].length; col++){
+            var celld = array2d[row][col];
             var floatval = encode_cell_to_float(celld);
             ch1.poke(col+1, row, floatval);
-    	}
+        }
     }
 }
 
@@ -109,23 +109,23 @@ function command(instruction){
     if (instruction === 'export_pattern'){
         post('Exporting Pattern\n');
         var outputDict = new Dict('pattern_data');
-        
+
         // my_tracker.pattern_markup.data = this.faux_pattern; // ensure the data is up to date before exporting, necessary?
         outputDict.parse(JSON.stringify(my_tracker.pattern_markup));
         outlet(2, "dictionary", outputDict.name);
     }
 
     if (instruction.startsWith('jitblock_')){
-    	post('yes here, jitblock set to', instruction.substring(9));
-    	my_tracker.current_patcher = this.patcher;
-    	my_tracker.jitblock_name = instruction.substring(9);
-    	return; // end early is ok.
+        post('yes here, jitblock set to', instruction.substring(9));
+        my_tracker.current_patcher = this.patcher;
+        my_tracker.jitblock_name = instruction.substring(9);
+        return; // end early is ok.
     }
 
     if (instruction.startsWith('buffermode:')){
-		my_tracker.BufferMode = parseInt(instruction.substring(11));
-	    post('BufferMode set to:', my_tracker.BufferMode);
-	}
+        my_tracker.BufferMode = parseInt(instruction.substring(11));
+        post('BufferMode set to:', my_tracker.BufferMode);
+    }
 
     if (instruction.startsWith('theme=')){
 
@@ -155,5 +155,4 @@ function command(instruction){
             return;
         default: break;
     }
-
 }

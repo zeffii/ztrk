@@ -368,7 +368,7 @@ class Tracker  {
                 var num_cols = celldata_array[row].length;
                 for (var col = 0; col < num_cols; col++){
                     var proposed_cell_data = celldata_array[row][col];
-    
+
                     if (isOnlyDots(proposed_cell_data)){
                         jit_cellblock.message('clear', row+1, col);
                     } else {
@@ -608,7 +608,7 @@ class Tracker  {
                 'selection_data': []
             }
             for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
-                
+
                 var shifted_row = row;
                 if (this.pattern_row_shift !== 0){
                     shifted_row = getRotatedIndex(this, row);
@@ -731,7 +731,7 @@ class Tracker  {
 
             // this makes it possible to enter data when the pattern is row-shifted.
             const caret_row = getRotatedIndex(this, caret.row);
-            
+
             if (found_in(listed, charfound)){
                 var replacement_hex = '';
 
@@ -1247,7 +1247,7 @@ class Tracker  {
                     }
                 }
             }
-            
+
             this.pattern_input_handler(USER_KEY, this.#caret, this.pattern_markup, this.faux_pattern);
 
             // we can restrict this to redraw iff there are updates, but for now this is convenient.
@@ -1432,8 +1432,6 @@ class Tracker  {
             gfx.move_to(w - identifier_width, h - (0.25 * this.charheight));
             gfx.show_text(version_identifier);
         }
-
-
     }
 
     draw_scrollbars(){
