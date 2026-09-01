@@ -205,8 +205,8 @@ class Tracker  {
 
     handle_received_pattern(payload){
         post('handleing received pattern');
-        this.pattern_markup = payload.pattern_markup;
-        this.faux_pattern = this.make_empty_pattern(payload.pattern_markup);
+        this.pattern_markup = payload;
+        this.faux_pattern = this.make_empty_pattern(payload);
         this.pattern_markup.data = this.faux_pattern;
         this.mgraphics.redraw();
         this.write_buffers(this);
