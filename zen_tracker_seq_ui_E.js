@@ -325,15 +325,16 @@ function command(instruction) {
 
 //  I O 
 
-// function send_dict_out(outlet_index, obj) {
-//     var d = new Dict();               // auto-named, one-shot
-//     d.parse(JSON.stringify(obj));     // load the payload as dict content
-//     outlet(outlet_index, "dictionary", d.name); // Max convention for passing a dict by name
-//     d.freepeer();                     // dict content is now owned by Max's dict system,
-//                                        // safe to free our JS-side peer immediately
-// }
+function dictionary(payload) {
 
+    // remember to remove this object key before storing it.
+    if ("edited_pattern" in payload) {
+        // post(`received puid ${pattern.puid}` to injection.)
+        //  this.handle_pattern_from_tracker(payload);
+        return;
+    }
 
+}
 
 function msg_int(tick){
     global_tick = tick;
