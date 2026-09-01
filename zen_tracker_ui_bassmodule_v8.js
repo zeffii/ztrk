@@ -1252,7 +1252,7 @@ class Tracker  {
 
             // we can restrict this to redraw iff there are updates, but for now this is convenient.
             // this.mgraphics.redraw();
-            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: false});
+            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: false, write_buffers: false}); // just refresh.
         }
     }
 
