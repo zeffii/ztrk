@@ -208,6 +208,8 @@ class Tracker  {
         this.pattern_markup = payload;
         this.faux_pattern = this.make_empty_pattern(payload);
         this.pattern_markup.data = this.faux_pattern;
+        this.rows = this.pattern_markup.length;
+        this.cols = this.pattern_markup.lexical_track.length;        
         this.mgraphics.redraw();
         this.write_buffers(this);
     }

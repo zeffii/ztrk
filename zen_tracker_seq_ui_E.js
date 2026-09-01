@@ -284,6 +284,7 @@ function send_pattern_to_tracker(){
     var machine_name = sequencer_config.tracks[trk].machine;
     var pattern_exchange_markup = {
         editing_puid: 1,
+        puid: pattern.puid,
         length: pattern.length,
         descriptors: {track: sequencer_config.machines[machine_name]},
         data: [],
