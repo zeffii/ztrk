@@ -152,8 +152,7 @@ class Tracker  {
         this.faux_pattern = this.make_empty_pattern(this.pattern_markup);
         this.pattern_markup.data = this.faux_pattern;    
         this.mgraphics.redraw();
-        // this should also wipe the buffer data
-        var ch1 = new Buffer("ch1");
+        var ch1 = new Buffer("ch1");   // should maybe not do this here.
         clearBuffer(ch1);
     }
 
@@ -168,8 +167,6 @@ class Tracker  {
             this.mgraphics.redraw();
         }
         this.#g_key_codes = [a1, a2, a3, a4];
-        // this.patcher.send(1)
-        // post(this.#g_key_codes);
     }
 
     dictionary(dictName) {
@@ -195,16 +192,18 @@ class Tracker  {
         // here some default behaviour
         this.pattern_markup = payload;
         this.faux_pattern = this.pattern_markup.data;
-        this.mgraphics.redraw();
-        this.write_buffers(this);
-        // gfx_refresh_and_write_buffers_and_dispatch({send_back: false})
+        // this.mgraphics.redraw();
+        // this.write_buffers(this);
+        this.gfx_refresh_and_write_buffers_and_dispatch({send_back: false})
     }
 
     gfx_refresh_and_write_buffers_and_dispatch(command){
         this.mgraphics.redraw();
-        this.write_buffers(this);
+        if (command.write_buffers){
+            this.write_buffers(this);
+        }
         if (command.send_back) {
-            // send back to sequencer with update.
+            post(" send back to sequencer with update.");
         }
     }
 
@@ -224,10 +223,9 @@ class Tracker  {
         this.rows = this.pattern_markup.length;
         this.update_v8_boxsize(this.cols);
 
-        this.mgraphics.redraw();
-        this.write_buffers(this);
-        // gfx_refresh_and_write_buffers_and_dispatch({send_back: false})
-
+        // this.mgraphics.redraw();
+        // this.write_buffers(this);
+        this.gfx_refresh_and_write_buffers_and_dispatch({send_back: false})
     }
 
     /*  ------- Local Util Functions ------------- */
@@ -252,7 +250,6 @@ class Tracker  {
             bottom: Math.max(this.#anchor.row, this.#caret.row),
             right:  Math.max(this.#anchor.col, this.#caret.col)
         };
-
     }
 
     caret_to_location(){
@@ -435,9 +432,9 @@ class Tracker  {
             }
 
             this.push_to_live();
-            this.push_to_buffers();
-            this.refresh();
-            // gfx_refresh_and_write_buffers_and_dispatch({send_back: true});
+            // this.push_to_buffers();
+            // this.refresh();
+            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true});
             return true;
         }
         return false;
@@ -528,9 +525,9 @@ class Tracker  {
             }
 
             this.push_to_live();
-            this.push_to_buffers();
-            this.refresh();
-            // gfx_refresh_and_write_buffers_and_dispatch({send_back: true});
+            // this.push_to_buffers();
+            // this.refresh();
+            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true});
             return true;
         }
         return false;
@@ -587,9 +584,9 @@ class Tracker  {
             }
 
             this.push_to_live();
-            this.push_to_buffers();
-            this.refresh();
-            // gfx_refresh_and_write_buffers_and_dispatch({send_back: true});
+            // this.push_to_buffers();
+            // this.refresh();
+            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true});
             return true;
         }
         return false;
@@ -631,9 +628,9 @@ class Tracker  {
             }
 
             this.push_to_live();
-            this.push_to_buffers();
-            this.refresh();
-            // gfx_refresh_and_write_buffers_and_dispatch({send_back: true});
+            // this.push_to_buffers();
+            // this.refresh();
+            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true});
             return true;
         }
         return false;
@@ -706,9 +703,9 @@ class Tracker  {
             }
 
             this.push_to_live();
-            this.push_to_buffers();
-            this.refresh();
-            // gfx_refresh_and_write_buffers_and_dispatch({send_back: true});
+            // this.push_to_buffers();
+            // this.refresh();
+            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true});
         }
     }
 
@@ -762,10 +759,7 @@ class Tracker  {
                 pattern[caret_row] = replaceAt(pattern[caret_row], lower_index, '..', 2);
                 this.push_to_buffers();
             }
-
-            // if (update){ // gfx_refresh_and_write_buffers_and_dispatch({send_back: true}); }
-        }    
-
+        }
     }
 
 
@@ -783,10 +777,8 @@ class Tracker  {
 
                 pattern[shifted_row] = replaceAt(current_rowB, caret.col, key_infoB, 1);
                 this.push_to_buffers();
-                
             }
         }
-
     }
 
 
@@ -844,8 +836,6 @@ class Tracker  {
                 this.push_to_buffers();
             }
         }
-
-
     }
 
 
@@ -884,7 +874,6 @@ class Tracker  {
                 this.push_to_buffers();
             }
         }
-
     };
 
 
@@ -1024,7 +1013,7 @@ class Tracker  {
                     non_note_cursor_input(this, key, caret, pattern, caret_row3, -2);  
                 }
 
-            }            
+            }
 
         }
 
@@ -1262,8 +1251,8 @@ class Tracker  {
             this.pattern_input_handler(USER_KEY, this.#caret, this.pattern_markup, this.faux_pattern);
 
             // we can restrict this to redraw iff there are updates, but for now this is convenient.
-            this.mgraphics.redraw();
-            // gfx_refresh_and_write_buffers_and_dispatch({send_back: true});
+            // this.mgraphics.redraw();
+            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: false});
         }
     }
 
