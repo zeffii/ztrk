@@ -680,7 +680,7 @@
                     "numoutlets": 3,
                     "outlettype": [ "", "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 495.0, 156.0, 549.0, 440.0 ],
+                    "patching_rect": [ 495.0, 156.0, 446.0, 419.0 ],
                     "textfile": {
                         "filename": "hex_tracker.js",
                         "flags": 0,

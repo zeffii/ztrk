@@ -70,9 +70,9 @@ class Tracker  {
         this.rows = this.pattern_markup.length;
         this.cols = this.pattern_markup.lexical_track.length;
         this.settings_font_size = 12; //
-        this.charwidth = 8;
+        this.charwidth = 6.60;   // this gets updated at runtime. see this.get_text_width_and_height();
         this.charheight = this.settings_font_size; 
-        this.text_w = 1;
+        this.text_w = 1;         // this gets updated at runtime. see this.get_text_width_and_height();
         this.text_h = this.settings_font_size;
         this.start_x = 30;
         this.start_y = 30;
@@ -99,6 +99,7 @@ class Tracker  {
             divider_gfx_color: [0.8, 0.2, 0.2, 1.0]
         };
         this.theme_colors = {...this.default_theme_colors};
+        this.update_v8_boxsize(this.cols);
 
     }
 
@@ -115,15 +116,11 @@ class Tracker  {
         ggg    = signed (-20 .. +20)  NOT IMPLEMENTED
         */
 
-        post('markup.descriptors.track', markup.descriptors.track);
-
         var pattern = [];
         var param_track = [];
         for (var i=0; i < Object.keys(markup.descriptors.track).length; i++){
             param_track.push(markup.descriptors.track[i][0]);
-            post('yay', i);
         }
-        post('param_trck', param_track);
 
         var lexical_descriptor = param_track.join(' ');
         markup.lexical_track = lexical_descriptor;
@@ -203,10 +200,12 @@ class Tracker  {
         this.write_buffers(this);
     }
 
-    update_v8_boxsize(lexical_track){
+    update_v8_boxsize(num_characters){
         var gfx = this.mgraphics;
         var [w, h] = gfx.size;
-        var new_width = (this.charwidth * (lexical_track.length + 6)) + this.start_x;
+        // this.get_text_width_and_height();
+        // this.text_w
+        var new_width = (this.charwidth * (num_characters + 6)) + this.start_x;
         //gfx.size(new_width, h);
         box.size(new_width, h);
     }
@@ -219,7 +218,7 @@ class Tracker  {
         this.cols = this.pattern_markup.lexical_track.length;
         this.rows = this.pattern_markup.length;
 
-        this.update_v8_boxsize(this.pattern_markup.lexical_track);  // i prefer to auto update.. maybe if its too long it should snip.
+        this.update_v8_boxsize(this.cols);
 
         this.mgraphics.redraw();
         this.write_buffers(this);
@@ -1294,8 +1293,7 @@ class Tracker  {
         
         var tx_wh = gfx.text_measure('000 ' + this.pattern_markup.lexical_track);  // returns width and height
         this.text_w = tx_wh[0];
-        this.text_h = tx_wh[1];        
-
+        this.text_h = tx_wh[1];
     }
 
 
