@@ -434,7 +434,7 @@ class Tracker  {
             this.push_to_live();
             // this.push_to_buffers();
             // this.refresh();
-            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true});
+            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: true});
             return true;
         }
         return false;
@@ -527,7 +527,7 @@ class Tracker  {
             this.push_to_live();
             // this.push_to_buffers();
             // this.refresh();
-            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true});
+            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: true});
             return true;
         }
         return false;
@@ -586,7 +586,7 @@ class Tracker  {
             this.push_to_live();
             // this.push_to_buffers();
             // this.refresh();
-            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true});
+            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: true});
             return true;
         }
         return false;
@@ -630,7 +630,7 @@ class Tracker  {
             this.push_to_live();
             // this.push_to_buffers();
             // this.refresh();
-            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true});
+            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: true});
             return true;
         }
         return false;
@@ -705,7 +705,7 @@ class Tracker  {
             this.push_to_live();
             // this.push_to_buffers();
             // this.refresh();
-            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true});
+            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: true});
         }
     }
 
