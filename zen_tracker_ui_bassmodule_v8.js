@@ -99,7 +99,8 @@ class Tracker  {
             divider_gfx_color: [0.8, 0.2, 0.2, 1.0]
         };
         this.theme_colors = {...this.default_theme_colors};
-        this.update_v8_boxsize(this.cols);
+
+        this.update_v8_boxsize(this.cols, this.rows);
 
     }
 
@@ -204,14 +205,20 @@ class Tracker  {
         }
         if (command.send_back) {
             post(" send back to sequencer with update.");
+            var outputDict = new Dict('pattern_markup_dict');
+            outputDict.parse(JSON.stringify(this.pattern_markup));
+            this.send(1, "dictionary", outputDict.name);  // only patterns received from sequencer will contain a puid.
         }
     }
 
-    update_v8_boxsize(num_characters){
+    update_v8_boxsize(num_characters, num_rows){
         var gfx = this.mgraphics;
         var [w, h] = gfx.size;
         var new_width = (this.charwidth * (num_characters + 6)) + this.start_x;
         box.size(new_width, h);
+        if (num_rows !== null){
+            box.size(new_width, 34*this.charheight+20);
+        }
     }
 
     handle_received_pattern(payload){
@@ -221,7 +228,7 @@ class Tracker  {
         this.pattern_markup.data = this.faux_pattern;
         this.cols = this.pattern_markup.lexical_track.length;
         this.rows = this.pattern_markup.length;
-        this.update_v8_boxsize(this.cols);
+        this.update_v8_boxsize(this.cols, null);
 
         // this.mgraphics.redraw();
         // this.write_buffers(this);
@@ -265,7 +272,6 @@ class Tracker  {
         return [_x, _y];   
 
     }
-
 
     get_adjusted_selection_rect(){
 
@@ -363,7 +369,6 @@ class Tracker  {
             var celldata_array = pattern_data_to_2d_array(this.pattern_markup.data);
 
             // pprint(celldata_array);
-            
             for (var row = 0; row < celldata_array.length; row++){
                 var num_cols = celldata_array[row].length;
                 for (var col = 0; col < num_cols; col++){
@@ -1039,8 +1044,9 @@ class Tracker  {
           case 'ffxxyy':
             this.handle_ffxxyy_input(key, caret, desciptor, pattern, param_at_position); break;
           default:
-            break;
+            return;
         }
+        this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: false}); // already refreshed at this point.
     }
 
     find_cell_under_cursor(x, y){
@@ -1069,6 +1075,9 @@ class Tracker  {
 
 
     key_handler(){
+
+        var mutates_pattern_state = false;   // some handlers already do their own updates, but 
+                                             // for others i want to explicitely track this. should change eventually.
 
         if (!this.faux_pattern){
             return;
@@ -1172,6 +1181,7 @@ class Tracker  {
                     post('starting selection mode\n');
                     this.#started_selection_mode = true;
                 }
+                mutates_pattern_state = false;
 
             } else if (found_in([PAGE_UP, PAGE_DOWN], USER_KEY)){
 
@@ -1185,11 +1195,15 @@ class Tracker  {
             } else {
                 this.#started_selection_mode = false;
                 this.#anchor = null;
+                mutates_pattern_state = false;
             }
 
             if (direction_input){
 
+                mutates_pattern_state = false;
+
                 if (found_in([CTRL, CTRL_SHIFT], SELECTOR)){
+
 
                     var param_starts = find_idx_after_space(this.pattern_markup.lexical_track);
                     var [left_distance, right_distance] = [-1, 1];
@@ -1251,8 +1265,8 @@ class Tracker  {
             this.pattern_input_handler(USER_KEY, this.#caret, this.pattern_markup, this.faux_pattern);
 
             // we can restrict this to redraw iff there are updates, but for now this is convenient.
-            // this.mgraphics.redraw();
-            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: false, write_buffers: false}); // just refresh.
+            // this.gfx_refresh_and_write_buffers_and_dispatch({send_back: false, write_buffers: false}); // just refresh.
+            this.mgraphics.redraw();
         }
     }
 

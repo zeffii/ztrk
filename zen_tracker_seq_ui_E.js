@@ -673,13 +673,6 @@ function insert_patterns_in_selection(){
     // mgraphics.redraw();
 }
 
-function slice_pattern_content_dummy(first_half, second_half){
-    // TODO: once pattern row-data lives somewhere addressable from here,
-    // copy/split the underlying rows so second_half actually starts with
-    // whatever was under the playhead. For now this is just a hook.
-    // pattern name will be  "pname A" and "pname B"
-}
-
 // - DRAWING.
 
 function draw_background(w, h){

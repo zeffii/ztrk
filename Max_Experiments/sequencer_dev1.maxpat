@@ -9,8 +9,17 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 67.0, 107.0, 1123.0, 1109.0 ],
+        "rect": [ 67.0, 107.0, 1779.0, 1104.0 ],
         "boxes": [
+            {
+                "box": {
+                    "id": "obj-23",
+                    "maxclass": "dict.view",
+                    "numinlets": 1,
+                    "numoutlets": 0,
+                    "patching_rect": [ 846.0, 666.0, 635.0, 381.0 ]
+                }
+            },
             {
                 "box": {
                     "id": "obj-22",
@@ -147,7 +156,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "13",
+                                    "text": "116",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -236,7 +245,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "36",
+                                    "text": "17",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -281,7 +290,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 13 36 0 -4",
+                                    "text": "keys 116 17 0 116",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -680,7 +689,7 @@
                     "numoutlets": 3,
                     "outlettype": [ "", "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 495.0, 156.0, 525.0, 419.0 ],
+                    "patching_rect": [ 495.0, 157.0, 525.0, 419.0 ],
                     "textfile": {
                         "filename": "hex_tracker.js",
                         "flags": 0,
@@ -915,7 +924,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 330.0, 325.0, 56.0, 25.0 ],
-                                    "text": "13",
+                                    "text": "116",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -993,7 +1002,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 187.0, 154.0, 22.0 ],
-                                    "text": "36",
+                                    "text": "17",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -1027,7 +1036,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 373.0, 154.0, 22.0 ],
-                                    "text": "keys 13 36 0 -4",
+                                    "text": "keys 116 17 0 116",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -1453,6 +1462,12 @@
                 "patchline": {
                     "destination": [ "obj-8", 0 ],
                     "source": [ "obj-17", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-23", 0 ],
+                    "source": [ "obj-2", 1 ]
                 }
             },
             {
