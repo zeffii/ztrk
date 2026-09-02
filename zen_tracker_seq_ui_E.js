@@ -325,11 +325,15 @@ function command(instruction) {
 
 //  I O 
 
-function dictionary(payload) {
+function dictionary(dictName) {
+
+    var d = new Dict(dictName);
+    var data = JSON.parse(d.stringify());
+    d.freepeer();  // free now that we own our own copy of thet passed dict
 
     // remember to remove this object key before storing it.
-    if ("edited_pattern" in payload) {
-        // post(`received puid ${pattern.puid}` to injection.)
+    if ("edit_request" in data) {
+        post(`sequencer: received puid ${data.payload.puid} for injection`)
         //  this.handle_pattern_from_tracker(payload);
         return;
     }

@@ -210,7 +210,7 @@ class Tracker  {
                 post("send back to sequencer with update. ---untracked");
             }
             var outputDict = new Dict('pattern_markup_dict');
-            outputDict.parse(JSON.stringify(this.pattern_markup));
+            outputDict.parse(JSON.stringify({edit_request: this.pattern_markup.puid, payload: this.pattern_markup}));
             this.send(1, "dictionary", outputDict.name);  // only patterns received from sequencer will contain a puid.
         }
     }
