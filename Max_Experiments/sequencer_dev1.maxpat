@@ -156,7 +156,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "116",
+                                    "text": "113",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -245,7 +245,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "17",
+                                    "text": "12",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -290,7 +290,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 116 17 0 116",
+                                    "text": "keys 113 12 0 113",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -689,7 +689,7 @@
                     "numoutlets": 3,
                     "outlettype": [ "", "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 495.0, 157.0, 525.0, 419.0 ],
+                    "patching_rect": [ 495.0, 157.0, 392.87109375, 428.0 ],
                     "textfile": {
                         "filename": "hex_tracker.js",
                         "flags": 0,
@@ -924,7 +924,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 330.0, 325.0, 56.0, 25.0 ],
-                                    "text": "116",
+                                    "text": "113",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -1002,7 +1002,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 187.0, 154.0, 22.0 ],
-                                    "text": "17",
+                                    "text": "12",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -1036,7 +1036,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 373.0, 154.0, 22.0 ],
-                                    "text": "keys 116 17 0 116",
+                                    "text": "keys 113 12 0 113",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -1382,7 +1382,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 5.0, 154.0, 459.0, 590.0 ],
+                    "patching_rect": [ 4.0, 152.0, 459.0, 590.0 ],
                     "textfile": {
                         "filename": "zen_tracker_seq_ui_E.js",
                         "flags": 0,
@@ -1395,8 +1395,9 @@
         "lines": [
             {
                 "patchline": {
+                    "color": [ 0.03137254901960784, 0.6078431372549019, 0.9411764705882353, 1.0 ],
                     "destination": [ "obj-2", 0 ],
-                    "midpoints": [ 454.5, 752.0, 480.0, 752.0, 480.0, 149.0, 504.5, 149.0 ],
+                    "midpoints": [ 453.5, 752.0, 480.0, 752.0, 480.0, 149.0, 504.5, 149.0 ],
                     "source": [ "obj-1", 1 ]
                 }
             },
@@ -1466,7 +1467,17 @@
             },
             {
                 "patchline": {
+                    "color": [ 1.0, 0.0, 0.0, 1.0 ],
+                    "destination": [ "obj-1", 0 ],
+                    "midpoints": [ 691.435546875, 606.0, 472.0, 606.0, 472.0, 138.0, 15.0, 138.0, 15.0, 150.0, 13.5, 150.0 ],
+                    "order": 1,
+                    "source": [ "obj-2", 1 ]
+                }
+            },
+            {
+                "patchline": {
                     "destination": [ "obj-23", 0 ],
+                    "order": 0,
                     "source": [ "obj-2", 1 ]
                 }
             },

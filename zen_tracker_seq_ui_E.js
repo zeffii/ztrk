@@ -323,6 +323,10 @@ function command(instruction) {
     }
 }
 
+function handle_pattern_from_tracker(payload){
+    post('handle_pattern_from_tracker');
+};
+
 //  I O 
 
 function dictionary(dictName) {
@@ -334,7 +338,7 @@ function dictionary(dictName) {
     // remember to remove this object key before storing it.
     if ("edit_request" in data) {
         post(`sequencer: received puid ${data.payload.puid} for injection`)
-        //  this.handle_pattern_from_tracker(payload);
+        this.handle_pattern_from_tracker(data.payload);
         return;
     }
 
