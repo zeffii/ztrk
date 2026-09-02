@@ -1265,8 +1265,7 @@ class Tracker  {
             this.pattern_input_handler(USER_KEY, this.#caret, this.pattern_markup, this.faux_pattern);
 
             // we can restrict this to redraw iff there are updates, but for now this is convenient.
-            // this.gfx_refresh_and_write_buffers_and_dispatch({send_back: false, write_buffers: false}); // just refresh.
-            this.mgraphics.redraw();
+            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: false, write_buffers: false}); // just refresh.
         }
     }
 
