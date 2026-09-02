@@ -1095,9 +1095,6 @@ class Tracker  {
 
     key_handler(){
 
-        var mutates_pattern_state = false;   // some handlers already do their own updates, but 
-                                             // for others i want to explicitely track this. should change eventually.
-
         if (!this.faux_pattern){
             return;
         }
@@ -1200,7 +1197,6 @@ class Tracker  {
                     post('starting selection mode\n');
                     this.#started_selection_mode = true;
                 }
-                mutates_pattern_state = false;
 
             } else if (found_in([PAGE_UP, PAGE_DOWN], USER_KEY)){
 
@@ -1214,15 +1210,11 @@ class Tracker  {
             } else {
                 this.#started_selection_mode = false;
                 this.#anchor = null;
-                mutates_pattern_state = false;
             }
 
             if (direction_input){
 
-                mutates_pattern_state = false;
-
                 if (found_in([CTRL, CTRL_SHIFT], SELECTOR)){
-
 
                     var param_starts = find_idx_after_space(this.pattern_markup.lexical_track);
                     var [left_distance, right_distance] = [-1, 1];
