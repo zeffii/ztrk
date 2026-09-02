@@ -723,6 +723,7 @@ class Tracker  {
 
     handle_2hex_input(key, caret, desciptor, pattern){
         // 4hex version of this was written after 2hex, use 4hex as inspiration if you plan to rewrite this function.
+        var mutates = false;
         var hex_deletes = [46, 127];
         const two_hex_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bh{2}\b/g);  // hh
         const two_hex_index_pairs = [];
@@ -753,6 +754,7 @@ class Tracker  {
                     }
                     pattern[caret_row] = replaceAt(pattern[caret_row], caret.col, replacement_hex, 2);
                     this.push_to_buffers();
+                    mutates = true;
                 }
                 else if (caret.col === higher_index){
                     if (pattern[caret_row][lower_index] === '.'){
@@ -763,17 +765,21 @@ class Tracker  {
                     replacement_hex += charfound;
                     pattern[caret_row] = replaceAt(pattern[caret_row], caret.col-1, replacement_hex, 2);
                     this.push_to_buffers();
+                    mutates = true;
                 }
             } else if (found_in(hex_deletes, key)) {
                 pattern[caret_row] = replaceAt(pattern[caret_row], lower_index, '..', 2);
                 this.push_to_buffers();
+                mutates = true;
             }
         }
+        return mutates;
     }
 
 
     handle_trigger_input(key, caret, desciptor, pattern){
 
+        var mutates = false;
         const trigger_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bb{1}\b/g);  // b
         if (found_in(trigger_indices, caret.col)){
             var keybangs = {49: "1", 46: ".", 127: "."};
@@ -786,13 +792,16 @@ class Tracker  {
 
                 pattern[shifted_row] = replaceAt(current_rowB, caret.col, key_infoB, 1);
                 this.push_to_buffers();
+                mutates = true;
             }
         }
+        return mutates;
     }
 
 
     handle_ffxxyy_input(key, caret, desciptor, pattern, param_at_position){
 
+        var mutates = false;
         var hex_deletes = [46, 127];
         var p = param_at_position;
 
@@ -826,9 +835,11 @@ class Tracker  {
                 proposed_param_data = proposed_param_data.replace(/\./g, "0");
                 pattern[caret_row] = replaceAt(pattern[caret_row], index_0, proposed_param_data, 2);
                 this.push_to_buffers();
+                mutates = true;
             } else if (found_in(hex_deletes, key)) {
                 pattern[caret_row] = replaceAt(pattern[caret_row], index_0, '..', 2);
                 this.push_to_buffers();
+                mutates = true;
             }
 
         } else if (found_in([2, 3, 4, 5], p.indexInParam)){
@@ -840,16 +851,20 @@ class Tracker  {
                 proposed_param_data = proposed_param_data.replace(/\./g, "0");
                 pattern[caret_row] = replaceAt(pattern[caret_row], index_0, proposed_param_data, 4);
                 this.push_to_buffers();
+                mutates = true;
             } else if (found_in(hex_deletes, key)) {
                 pattern[caret_row] = replaceAt(pattern[caret_row], index_0, '....', 4);
                 this.push_to_buffers();
+                mutates = true;
             }
         }
+        return mutates;
     }
 
 
     handle_4hex_input(key, caret, desciptor, pattern, param_at_position){
 
+        var mutates = false;
         var hex_deletes = [46, 127];
         const four_hex_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bh{4}\b/g);  // hhhh
         const four_hex_index_pairs = [];
@@ -878,11 +893,14 @@ class Tracker  {
                 proposed_param_data = proposed_param_data.replace(/\./g, "0");
                 pattern[caret_row] = replaceAt(pattern[caret_row], index_0, proposed_param_data, 4);
                 this.push_to_buffers();
+                mutates = true;
             } else if (found_in(hex_deletes, key)) {
                 pattern[caret_row] = replaceAt(pattern[caret_row], index_0, '....', 4);
                 this.push_to_buffers();
+                mutates = true;
             }
         }
+        return mutates;
     };
 
 
@@ -896,6 +914,7 @@ class Tracker  {
 
         */
 
+        var mutates = false;
         const NoteClearList = {46: "...", 127: "...", 96: "^^^", 49: "==="};
 
         function non_note_cursor_input(this_origin, key, caret, pattern, caret_row, position){
@@ -903,6 +922,7 @@ class Tracker  {
             const current_row = pattern[caret_row];
             pattern[caret_row] = replaceAt(current_row, caret.col + position, NoteReplacement, 3);
             this_origin.push_to_buffers();
+            mutates = true;
             // this.send(0, ['noteflush', 0]);   having key control over flush would be useful. implement a direct kb for this.
         }
 
@@ -958,14 +978,10 @@ class Tracker  {
                     const note = String(key_info[0]) + String(key_info[1] + this.#g_pattern_octave);
                     pattern[caret_row] = replaceAt(current_row, caret.col, note, 3);
                     this.push_to_buffers();
+                    mutates = true;
                     this.send(0, ['noteplay', note_to_int(note) ,50, 50]);
 
                 } else if (key in NoteClearList){
-
-                    // const NoteReplacement = NoteClearList[key];
-                    // const current_row1 = pattern[caret_row];
-                    // pattern[caret_row] = replaceAt(current_row1, caret.col, NoteReplacement, 3);
-                    // this.push_to_buffers();
                     non_note_cursor_input(this, key, caret, pattern, caret_row, 0);
                 }
             }
@@ -986,6 +1002,7 @@ class Tracker  {
                     const replacement_character = found_character === "-" ? "#" : "-";
                     pattern[caret_row2] = replaceAt(current_row2, caret.col, replacement_character, 1);
                     this.push_to_buffers();
+                    mutates = true;
 
                 } else if (key in NoteClearList){
                     // we are at the second index of a note field, means the rewrite will start 
@@ -1013,7 +1030,8 @@ class Tracker  {
                     if (/^[0-9]$/.test(found_character)) { // it's an octave
                         const replacement_character = octave_map[key];
                         pattern[caret_row3] = replaceAt(current_row3, caret.col, replacement_character, 1);
-                        this.push_to_buffers();                       
+                        this.push_to_buffers();
+                        mutates = true;
                     }
 
                 } else if (key in NoteClearList){
@@ -1025,33 +1043,29 @@ class Tracker  {
             }
 
         }
-
+        return mutates;
     }
 
 
     pattern_input_handler(key, caret, desciptor, pattern){
 
+        var mutates = false;
         const param_at_position = getParameterTypeAtPosition(desciptor.lexical_track, caret.col);
         if (param_at_position == null){
             return;  // in space column
         }
 
         switch (param_at_position.type) {
-          case 'nnn':
-            this.handle_note_input(key, caret, desciptor, pattern); break;
-          case 'hh':
-            this.handle_2hex_input(key, caret, desciptor, pattern); break;
-          case 'b':
-            this.handle_trigger_input(key, caret, desciptor, pattern); break;
-          case 'hhhh':
-            this.handle_4hex_input(key, caret, desciptor, pattern, param_at_position); break;
-          case 'ffxxyy':
-            this.handle_ffxxyy_input(key, caret, desciptor, pattern, param_at_position); break;
-          default:
-            return;
+            case 'nnn': { mutates = this.handle_note_input(key, caret, desciptor, pattern); break; }
+            case 'hh': {  mutates = this.handle_2hex_input(key, caret, desciptor, pattern); break; }
+            case 'b': {   mutates = this.handle_trigger_input(key, caret, desciptor, pattern); break; }
+            case 'hhhh': { mutates = this.handle_4hex_input(key, caret, desciptor, pattern, param_at_position); break; }
+            case 'ffxxyy': { mutates = this.handle_ffxxyy_input(key, caret, desciptor, pattern, param_at_position); break; }
+            default:
+                return;
         }
         // already refreshed at this point.
-        this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: false, origin: "pattern_input_handler"});
+        this.gfx_refresh_and_write_buffers_and_dispatch({send_back: mutates, write_buffers: false, origin: "pattern_input_handler"});
     }
 
     find_cell_under_cursor(x, y){
