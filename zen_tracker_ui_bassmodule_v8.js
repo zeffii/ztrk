@@ -939,7 +939,7 @@ class Tracker  {
 
             var notefield_indices_found = findSublistContaining(caret.col, note_index_pairs);
             if (notefield_indices_found === null){
-                return;  // caret is not in a notefield
+                return false;  // caret is not in a notefield
             }
 
             // only allow full note input on first element of note field
