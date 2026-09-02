@@ -195,7 +195,7 @@ class Tracker  {
         this.faux_pattern = this.pattern_markup.data;
         // this.mgraphics.redraw();
         // this.write_buffers(this);
-        this.gfx_refresh_and_write_buffers_and_dispatch({send_back: false})
+        this.gfx_refresh_and_write_buffers_and_dispatch({send_back: false, origin: "dictionary function"})
     }
 
     gfx_refresh_and_write_buffers_and_dispatch(command){
@@ -204,7 +204,11 @@ class Tracker  {
             this.write_buffers(this);
         }
         if (command.send_back) {
-            post(" send back to sequencer with update.");
+            if ('origin' in command){
+                post(`send back to sequencer with update. from: ${command.origin}`);
+            } else {
+                post("send back to sequencer with update. ---untracked");
+            }
             var outputDict = new Dict('pattern_markup_dict');
             outputDict.parse(JSON.stringify(this.pattern_markup));
             this.send(1, "dictionary", outputDict.name);  // only patterns received from sequencer will contain a puid.
@@ -232,7 +236,7 @@ class Tracker  {
 
         // this.mgraphics.redraw();
         // this.write_buffers(this);
-        this.gfx_refresh_and_write_buffers_and_dispatch({send_back: false})
+        this.gfx_refresh_and_write_buffers_and_dispatch({send_back: false, origin: "handle_received_pattern function"})
     }
 
     /*  ------- Local Util Functions ------------- */
@@ -1046,7 +1050,8 @@ class Tracker  {
           default:
             return;
         }
-        this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: false}); // already refreshed at this point.
+        // already refreshed at this point.
+        this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: false, origin: "pattern_input_handler"});
     }
 
     find_cell_under_cursor(x, y){
@@ -1265,7 +1270,7 @@ class Tracker  {
             this.pattern_input_handler(USER_KEY, this.#caret, this.pattern_markup, this.faux_pattern);
 
             // we can restrict this to redraw iff there are updates, but for now this is convenient.
-            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: false, write_buffers: false}); // just refresh.
+            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: false, write_buffers: false, origin: "end of key_handler"}); // just refresh.
         }
     }
 
