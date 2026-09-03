@@ -297,7 +297,7 @@ function send_pattern_to_tracker(){
         puid: pattern.puid,
         length: pattern.length,
         descriptors: {track: sequencer_config.machines[machine_name]},
-        data: pattern.data, // [],
+        data: pattern.data, // [],  <------ must actually be data.
         lexical_track: ""
     };
 
