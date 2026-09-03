@@ -80,6 +80,13 @@ And perhaps a shorter checklist:
 
 That's a particularly useful debugging principle: **prove the signal path before debugging the signal processing.**
 
+### gen~ gotchas.
+
+According to toneparticle (not sure exactly how to word this)
+`delta` and `latch` are stateful operators and cant be used in a for loop, because memory cant be preallocated to them in such a loop?
+max will never dynamically allocate memory in the audioprocess. (risk audio dropout and crashes)
+https://cycling74.com/forums/call-phasor-in-loop#reply-60633f1a5737e10b7812f26c
+
 ## v8ui
 
 This applies to the v8 and js objects in general, you define the number of inlets and outlets manually at the top
