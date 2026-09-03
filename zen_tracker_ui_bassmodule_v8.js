@@ -221,8 +221,18 @@ class Tracker  {
     handle_received_pattern(payload){
 
         this.pattern_markup = payload;
-        this.faux_pattern = this.make_empty_pattern(payload);  // at the moment this assumes empty patterns coming in.
-        this.pattern_markup.data = this.faux_pattern;
+
+        this.faux_pattern = this.make_empty_pattern(payload);
+        this.pattern_markup.data = this.faux_pattern;        
+
+        // if (payload.data.length === 0){
+        //     this.faux_pattern = this.make_empty_pattern(payload);
+        //     this.pattern_markup.data = this.faux_pattern;
+        // } else {
+        //     this.faux_pattern = payload.data;
+        //     this.pattern_markup.data = payload.data;
+        // }
+
         this.cols = this.pattern_markup.lexical_track.length;
         this.rows = this.pattern_markup.length;
         this.update_v8_boxsize(this.cols, null);
