@@ -13,102 +13,6 @@
         "boxes": [
             {
                 "box": {
-                    "id": "obj-4",
-                    "maxclass": "newobj",
-                    "numinlets": 1,
-                    "numoutlets": 1,
-                    "outlettype": [ "signal" ],
-                    "patching_rect": [ 1137.0, 88.0, 39.0, 22.0 ],
-                    "text": "click~"
-                }
-            },
-            {
-                "box": {
-                    "id": "obj-3",
-                    "maxclass": "newobj",
-                    "numinlets": 2,
-                    "numoutlets": 1,
-                    "outlettype": [ "float" ],
-                    "patcher": {
-                        "fileversion": 1,
-                        "appversion": {
-                            "major": 9,
-                            "minor": 1,
-                            "revision": 5,
-                            "architecture": "x64",
-                            "modernui": 1
-                        },
-                        "classnamespace": "dsp.gen",
-                        "rect": [ 59.0, 107.0, 1129.0, 676.0 ],
-                        "boxes": [
-                            {
-                                "box": {
-                                    "code": "// KickXP core voice — gen~ codebox\r\n// signal in: trig (1 for one sample on note-on, 0 otherwise)\r\n// params below are all continuous, real-world units — do the\r\n// byte-range/pow-curve mapping to these in the Max patch outside gen~\r\n\r\nParam startfreq(60);      // Hz\r\nParam endfreq(45);        // Hz\r\nParam tdecay(0.0025);     // pitch sweep rate, 1/samples-ish, tune by ear\r\nParam tshape(0.5);        // 0..1, sweep curve shape\r\nParam dtime(0.08);        // seconds, decay stage length\r\nParam dslope(0.002);      // amp decrease per sample during decay\r\nParam rslope(0.0006);     // amp decrease per sample during release\r\nParam buzzamt(0.3);       // 0..1\r\nParam bdecay(0.15);       // 0..1, buzz decay rate\r\n\r\nHistory envphase(0);\r\nHistory amp(0);\r\nHistory decamp(0);\r\nHistory xsin(0);\r\nHistory xcos(1);\r\nHistory bamp(0);\r\nHistory mulbamp(1);\r\nHistory freqhold(60);     // frequency held across the 32-sample chunk (see note below)\r\nHistory chunkcount(0);\r\n\r\nHistory this_startfreq(60);\r\nHistory this_endfreq(45);\r\nHistory this_tdecay(0.0025);\r\nHistory this_tshape(0.5);\r\nHistory this_dtime_samps(3528);\r\nHistory this_dslope(0.002);\r\nHistory this_rslope(0.0006);\r\nHistory this_bdecay(0.15);\r\n\r\nsr = samplerate;\r\nChunk = 32; // original re-derives frequency/dx every 32 samples rather\r\n            // than every sample — a deliberate optimization in the\r\n            // original that also gives the pitch chirp a very faint\r\n            // \"stepped\" quality. Keeping it here for authenticity;\r\n            // set Chunk = 1 for a perfectly smooth sweep instead.\r\n\r\n// --- trigger: latch params, reset envelope state ---\r\ntrig = in1;\r\n\r\nif (trig > 0.5) {\r\n\tthis_startfreq = startfreq;\r\n\tthis_endfreq = endfreq;\r\n\tthis_tdecay = tdecay;\r\n\tthis_tshape = tshape;\r\n\tthis_dtime_samps = dtime * sr;\r\n\tthis_dslope = dslope;\r\n\tthis_rslope = rslope;\r\n\tthis_bdecay = bdecay;\r\n\r\n\tenvphase = 0;\r\n\tamp = 1;\r\n\tbamp = buzzamt;\r\n\tmulbamp = pow(1.0/256.0, this_bdecay * (10.0/sr));\r\n\txsin = 0;\r\n\txcos = 1;\r\n\tchunkcount = 0;\r\n}\r\n\r\n// --- pitch envelope + oscillator increment, recomputed every Chunk samples ---\r\nif (chunkcount <= 0) {\r\n\tchunkcount = Chunk;\r\n\r\n\tratio = this_endfreq / this_startfreq;\r\n\tenvpoint = envphase * this_tdecay;\r\n\tshaped = pow(clip(envpoint, 0, 1), this_tshape * 2.0);\r\n\tfreq = this_startfreq * pow(ratio, shaped);\r\n\tfreq = min(freq, 10000);\r\n\tfreqhold = freq;\r\n}\r\n\r\ndxsin = sin(2*3.14159265*freqhold/sr);\r\ndxcos = cos(2*3.14159265*freqhold/sr);\r\n\r\n// --- amplitude envelope: linear decay, then linear release ---\r\ndecamp = (envphase < this_dtime_samps) ? this_dslope : this_rslope;\r\namp = max(amp - decamp, 0);\r\n\r\n// --- rotate oscillator one step (avoids a sin/cos call per sample) ---\r\nxsin2 = xsin*dxcos + xcos*dxsin;\r\nxcos2 = xcos*dxcos - xsin*dxsin;\r\nxsin = xsin2;\r\nxcos = xcos2;\r\n\r\n// --- buzz: 2nd-harmonic-ish term, its own exponential decay ---\r\nbamp = bamp * mulbamp;\r\nbuzzterm = (xsin > 0) ? (amp * bamp * xsin * xcos) : 0;\r\n\r\nout1 = amp * xsin - buzzterm;\r\n\r\nenvphase = envphase + 1;\r\nchunkcount = chunkcount - 1;",
-                                    "fontface": 0,
-                                    "fontname": "<Monospaced>",
-                                    "fontsize": 12.0,
-                                    "id": "obj-5",
-                                    "maxclass": "codebox",
-                                    "numinlets": 1,
-                                    "numoutlets": 1,
-                                    "outlettype": [ "" ],
-                                    "patching_rect": [ 363.0, 43.0, 663.0, 524.0 ]
-                                }
-                            },
-                            {
-                                "box": {
-                                    "id": "obj-1",
-                                    "maxclass": "newobj",
-                                    "numinlets": 0,
-                                    "numoutlets": 1,
-                                    "outlettype": [ "" ],
-                                    "patching_rect": [ 50.0, 14.0, 28.0, 22.0 ],
-                                    "text": "in 1"
-                                }
-                            },
-                            {
-                                "box": {
-                                    "id": "obj-2",
-                                    "maxclass": "newobj",
-                                    "numinlets": 0,
-                                    "numoutlets": 1,
-                                    "outlettype": [ "" ],
-                                    "patching_rect": [ 305.0, 14.0, 28.0, 22.0 ],
-                                    "text": "in 2"
-                                }
-                            },
-                            {
-                                "box": {
-                                    "id": "obj-4",
-                                    "maxclass": "newobj",
-                                    "numinlets": 1,
-                                    "numoutlets": 0,
-                                    "patching_rect": [ 176.0, 418.0, 35.0, 22.0 ],
-                                    "text": "out 1"
-                                }
-                            }
-                        ],
-                        "lines": [
-                            {
-                                "patchline": {
-                                    "destination": [ "obj-5", 0 ],
-                                    "source": [ "obj-1", 0 ]
-                                }
-                            },
-                            {
-                                "patchline": {
-                                    "destination": [ "obj-4", 0 ],
-                                    "source": [ "obj-5", 0 ]
-                                }
-                            }
-                        ]
-                    },
-                    "patching_rect": [ 1282.0, 187.0, 29.5, 22.0 ],
-                    "text": "gen"
-                }
-            },
-            {
-                "box": {
                     "id": "obj-23",
                     "maxclass": "dict.view",
                     "numinlets": 1,
@@ -252,7 +156,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "110",
+                                    "text": "13",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -341,7 +245,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "45",
+                                    "text": "36",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -386,7 +290,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 110 45 0 110",
+                                    "text": "keys 13 36 0 -4",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -1020,7 +924,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 330.0, 325.0, 56.0, 25.0 ],
-                                    "text": "110",
+                                    "text": "13",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -1098,7 +1002,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 187.0, 154.0, 22.0 ],
-                                    "text": "45",
+                                    "text": "36",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -1132,7 +1036,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 373.0, 154.0, 22.0 ],
-                                    "text": "keys 110 45 0 110",
+                                    "text": "keys 13 36 0 -4",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -1478,7 +1382,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 4.0, 152.0, 459.0, 590.0 ],
+                    "patching_rect": [ 3.0, 151.0, 459.0, 590.0 ],
                     "textfile": {
                         "filename": "zen_tracker_seq_ui_E.js",
                         "flags": 0,
@@ -1493,7 +1397,7 @@
                 "patchline": {
                     "color": [ 0.03137254901960784, 0.6078431372549019, 0.9411764705882353, 1.0 ],
                     "destination": [ "obj-2", 0 ],
-                    "midpoints": [ 453.5, 752.0, 480.0, 752.0, 480.0, 149.0, 504.5, 149.0 ],
+                    "midpoints": [ 452.5, 752.0, 480.0, 752.0, 480.0, 149.0, 504.5, 149.0 ],
                     "source": [ "obj-1", 1 ]
                 }
             },
@@ -1565,7 +1469,7 @@
                 "patchline": {
                     "color": [ 1.0, 0.0, 0.0, 1.0 ],
                     "destination": [ "obj-1", 0 ],
-                    "midpoints": [ 757.5, 606.0, 472.0, 606.0, 472.0, 138.0, 15.0, 138.0, 15.0, 150.0, 13.5, 150.0 ],
+                    "midpoints": [ 757.5, 606.0, 472.0, 606.0, 472.0, 138.0, 15.0, 138.0, 15.0, 150.0, 12.5, 150.0 ],
                     "order": 1,
                     "source": [ "obj-2", 1 ]
                 }

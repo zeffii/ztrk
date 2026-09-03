@@ -96,6 +96,14 @@ class Tracker  {
         this.update_v8_boxsize(this.cols, this.rows);
 
     }
+    make_lexical_track_from_descriptors(descriptors){
+        var param_track = [];
+        for (var i=0; i < Object.keys(descriptors.track).length; i++){
+            param_track.push(descriptors.track[i][0]);
+        }
+        var lexical_track = param_track.join(' ');
+        return lexical_track;
+    }
 
     make_empty_pattern(markup){
 
@@ -110,6 +118,7 @@ class Tracker  {
         ggg    = signed (-20 .. +20)  NOT IMPLEMENTED
         */
 
+        // [ ]   make lexical_track function  ( lexical_track_from_descriptors )
         var pattern = [];
         var param_track = [];
         for (var i=0; i < Object.keys(markup.descriptors.track).length; i++){
@@ -222,16 +231,17 @@ class Tracker  {
 
         this.pattern_markup = payload;
 
-        this.faux_pattern = this.make_empty_pattern(payload);
-        this.pattern_markup.data = this.faux_pattern;        
+        //this.faux_pattern = this.make_empty_pattern(payload);
+        //this.pattern_markup.data = this.faux_pattern;        
 
-        // if (payload.data.length === 0){
-        //     this.faux_pattern = this.make_empty_pattern(payload);
-        //     this.pattern_markup.data = this.faux_pattern;
-        // } else {
-        //     this.faux_pattern = payload.data;
-        //     this.pattern_markup.data = payload.data;
-        // }
+        if (payload.data.length === 0){
+            this.faux_pattern = this.make_empty_pattern(payload);
+            this.pattern_markup.data = this.faux_pattern;
+        } else {
+            this.faux_pattern = payload.data;
+            this.pattern_markup.data = payload.data;
+            this.pattern_markup.lexical_track = this.make_lexical_track_from_descriptors(payload.descriptors);
+        }
 
         this.cols = this.pattern_markup.lexical_track.length;
         this.rows = this.pattern_markup.length;

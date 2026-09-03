@@ -291,13 +291,17 @@ function send_pattern_to_tracker(){
         return;
     }
     var pattern = sequencer_config.tracks[trk].patterns[found_idx];
+
+    var pattern_ref = getMachineAndPIndexByPUID(pattern.puid);
+    var pdata = sequencer_config.patterns[pattern_ref.track].patterns[pattern_ref.pindex].data;
+
     var machine_name = sequencer_config.tracks[trk].machine;
     var pattern_exchange_markup = {
         editing_puid: 1,
         puid: pattern.puid,
         length: pattern.length,
         descriptors: {track: sequencer_config.machines[machine_name]},
-        data: pattern.data, // [],  <------ must actually be data.
+        data: pdata,
         lexical_track: ""
     };
 
