@@ -6,11 +6,12 @@ what remains after fear, is my true form.
 special thanks to:
 - federico foderaro (jsui / v8ui)
 - Philip Meyer ( signal based sequencing )
-- axers fall (gen)
+- axers fall (gen, codebox)
 - Wellenfront Max Lab (mc)
 - starakajian
 - Andrew Robinson
 - matt wright
+- toneparticle (gen, codebox)
 - claud, grok, chatgpt, qwen.
 
 without these folks, this tracker would have taken much longer to make.
@@ -21,16 +22,8 @@ include("ztrk_pattern_utils.js");
 class Tracker  {
 
     /*
-
-        Some of this is clunky, and will remain so until i'm able to trigger sample accurately.
-        once that works, then i'll go mental :) trust me.
-
-        Since the data-structure + editing are distinct and seperable from the way the data are read,
-        i'm OK with a clunky back-end to reach a point where sound can be triggered and arguments applied.
         See it is a minimal viable product. Getting sound and other cool stuff out of this will encourage me
         to revisit this backend, if, upon reflection, it can be done in a less head-wrecking manner :)
-
-
     */
 
     #AbletonMode = true;
