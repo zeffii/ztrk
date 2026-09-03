@@ -155,6 +155,16 @@ function getPattrByPUID(track, puid){
     return null;
 }
 
+function getMachineAndPIndexByPUID(puid){
+    for (const [midx, machine_storage] of sequencer_config.patterns.entries()){
+        for (const [idx, pattern] of machine_storage.patterns.entries()) {
+            if (pattern.puid === puid)
+                return {track: midx, pindex: idx};
+        }
+    }
+    return null;
+}
+
 function add_pattern(machine_trk, start, puid){
     var pattern = getPattrByPUID(sequencer_config.patterns[machine_trk], puid);
     if (pattern === null) { 
@@ -325,6 +335,18 @@ function command(instruction) {
 
 function handle_pattern_from_tracker(payload){
     post('handle_pattern_from_tracker');
+    /*
+    maybe the payload should include the track it came from, but puid already locks that, so puid lookup suffices
+    this should be more streamlined.
+    */
+    // post('OK? ', payload.puid);
+    var pattern_ref = getMachineAndPIndexByPUID(payload.puid);
+    var A = sequencer_config.patterns[pattern_ref.track].patterns[pattern_ref.pindex].data;
+    var B = payload.data;
+    post(A, '/////', B);
+    sequencer_config.patterns[pattern_ref.track].patterns[pattern_ref.pindex].data = payload.data;
+    // post('roundtrip success!?');
+    return;
 };
 
 //  I O 
@@ -337,6 +359,7 @@ function dictionary(dictName) {
 
     // remember to remove this object key before storing it.
     if ("edit_request" in data) {
+        // [ ] add another check to see if puid is present, else ignore.
         post(`sequencer: received puid ${data.payload.puid} for injection`)
         this.handle_pattern_from_tracker(data.payload);
         return;
