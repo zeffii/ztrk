@@ -36,7 +36,13 @@ Some milestones i will need to tackle, in no particular order
 - [x] basic kb controller envelope editor
 - [x] basic waveform viewer, selector
 - [x] basic first synth mk2
+- [x] link sequencer to pattern editor (back and forth)
 - [ ] sequencing patterns
+- [ ] implement machine types (preliminary version),
+- [ ] implement a subset of utrk (yes, that utrk!)
+
+Some refinements needed here:
+
 - [ ] keyrepeats, need a tidier solution (has been through several iteration, not satisfying yet)
 
 
