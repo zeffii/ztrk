@@ -345,9 +345,9 @@ function encode_cell_to_float(celld){
     else {
         if (celld.length === 3){
             if (celld.includes('^')){
-                new_cell_value = -0.8; }
+                new_cell_value = -0.75; }
             else if (celld.includes('=')){
-                new_cell_value = -0.6; } 
+                new_cell_value = -0.5; } 
             else { 
                 new_cell_value = encodeMidi(note_to_int(celld)); 
             }

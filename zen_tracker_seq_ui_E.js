@@ -134,7 +134,7 @@ const set_rgb = (c, d /*color, dimming*/) => { mgraphics.set_source_rgba(c.r / d
 
 const kind_from_column = (col) => sequencer_config.tracks[col].kind;
 const tick_from_row = (row) => row * 16;
-const found_in = (list, value) => (list.indexOf(value) !== -1);
+// const found_in = (list, value) => (list.indexOf(value) !== -1);   (defined in pattern_utils)
 
 // - multi line utils
 
@@ -349,10 +349,29 @@ function handle_pattern_from_tracker(payload){
     post('handle_pattern_from_tracker');
     /*
     maybe the payload should include the track it came from, but puid already locks that, so puid lookup suffices
-    this should be more streamlined.
+    this should be more streamlined.  For the time being this may not handle overlapping patterns very well.
     */
+    // [x]  first update the pattern data.
     var pattern_ref = getMachineAndPIndexByPUID(payload.puid);
     sequencer_config.patterns[pattern_ref.track].patterns[pattern_ref.pindex].data = payload.data;
+
+    // [x]  translate this pattern data into data that can be written to buffers.
+    var array2d = track_data_to_2d_array(payload.data);
+
+    // [ ]  overwrite one or more regions of the buffer with the data associated with the updated pattern.
+    // 1. find the occurances of this pattern in << sequencer_config.patterns[pattern_ref.track].patterns >>
+    //    find their starts, and lengths  -
+    //           lengths are calculated either by length or 
+    //           by distance to next pattern in sequence  (whichever is shorter)
+    //    {start: start, num_ticks: num_ticks, data: data}
+    //    this means we can send the same data multiple times, but the buffer writing function will truncate
+    //    the write operation in those parts of the sequence where the pattern is interupted by another pattern before
+    //    its natural end.
+    // for (const[pidx, construct] of datapaste.entries()){}
+    //    write_track_buffer(pattern_ref.track, construct.start, construct.num_ticks, data);
+    // }
+    //
+
 
     return;
 };
