@@ -110,8 +110,6 @@ function sequencer_init(){
     return init_track_buffers(patcher, num_tracks);
 }
 
-sequencer_init();
-
 // - simulate adding data at runtime.
 add_pattern(0, 0,   uid_01);
 add_pattern(0, 128, uid_04);
@@ -910,6 +908,8 @@ function draw_songname(gfx, h){
     gfx.show_text(`${g_song_name} @ ${abbreviated_folder_structure}`);
 }
 
+sequencer_init();
+
 function paint(){
 
     // --- constants ---
@@ -1043,6 +1043,11 @@ function get_environment(){
 // what's missing, and returns Buffer() handles keyed by track index.
 
 function init_track_buffers(patcher, num_tracks) {
+    /*
+    Initializer for the buffer-holding subpatcher: ensures one buffer~
+    per track exists with the correct sr/size/chans, creating only
+    what's missing, and returns Buffer() handles keyed by track index.
+    */
     opts = {};
     var sr      = opts.sr      || 1000;   // nominal declared sample rate (not audio driver sr)
     var nsamps  = opts.nsamps  || 2048;   // buffer length in samples (ticks)
@@ -1059,7 +1064,7 @@ function init_track_buffers(patcher, num_tracks) {
         var box = patcher.getnamed(buf_name); // matches on varname, see note below
 
         if (!box) {
-            box = patcher.newobject("buffer~", buf_name, x, y + (i * y_step), 120, 20);
+            box = patcher.newdefault(x, y + (i * y_step), "buffer~", buf_name);
             box.varname = buf_name; // required so future getnamed(buf_name) calls find it
         }
 
