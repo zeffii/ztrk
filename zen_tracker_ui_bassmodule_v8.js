@@ -96,6 +96,7 @@ class Tracker  {
         this.update_v8_boxsize(this.cols, this.rows);
 
     }
+
     make_lexical_track_from_descriptors(descriptors){
         var param_track = [];
         for (var i=0; i < Object.keys(descriptors.track).length; i++){
@@ -118,17 +119,20 @@ class Tracker  {
         ggg    = signed (-20 .. +20)  NOT IMPLEMENTED
         */
 
+        // OLD
         // [ ]   make lexical_track function  ( lexical_track_from_descriptors )
-        var pattern = [];
-        var param_track = [];
-        for (var i=0; i < Object.keys(markup.descriptors.track).length; i++){
-            param_track.push(markup.descriptors.track[i][0]);
-        }
-
-        var lexical_descriptor = param_track.join(' ');
-        markup.lexical_track = lexical_descriptor;
-        const empty_row = lexical_descriptor.replace(/\S/g, ".");
+        // var param_track = [];
+        // for (var i=0; i < Object.keys(markup.descriptors.track).length; i++){
+        //     param_track.push(markup.descriptors.track[i][0]);
+        // }
+        // var lexical_descriptor = param_track.join(' ');
+        // markup.lexical_track = lexical_descriptor;
         
+        // NEW
+        markup.lexical_track = this.make_lexical_track_from_descriptors(markup.descriptors);
+        const empty_row = markup.lexical_track.replace(/\S/g, ".");
+        
+        var pattern = [];
         for (var i = 0; i < markup.length; i++) {
             pattern.push(empty_row);
         }
