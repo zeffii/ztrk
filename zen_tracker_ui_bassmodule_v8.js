@@ -119,16 +119,6 @@ class Tracker  {
         ggg    = signed (-20 .. +20)  NOT IMPLEMENTED
         */
 
-        // OLD
-        // [ ]   make lexical_track function  ( lexical_track_from_descriptors )
-        // var param_track = [];
-        // for (var i=0; i < Object.keys(markup.descriptors.track).length; i++){
-        //     param_track.push(markup.descriptors.track[i][0]);
-        // }
-        // var lexical_descriptor = param_track.join(' ');
-        // markup.lexical_track = lexical_descriptor;
-        
-        // NEW
         markup.lexical_track = this.make_lexical_track_from_descriptors(markup.descriptors);
         const empty_row = markup.lexical_track.replace(/\S/g, ".");
         
