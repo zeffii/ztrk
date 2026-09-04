@@ -210,6 +210,131 @@ If a Gen <code>inlet</code> appears to be ignoring a signal, temporarily replace
 <li>Only <strong>then</strong> start debugging <code>History</code>, <code>if</code>, counters, etc.</li>
 </ul>
 <p>That's a particularly useful debugging principle: <strong>prove the signal path before debugging the signal processing.</strong></p>
+<h3 id="gen-gotchas">gen~ gotchas.</h3>
+<p>According to toneparticle (not sure exactly how to word this)
+<code>delta</code> and <code>latch</code> are stateful operators and cant be used in a for loop, because memory cant be preallocated to them in such a loop?
+max will never dynamically allocate memory in the audioprocess. (risk audio dropout and crashes)
+<a href="https://cycling74.com/forums/call-phasor-in-loop#reply-60633f1a5737e10b7812f26c">https://cycling74.com/forums/call-phasor-in-loop#reply-60633f1a5737e10b7812f26c</a></p>
+<h2 id="js-patcher-scripting">js (Patcher scripting)</h2>
+<p><a href="#js-patcher-scripting">#js-patcher-scripting</a></p>
+<blockquote>
+<p>Scripting patchers/subpatchers from <code>js</code>/<code>v8</code> — creating boxes, buffers, and sub-patchers programmatically. This is its own object model, separate from writing DSP-side <code>v8ui</code>/<code>gen~</code> code.</p>
+</blockquote>
+<h3 id="object-model-maxobj-vs-patcher-vs-wind">Object model: Maxobj vs Patcher vs Wind</h3>
+<p><a href="#object-model-maxobj-vs-patcher-vs-wind">#object-model-maxobj-vs-patcher-vs-wind</a></p>
+<p>There are three different objects in play, and it's easy to confuse them:</p>
+<ul>
+<li><strong><code>Maxobj</code></strong> — what <code>patcher.newobject(...)</code> / <code>patcher.newdefault(...)</code> returns. This is a <em>box</em> in a patcher (e.g. a <code>buffer~</code>, a <code>p</code> box). It does <strong>not</strong> have a <code>.wind</code> property.</li>
+<li><strong><code>Patcher</code></strong> — a full patcher/subpatcher. If you have a <code>Maxobj</code> that is a <code>p</code>/<code>patcher</code> box (i.e. it <em>contains</em> a subpatcher), get the actual <code>Patcher</code> via <code>box.subpatcher()</code>.</li>
+<li><strong><code>Wind</code></strong> — a patcher's window, accessed as <code>somePatcher.wind</code>. Only exists on <code>Patcher</code> objects, never on <code>Maxobj</code>.</li>
+</ul>
+<pre><code>var box = patcher.newdefault(100, 100, &quot;p&quot;, &quot;buffer_storage&quot;); // Maxobj
+var subpatch = box.subpatcher();                                // Patcher
+subpatch.wind.visible = 0;                                      // Wind
+</code></pre>
+<p>Calling <code>.wind</code> directly on the <code>Maxobj</code> (skipping <code>.subpatcher()</code>) will throw, since that property simply doesn't exist there.</p>
+<h3 id="wind-object-useful-properties">Wind object: useful properties</h3>
+<p><a href="#wind-object-useful-properties">#wind-object-useful-properties</a></p>
+<p><code>Wind</code> has no <code>.close()</code> method — that's a natural but wrong guess. What it does have:</p>
+<ul>
+<li><code>visible</code> (Boolean, get/set) — show/hide the window</li>
+<li><code>size</code> (Array <code>[w, h]</code>, get/set)</li>
+<li><code>location</code> (Array <code>[left, top, right, bottom]</code>, get/set)</li>
+</ul>
+<pre><code>subpatch.wind.visible = 0;        // suppress/hide
+subpatch.wind.size = [200, 400];  // resize
+</code></pre>
+<p>To actually destroy a scripted patcher (not just hide it), use <code>patcher.remove()</code> on the <code>Patcher</code> object — but note this also frees anything living inside it (buffers, gen~ state, etc.), so only do this if you don't need what's inside to persist.</p>
+<h3 id="gotcha-ppatcher-boxes-can-flash-open-on-creation">Gotcha: <code>p</code>/<code>patcher</code> boxes can flash open on creation</h3>
+<p><a href="#gotcha-p-patcher-boxes-can-flash-open-on-creation">#gotcha-p-patcher-boxes-can-flash-open-on-creation</a></p>
+<p>Creating a <code>p</code> box (<code>patcher.newdefault(x, y, &quot;p&quot;, &quot;name&quot;)</code>) can pop its subpatcher window open the instant the box is instantiated — before your very next line of JS runs. This appears to happen at the C level alongside box creation, rather than being something JS creates and then shows.</p>
+<p>Setting <code>visible = 0</code> immediately afterward (same function call, synchronous) is usually enough to suppress it, since nothing else in your script yields control in between:</p>
+<pre><code>var subpatch = patcher.newdefault(100, 100, &quot;p&quot;, &quot;buffer_storage&quot;).subpatcher();
+subpatch.wind.visible = 0;
+</code></pre>
+<h3 id="idempotent-box-creation-with-getnamedvarname">Idempotent box creation with <code>getnamed</code>/<code>varname</code></h3>
+<p><a href="#idempotent-box-creation-with-getnamedvarname">#idempotent-box-creation-with-getnamedvarname</a></p>
+<p>To avoid duplicating boxes every time an init function runs, name each box with <code>varname</code> on creation, then check for it with <code>getnamed()</code> before creating a new one. This works at any nesting level — a wrapping <code>p</code> box, or the boxes inside it:</p>
+<pre><code>var subpatch = patcher.getnamed(&quot;buffer_storage&quot;);
+
+if (!subpatch) {
+    subpatch = patcher.newdefault(100, 100, &quot;p&quot;, &quot;buffer_storage&quot;);
+    subpatch.varname = &quot;buffer_storage&quot;;
+}
+</code></pre>
+<p>This makes the init function safe to call repeatedly — it becomes a &quot;create what's missing, fix up what exists&quot; pass rather than something that has to be called exactly once.</p>
+<h3 id="cookbook-per-track-buffer-initializer">Cookbook: per-track buffer~ initializer</h3>
+<p><a href="#cookbook-per-track-buffer-initializer">#cookbook-per-track-buffer-initializer</a></p>
+<p>Puts all of the above together: a hidden subpatcher holding one <code>buffer~</code> per track, created only if missing, with sr/size/chans re-asserted every call so the function doubles as a &quot;fix drift&quot; pass.</p>
+<pre><code>function bang(){
+    var patcher = this.patcher;
+    var num_tracks = 4;
+    init_track_buffers(patcher, num_tracks);
+}
+
+function init_track_buffers(patcher, num_tracks) {
+    /*
+    Initializer for the buffer-holding subpatcher: ensures one buffer~
+    per track exists with the correct sr/size/chans, creating only
+    what's missing, and returns Buffer() handles keyed by track index.
+    */
+    opts = {};
+    var sr      = opts.sr      || 1000;   // nominal declared sample rate (not audio driver sr)
+    var nsamps  = opts.nsamps  || 2048;   // buffer length in samples (ticks)
+    var chans   = opts.chans   || 48;     // channels per buffer
+    var x       = opts.x       || 20;
+    var y       = opts.y       || 20;
+    var y_step  = opts.y_step  || 32;
+    var name_fn = opts.name_fn || function (i) { return &quot;t&quot; + i + &quot;_buf&quot;; };
+
+    var buffers = {};
+
+    // check if the subpatcher box already exists before creating a new one
+    var subpatch = patcher.getnamed(&quot;buffer_storage&quot;);
+
+    if (!subpatch) {
+        subpatch = patcher.newdefault(100, 100, &quot;p&quot;, &quot;buffer_storage&quot;);
+        subpatch.varname = &quot;buffer_storage&quot;;
+    }
+
+    var internalPatcher = subpatch.subpatcher();
+    internalPatcher.wind.size = [200, 400];
+    internalPatcher.wind.visible = 0;
+
+    for (var i = 0; i &lt; num_tracks; i++) {
+        var buf_name = name_fn(i);
+        var box = internalPatcher.getnamed(buf_name); // matches on varname, see note below
+
+        if (!box) {
+            box = internalPatcher.newdefault(x, y + (i * y_step), &quot;buffer~&quot;, buf_name);
+            box.varname = buf_name; // required so future getnamed(buf_name) calls find it
+        }
+
+        // Re-assert spec every time, whether the box was just created or
+        // already existed — keeps this function idempotent and makes it
+        // double as a &quot;fix up any buffer that's drifted from spec&quot; pass.
+        box.message(&quot;sr&quot;, sr);
+        box.message(&quot;size&quot;, nsamps);
+        box.message(&quot;chans&quot;, chans);
+
+        buffers[i] = new Buffer(buf_name);
+    }
+
+    return buffers;
+}
+</code></pre>
+<h2 id="v8ui">v8ui</h2>
+<p>This applies to the v8 and js objects in general, you define the number of inlets and outlets manually at the top</p>
+<pre><code class="language-js">
+inlets = <span class="hljs-number">3</span>
+outlets = <span class="hljs-number">2</span>
+
+</code></pre>
+<p>and you send information to them like</p>
+<pre><code class="language-js"><span class="hljs-comment">// outlet indices are zero based.</span>
+<span class="hljs-title function_">outlet</span>(<span class="hljs-number">1</span>, <span class="hljs-string">&quot;dictionary&quot;</span>, outputDict.<span class="hljs-property">name</span>);
+
+</code></pre>
 
             <script async src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
             
