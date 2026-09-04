@@ -1028,3 +1028,42 @@ function get_environment(){
     if (max.os === "windows") return "Win";
     return "Gibson"
 }
+
+// buffer_subpatch_init.js
+// Initializer for the buffer-holding subpatcher: ensures one buffer~
+// per track exists with the correct sr/size/chans, creating only
+// what's missing, and returns Buffer() handles keyed by track index.
+
+function init_track_buffers(patcher, num_tracks, opts) {
+    opts = opts || {};
+    var sr      = opts.sr      || 1000;   // nominal declared sample rate (not audio driver sr)
+    var nsamps  = opts.nsamps  || 2048;   // buffer length in samples (ticks)
+    var chans   = opts.chans   || 48;     // channels per buffer
+    var x       = opts.x       || 20;
+    var y       = opts.y       || 20;
+    var y_step  = opts.y_step  || 32;
+    var name_fn = opts.name_fn || function (i) { return "t" + i + "_buf"; };
+
+    var buffers = {};
+
+    for (var i = 0; i < num_tracks; i++) {
+        var buf_name = name_fn(i);
+        var box = patcher.getnamed(buf_name); // matches on varname, see note below
+
+        if (!box) {
+            box = patcher.newobject("buffer~", buf_name, x, y + (i * y_step), 120, 20);
+            box.varname = buf_name; // required so future getnamed(buf_name) calls find it
+        }
+
+        // Re-assert spec every time, whether the box was just created or
+        // already existed — keeps this function idempotent and makes it
+        // double as a "fix up any buffer that's drifted from spec" pass.
+        box.message("sr", sr);
+        box.message("size", nsamps);
+        box.message("chans", chans);
+
+        buffers[i] = new Buffer(buf_name);
+    }
+
+    return buffers;
+}
