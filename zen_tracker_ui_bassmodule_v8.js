@@ -43,6 +43,7 @@ class Tracker  {
     
     #anchor = null;
     #g_pattern_octave = 4;           // [ todo, implement current octave for input ]
+    #g_tracker_version = "ztrk v.007";
 
     constructor(pattern_markup, mgraphics, options = {} ){
 
@@ -1457,7 +1458,7 @@ class Tracker  {
             gfx.show_text(caret_string);
             var current_channel = "⌇ " + channel_idx + " |";
             var current_octave = " Ξ " + this.#g_pattern_octave + " | ";
-            var version_identifier = current_channel + current_octave + 'ztrk v.006';
+            var version_identifier = current_channel + current_octave + this.#g_tracker_version;
             var identifier_width = this.mgraphics.text_measure(version_identifier + ' ')[0];
 
             gfx.move_to(w - identifier_width, h - (0.25 * this.charheight));

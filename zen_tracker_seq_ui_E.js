@@ -343,11 +343,10 @@ function handle_pattern_from_tracker(payload){
     maybe the payload should include the track it came from, but puid already locks that, so puid lookup suffices
     this should be more streamlined.
     */
-    // post('OK? ', payload.puid);
     var pattern_ref = getMachineAndPIndexByPUID(payload.puid);
-    var A = sequencer_config.patterns[pattern_ref.track].patterns[pattern_ref.pindex].data;
-    var B = payload.data;
-    post(A, '/////', B);
+    // var A = sequencer_config.patterns[pattern_ref.track].patterns[pattern_ref.pindex].data;
+    // var B = payload.data;
+    // post(A, '/////', B);
     sequencer_config.patterns[pattern_ref.track].patterns[pattern_ref.pindex].data = payload.data;
     // post('roundtrip success!?');
     return;

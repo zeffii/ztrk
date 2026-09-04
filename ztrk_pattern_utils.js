@@ -336,6 +336,7 @@ function decodeMidi(f) {
 }
 
 function encode_cell_to_float(celld){
+    // encode cell-string-of-known-lexical-type to normalized float
     var empty = isOnlyDots(celld) ? 1 : 0;
     var new_cell_value = 0.0;
 
