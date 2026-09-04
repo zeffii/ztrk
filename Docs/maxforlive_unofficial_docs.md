@@ -87,6 +87,142 @@ According to toneparticle (not sure exactly how to word this)
 max will never dynamically allocate memory in the audioprocess. (risk audio dropout and crashes)
 https://cycling74.com/forums/call-phasor-in-loop#reply-60633f1a5737e10b7812f26c
 
+## js (Patcher scripting)
+
+[#js-patcher-scripting](#js-patcher-scripting)
+
+> Scripting patchers/subpatchers from `js`/`v8` — creating boxes, buffers, and sub-patchers programmatically. This is its own object model, separate from writing DSP-side `v8ui`/`gen~` code.
+
+### Object model: Maxobj vs Patcher vs Wind
+
+[#object-model-maxobj-vs-patcher-vs-wind](#object-model-maxobj-vs-patcher-vs-wind)
+
+There are three different objects in play, and it's easy to confuse them:
+
+- **`Maxobj`** — what `patcher.newobject(...)` / `patcher.newdefault(...)` returns. This is a *box* in a patcher (e.g. a `buffer~`, a `p` box). It does **not** have a `.wind` property.
+- **`Patcher`** — a full patcher/subpatcher. If you have a `Maxobj` that is a `p`/`patcher` box (i.e. it *contains* a subpatcher), get the actual `Patcher` via `box.subpatcher()`.
+- **`Wind`** — a patcher's window, accessed as `somePatcher.wind`. Only exists on `Patcher` objects, never on `Maxobj`.
+
+```
+var box = patcher.newdefault(100, 100, "p", "buffer_storage"); // Maxobj
+var subpatch = box.subpatcher();                                // Patcher
+subpatch.wind.visible = 0;                                      // Wind
+```
+
+Calling `.wind` directly on the `Maxobj` (skipping `.subpatcher()`) will throw, since that property simply doesn't exist there.
+
+### Wind object: useful properties
+
+[#wind-object-useful-properties](#wind-object-useful-properties)
+
+`Wind` has no `.close()` method — that's a natural but wrong guess. What it does have:
+
+- `visible` (Boolean, get/set) — show/hide the window
+- `size` (Array `[w, h]`, get/set)
+- `location` (Array `[left, top, right, bottom]`, get/set)
+
+```
+subpatch.wind.visible = 0;        // suppress/hide
+subpatch.wind.size = [200, 400];  // resize
+```
+
+To actually destroy a scripted patcher (not just hide it), use `patcher.remove()` on the `Patcher` object — but note this also frees anything living inside it (buffers, gen~ state, etc.), so only do this if you don't need what's inside to persist.
+
+### Gotcha: `p`/`patcher` boxes can flash open on creation
+
+[#gotcha-p-patcher-boxes-can-flash-open-on-creation](#gotcha-p-patcher-boxes-can-flash-open-on-creation)
+
+Creating a `p` box (`patcher.newdefault(x, y, "p", "name")`) can pop its subpatcher window open the instant the box is instantiated — before your very next line of JS runs. This appears to happen at the C level alongside box creation, rather than being something JS creates and then shows.
+
+Setting `visible = 0` immediately afterward (same function call, synchronous) is usually enough to suppress it, since nothing else in your script yields control in between:
+
+```
+var subpatch = patcher.newdefault(100, 100, "p", "buffer_storage").subpatcher();
+subpatch.wind.visible = 0;
+```
+
+### Idempotent box creation with `getnamed`/`varname`
+
+[#idempotent-box-creation-with-getnamedvarname](#idempotent-box-creation-with-getnamedvarname)
+
+To avoid duplicating boxes every time an init function runs, name each box with `varname` on creation, then check for it with `getnamed()` before creating a new one. This works at any nesting level — a wrapping `p` box, or the boxes inside it:
+
+```
+var subpatch = patcher.getnamed("buffer_storage");
+
+if (!subpatch) {
+    subpatch = patcher.newdefault(100, 100, "p", "buffer_storage");
+    subpatch.varname = "buffer_storage";
+}
+```
+
+This makes the init function safe to call repeatedly — it becomes a "create what's missing, fix up what exists" pass rather than something that has to be called exactly once.
+
+### Cookbook: per-track buffer~ initializer
+
+[#cookbook-per-track-buffer-initializer](#cookbook-per-track-buffer-initializer)
+
+Puts all of the above together: a hidden subpatcher holding one `buffer~` per track, created only if missing, with sr/size/chans re-asserted every call so the function doubles as a "fix drift" pass.
+
+```
+function bang(){
+    var patcher = this.patcher;
+    var num_tracks = 4;
+    init_track_buffers(patcher, num_tracks);
+}
+
+function init_track_buffers(patcher, num_tracks) {
+    /*
+    Initializer for the buffer-holding subpatcher: ensures one buffer~
+    per track exists with the correct sr/size/chans, creating only
+    what's missing, and returns Buffer() handles keyed by track index.
+    */
+    opts = {};
+    var sr      = opts.sr      || 1000;   // nominal declared sample rate (not audio driver sr)
+    var nsamps  = opts.nsamps  || 2048;   // buffer length in samples (ticks)
+    var chans   = opts.chans   || 48;     // channels per buffer
+    var x       = opts.x       || 20;
+    var y       = opts.y       || 20;
+    var y_step  = opts.y_step  || 32;
+    var name_fn = opts.name_fn || function (i) { return "t" + i + "_buf"; };
+
+    var buffers = {};
+
+    // check if the subpatcher box already exists before creating a new one
+    var subpatch = patcher.getnamed("buffer_storage");
+
+    if (!subpatch) {
+        subpatch = patcher.newdefault(100, 100, "p", "buffer_storage");
+        subpatch.varname = "buffer_storage";
+    }
+
+    var internalPatcher = subpatch.subpatcher();
+    internalPatcher.wind.size = [200, 400];
+    internalPatcher.wind.visible = 0;
+
+    for (var i = 0; i < num_tracks; i++) {
+        var buf_name = name_fn(i);
+        var box = internalPatcher.getnamed(buf_name); // matches on varname, see note below
+
+        if (!box) {
+            box = internalPatcher.newdefault(x, y + (i * y_step), "buffer~", buf_name);
+            box.varname = buf_name; // required so future getnamed(buf_name) calls find it
+        }
+
+        // Re-assert spec every time, whether the box was just created or
+        // already existed — keeps this function idempotent and makes it
+        // double as a "fix up any buffer that's drifted from spec" pass.
+        box.message("sr", sr);
+        box.message("size", nsamps);
+        box.message("chans", chans);
+
+        buffers[i] = new Buffer(buf_name);
+    }
+
+    return buffers;
+}
+```
+
 ## v8ui
 
 This applies to the v8 and js objects in general, you define the number of inlets and outlets manually at the top
