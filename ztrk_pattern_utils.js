@@ -45,6 +45,7 @@ function fmt(n) {
     return ('000' + Math.floor(Math.abs(n))).slice(-3) + ' ';
 }
 
+// const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 function clamp(v, lo, hi) {
     return Math.max(lo, Math.min(hi, v));
 }

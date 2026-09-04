@@ -123,7 +123,7 @@ add_pattern(2, 256, uid_06);
 
 // - one liner utils.
 
-const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+//const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 const ASCII = (key) => String.fromCharCode(key).toUpperCase();
 const fmt4 = (n) => ('0000' + Math.floor(Math.abs(n))).slice(-4) + ' '; 
 const fmt3 = (n) => ('000' + Math.floor(Math.abs(n))).slice(-3) + ' '; 
@@ -352,11 +352,8 @@ function handle_pattern_from_tracker(payload){
     this should be more streamlined.
     */
     var pattern_ref = getMachineAndPIndexByPUID(payload.puid);
-    // var A = sequencer_config.patterns[pattern_ref.track].patterns[pattern_ref.pindex].data;
-    // var B = payload.data;
-    // post(A, '/////', B);
     sequencer_config.patterns[pattern_ref.track].patterns[pattern_ref.pindex].data = payload.data;
-    // post('roundtrip success!?');
+
     return;
 };
 
