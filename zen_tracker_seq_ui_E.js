@@ -1037,11 +1037,6 @@ function get_environment(){
     return "Gibson"
 }
 
-// buffer_subpatch_init.js
-// Initializer for the buffer-holding subpatcher: ensures one buffer~
-// per track exists with the correct sr/size/chans, creating only
-// what's missing, and returns Buffer() handles keyed by track index.
-
 function init_track_buffers(patcher, num_tracks) {
     /*
     Initializer for the buffer-holding subpatcher: ensures one buffer~
@@ -1059,22 +1054,31 @@ function init_track_buffers(patcher, num_tracks) {
 
     var buffers = {};
 
+    // check if the subpatcher box already exists before creating a new one
+    var subpatch = patcher.getnamed("buffer_storage");
+
+    if (!subpatch) {
+        subpatch = patcher.newdefault(5, 25, "p", "buffer_storage");
+        subpatch.varname = "buffer_storage";
+    }
+
+    var internalPatcher = subpatch.subpatcher();
+    internalPatcher.wind.size = [200, 400];
+    internalPatcher.wind.visible = 0;
+
     for (var i = 0; i < num_tracks; i++) {
         var buf_name = name_fn(i);
-        var box = patcher.getnamed(buf_name); // matches on varname, see note below
+        var box = internalPatcher.getnamed(buf_name); // matches on varname, see note below
 
         if (!box) {
-            box = patcher.newdefault(x, y + (i * y_step), "buffer~", buf_name);
+            box = internalPatcher.newdefault(x, y + (i * y_step), "buffer~", buf_name);
             box.varname = buf_name; // required so future getnamed(buf_name) calls find it
         }
 
-        // Re-assert spec every time, whether the box was just created or
-        // already existed — keeps this function idempotent and makes it
-        // double as a "fix up any buffer that's drifted from spec" pass.
+        // ensure we are working with what we expect.
         box.message("sr", sr);
         box.message("size", nsamps);
         box.message("chans", chans);
-
         buffers[i] = new Buffer(buf_name);
     }
 
