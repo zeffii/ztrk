@@ -104,6 +104,14 @@ var sequencer_config = {
     }
 };
 
+function sequencer_init(){
+    var num_tracks = sequencer_config.tracks.length;
+    var patcher = this.patcher;
+    return init_track_buffers(patcher, num_tracks);
+}
+
+sequencer_init();
+
 // - simulate adding data at runtime.
 add_pattern(0, 0,   uid_01);
 add_pattern(0, 128, uid_04);
@@ -1034,8 +1042,8 @@ function get_environment(){
 // per track exists with the correct sr/size/chans, creating only
 // what's missing, and returns Buffer() handles keyed by track index.
 
-function init_track_buffers(patcher, num_tracks, opts) {
-    opts = opts || {};
+function init_track_buffers(patcher, num_tracks) {
+    opts = {};
     var sr      = opts.sr      || 1000;   // nominal declared sample rate (not audio driver sr)
     var nsamps  = opts.nsamps  || 2048;   // buffer length in samples (ticks)
     var chans   = opts.chans   || 48;     // channels per buffer
