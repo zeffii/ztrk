@@ -396,3 +396,19 @@ function clearBuffer(buf){
 
 
 }
+
+
+function generate_svg(conditions){
+
+    // M 10 100 Q 25 10 180 100 T 250 100 T 300 100 T 390 130
+    // this can be updated at runtime.
+    const start_line = `<svg height="400" width="800" xmlns="http://www.w3.org/2000/svg">`
+    const end_line = `</svg>`
+    var body_array = []
+    for (const [idx, element] of conditions.entries()){
+        var tpath = `  <path d="${element.path}" stroke="${element.stroke}" stroke-width="${element.stroke_width}" fill="${element.fill}" />`
+        body_array.push(tpath);
+    }
+    var body = body_array.join('\n');
+    return start_line + body + end_line;
+}

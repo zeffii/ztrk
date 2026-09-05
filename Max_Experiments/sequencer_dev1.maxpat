@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 157.0, 133.0, 1779.0, 932.0 ],
+        "rect": [ 1159.0, 210.0, 1779.0, 932.0 ],
         "boxes": [
             {
                 "box": {
@@ -1395,6 +1395,68 @@
             },
             {
                 "box": {
+                    "id": "obj-3",
+                    "maxclass": "newobj",
+                    "numinlets": 0,
+                    "numoutlets": 0,
+                    "patcher": {
+                        "fileversion": 1,
+                        "appversion": {
+                            "major": 9,
+                            "minor": 1,
+                            "revision": 5,
+                            "architecture": "x64",
+                            "modernui": 1
+                        },
+                        "classnamespace": "box",
+                        "rect": [ 59.0, 107.0, 132.0, 332.0 ],
+                        "boxes": [
+                            {
+                                "box": {
+                                    "id": "obj-1",
+                                    "maxclass": "newobj",
+                                    "numinlets": 1,
+                                    "numoutlets": 2,
+                                    "outlettype": [ "float", "bang" ],
+                                    "patching_rect": [ 20.0, 20.0, 100.0, 0.0 ],
+                                    "text": "buffer~ t0_buf",
+                                    "varname": "t0_buf"
+                                }
+                            },
+                            {
+                                "box": {
+                                    "id": "obj-2",
+                                    "maxclass": "newobj",
+                                    "numinlets": 1,
+                                    "numoutlets": 2,
+                                    "outlettype": [ "float", "bang" ],
+                                    "patching_rect": [ 20.0, 52.0, 100.0, 0.0 ],
+                                    "text": "buffer~ t1_buf",
+                                    "varname": "t1_buf"
+                                }
+                            },
+                            {
+                                "box": {
+                                    "id": "obj-3",
+                                    "maxclass": "newobj",
+                                    "numinlets": 1,
+                                    "numoutlets": 2,
+                                    "outlettype": [ "float", "bang" ],
+                                    "patching_rect": [ 20.0, 84.0, 100.0, 0.0 ],
+                                    "text": "buffer~ t2_buf",
+                                    "varname": "t2_buf"
+                                }
+                            }
+                        ],
+                        "lines": []
+                    },
+                    "patching_rect": [ 5.0, 25.0, 100.0, 22.0 ],
+                    "text": "p buffer_storage",
+                    "varname": "buffer_storage"
+                }
+            },
+            {
+                "box": {
                     "id": "obj-25",
                     "maxclass": "newobj",
                     "numinlets": 0,
@@ -1452,7 +1514,7 @@
                     },
                     "patching_rect": [ 5.0, 25.0, 100.0, 22.0 ],
                     "text": "p buffer_storage",
-                    "varname": "buffer_storage"
+                    "varname": "buffer_storage[1]"
                 }
             }
         ],

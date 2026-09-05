@@ -3,6 +3,7 @@ all 'on_xxxx' functions must be mapped from your js.
 
 */
 
+autowatch = 1;
 include("zen_tracker_ui_bassmodule_v8");
 
 outlets = 3;

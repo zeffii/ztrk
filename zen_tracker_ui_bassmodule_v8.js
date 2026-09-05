@@ -29,6 +29,7 @@ class Tracker  {
     #AbletonMode = true;
     #MatrixMode = false;
     #ztrk_clipboard = {};
+    #received_first_pattern = false;
     
     #g_Mouse = [-1, -1];
     #g_in_edit_mode = false;
@@ -244,6 +245,7 @@ class Tracker  {
 
         // this.mgraphics.redraw();
         // this.write_buffers(this);
+        this.#received_first_pattern = true;
         this.gfx_refresh_and_write_buffers_and_dispatch({send_back: false, origin: "handle_received_pattern function"})
     }
 
@@ -1559,6 +1561,43 @@ class Tracker  {
         gfx.show_text(final_top_row_dividers);
     }
 
+    draw_splash(){
+    
+        var gfx = this.mgraphics;
+        var [w, h] = gfx.size;
+        // gfx.set_source_rgba(0.1, 0.2, 0.4, 1);  // this.ui_bg_color
+        gfx.set_source_rgba(...this.theme_colors.ui_bg_color);
+        gfx.rectangle(0, 0, w, h);
+        gfx.fill();
+
+        // status bar
+        this.set_rgb(this.asRGB(...this.theme_colors.status_bg_color), 2.3);
+        gfx.rectangle(0, h-this.charheight, w, this.charheight);
+        gfx.fill();
+
+        //var conditions = [
+        //    {path: "M20,0 L20, 60", stroke: "red", stroke_width: "7", fill: "none"},
+        //    {path: "M30,0 L30, 60", stroke: "green", stroke_width: "5", fill: "none"},
+        //    {path: "M50,0 L50, 60", stroke: "blue", stroke_width: "4", fill: "none"},
+        //    {path: "M80,0 L80, 60", stroke: "white", stroke_width: "3", fill: "none"},
+        //];
+        //var mstr = generate_svg(conditions);
+        //gfx.svg_render(mstr);
+        this.set_rgb(this.asRGB(...this.theme_colors.data_color), 1.3);
+        var load_message = "ZTRK loaded: Waiting for patterns..";
+        var load_width = gfx.text_measure(load_message)[0];
+        gfx.move_to((load_width/2), h/2);
+        gfx.show_text(load_message);
+
+
+        // bottom right
+        this.set_rgb(this.asRGB(...this.theme_colors.status_text_color), 1.3);
+        var version_identifier = this.#g_tracker_version;
+        var identifier_width = gfx.text_measure(version_identifier + ' ')[0];
+        gfx.move_to(w - identifier_width, h - (0.25 * this.charheight));
+        gfx.show_text(version_identifier);
+    }
+
     paint(){
         /*
         when not in edit mode, this could do some pop/push, rather than performing all draw commands..
@@ -1566,6 +1605,10 @@ class Tracker  {
         */
 
         this.get_text_width_and_height();
+
+        if (this.#received_first_pattern === false){
+            this.draw_splash(); return;
+        }
 
         this.dark_background();
         this.draw_highlighted_lines(4);
