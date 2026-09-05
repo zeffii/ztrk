@@ -103,7 +103,8 @@ var sequencer_config = {
             ['b', 'Trigger 1', 0],     ['b', 'Trigger 2', 0],       ['b', 'Trigger 3', 0],       ['b', 'Trigger 4', 0],
             ['ffxxyy', 'Effect 1', 1],  ['ffxxyy', 'Effect 2', 1]
         ]
-    }
+    },
+    encoded_pattern_cache: {}
 };
 
 function sequencer_init(){
@@ -359,6 +360,9 @@ function handle_pattern_from_tracker(payload){
     var array2d_str = pattern_data_to_2d_Array_string_cells(payload.data);
     var array2d_float = encodeArray2Dstr_to_float(array2d_str);
 
+    // stash it in the encoded-pattern cache too, since we've just computed it anyway
+    sequencer_config.encoded_pattern_cache[payload.puid] = array2d_float;
+
     // [ ]  overwrite one or more regions of the buffer with the data associated with the updated pattern.
     // 1. find the occurances of this pattern in << sequencer_config.patterns[pattern_ref.track].patterns >>
     //    find their starts, and lengths  -
@@ -371,11 +375,36 @@ function handle_pattern_from_tracker(payload){
     // for (const[pidx, construct] of datapaste.entries()){}
     //    write_track_buffer(pattern_ref.track, construct.start, construct.num_ticks, data);
     // }
-    //
-
+    // [x]  overwrite one or more regions of the buffer with the data associated with the updated pattern.
+    var occurrences = find_pattern_occurrences_for_buffer_write(pattern_ref.track, payload.puid);
+    for (const occ of occurrences) {
+        write_track_buffer_from_Array2D_floats(pattern_ref.track, occ.start, occ.num_ticks, array2d_float);
+    }
 
     return;
 };
+
+function find_pattern_occurrences_for_buffer_write(track, puid){
+    // all placements on this track, sorted by start — needed regardless of puid,
+    // since a *different* pattern's placement can interrupt this one before its natural end
+    var sorted_placements = sequencer_config.tracks[track].patterns.slice().sort(function(a, b){
+        return a.start - b.start;
+    });
+
+    var occurrences = [];
+    for (var i = 0; i < sorted_placements.length; i++) {
+        var placement = sorted_placements[i];
+        if (placement.puid !== puid) continue;
+
+        var next_start = (i + 1 < sorted_placements.length) ? sorted_placements[i + 1].start : Infinity;
+        var num_ticks = Math.min(placement.length, next_start - placement.start);
+
+        if (num_ticks <= 0) continue; // degenerate: another placement starts at/before this one
+
+        occurrences.push({start: placement.start, num_ticks: num_ticks});
+    }
+    return occurrences;
+}
 
 //  I O 
 

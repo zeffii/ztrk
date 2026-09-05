@@ -1,5 +1,9 @@
 include("ztrk_pattern_utils.js");
 
+function get_buffer_name_from_track(track){
+    return "t" + track + "_buf";
+}
+
 function pattern_data_to_2d_Array_string_cells(data){
     /*
     this function currently expects to be passed pattern data in the form of strings, 
@@ -24,13 +28,18 @@ function pattern_data_to_2d_Array_string_cells(data){
     return celldata_array;
 }
 
-function write_track_buffer_from_Array2D_floats(props, array2d){
+function write_track_buffer_from_Array2D_floats(track, start, num_ticks, array2d){
 
-    var buff_track = new Buffer(props.buffer_name);
-    for (var row = 0; row < array2d.length; row++){
+    var buffer_name = get_buffer_name_from_track(track);
+    var buff_track = new Buffer(buffer_name);
+
+    var rows_to_write = Math.min(num_ticks, array2d.length);
+
+    for (var row = 0; row < rows_to_write; row++){
+        var buffer_index = start + row;
         for (var col = 0; col < array2d[0].length; col++){
             var cell = array2d[row][col];  // is a float now.
-            buff_track.poke(col+1, row, cell);
+            buff_track.poke(col+1, buffer_index, cell);
         }
     }
 }
