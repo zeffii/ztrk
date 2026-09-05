@@ -356,7 +356,8 @@ function handle_pattern_from_tracker(payload){
     sequencer_config.patterns[pattern_ref.track].patterns[pattern_ref.pindex].data = payload.data;
 
     // [x]  translate this pattern data into data that can be written to buffers.
-    var array2d = track_data_to_2d_array(payload.data);
+    var array2d_str = pattern_data_to_2d_Array_string_cells(payload.data);
+    var array2d_float = encodeArray2Dstr_to_float(array2d_str);
 
     // [ ]  overwrite one or more regions of the buffer with the data associated with the updated pattern.
     // 1. find the occurances of this pattern in << sequencer_config.patterns[pattern_ref.track].patterns >>

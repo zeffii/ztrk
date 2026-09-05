@@ -1,10 +1,9 @@
 include("ztrk_pattern_utils.js");
 
-function track_data_to_2d_array(data){
+function pattern_data_to_2d_Array_string_cells(data){
     /*
-    the body of this function is not updated to match the name of the function. this function currently 
-    expects to be passed pattern data in the form of strings, and it splits them up into a 2d array for
-    conversion in cell_to_float.
+    this function currently expects to be passed pattern data in the form of strings, 
+    and it splits them up into a 2d array for conversion in cell_to_float.
     */
     var celldata_array = [];
 
@@ -25,15 +24,17 @@ function track_data_to_2d_array(data){
     return celldata_array;
 }
 
-function write_track_buffer(props, array2d){
+function write_track_buffer_from_Array2D_floats(props, array2d){
 
     var buff_track = new Buffer(props.buffer_name);
-
     for (var row = 0; row < array2d.length; row++){
         for (var col = 0; col < array2d[0].length; col++){
-            var celld = array2d[row][col];
-            var floatval = encode_cell_to_float(celld);
-            buff_track.poke(col+1, row, floatval);
+            var cell = array2d[row][col];  // is a float now.
+            buff_track.poke(col+1, row, cell);
         }
     }
+}
+
+function encodeArray2Dstr_to_float(grid) {
+    return grid.map(row => row.map(cell => encode_cell_to_float(cell)));
 }
