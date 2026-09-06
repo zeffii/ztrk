@@ -47,3 +47,36 @@ function write_track_buffer_from_Array2D_floats(track, start, num_ticks, array2d
 function encodeArray2Dstr_to_float(grid) {
     return grid.map(row => row.map(cell => encode_cell_to_float(cell)));
 }
+
+function empty_buffers_by_range(startTrack, endTrack) {
+	var count = 0;
+	for (var n = startTrack; n <= endTrack; n++) {
+		var bufname = `t${n}_buf`;
+		new Buffer(bufname).send("clear");
+		count++;
+	}
+	post(`empty_buffers_by_range: cleared ${count} buffer(s) (t${startTrack}_buf .. t"${endTrack}_buf)\n`);
+}
+
+/*
+
+function empty_buffers_by_range(startTrack, endTrack) {
+	var count = 0;
+	var missing = [];
+	for (var n = startTrack; n <= endTrack; n++) {
+		var bufname = "t" + n + "_buf";
+		var buf = new Buffer(bufname);
+		if (buf.framecount() > 0) {
+			buf.send("clear");
+			count++;
+		} else {
+			missing.push(bufname);
+		}
+	}
+	post("empty_buffers_by_range: cleared " + count + " buffer(s) (t" + startTrack + "_buf .. t" + endTrack + "_buf)\n");
+	if (missing.length > 0) {
+		post("empty_buffers_by_range: no buffer~ found for: " + missing.join(", ") + "\n");
+	}
+}
+
+*/

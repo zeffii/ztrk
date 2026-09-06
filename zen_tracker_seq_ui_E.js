@@ -304,6 +304,11 @@ function set_output_dir(full_path){
     mgraphics.redraw();
 }
 
+function debug_empty_buffers(){
+    //empty_buffers("buffer_storage");
+    empty_buffers_by_range(0, sequencer_config.tracks.length);
+}
+
 function send_pattern_to_tracker(){
 
     const trk = g_tcaret.col;
