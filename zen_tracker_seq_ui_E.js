@@ -331,7 +331,9 @@ function send_pattern_to_tracker(){
         length: pattern.length,
         descriptors: {track: sequencer_config.machines[machine_name]},
         data: pdata,
-        lexical_track: ""
+        lexical_track: "",
+        machine_name: machine_name,
+        pattern_name: pattern.pname
     };
 
     post('Telling Tracker to show pattern \n');

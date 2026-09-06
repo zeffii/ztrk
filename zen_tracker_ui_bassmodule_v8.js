@@ -1613,11 +1613,12 @@ class Tracker  {
         var gfx = this.mgraphics;
         var [w, h] = gfx.size;
 
-        var pattern_properties = ` pattern name / machine name / length`;
+        var pattern_properties = `${this.pattern_markup.pattern_name} / ${this.pattern_markup.machine_name} / ${this.pattern_markup.length}`;
         var str_width = gfx.text_measure(pattern_properties)[0];
 
         this.set_rgb(this.asRGB(...this.theme_colors.pattern_info_bg_color), 2.3);
         gfx.rectangle(w - str_width - 5, 0, str_width, this.charheight);
+
         gfx.fill();
 
         this.set_rgb(this.asRGB(...this.theme_colors.status_text_color), 1.3);
