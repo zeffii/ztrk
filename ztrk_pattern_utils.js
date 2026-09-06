@@ -406,7 +406,12 @@ function generate_svg(conditions){
     const end_line = `</svg>`
     var body_array = []
     for (const [idx, element] of conditions.entries()){
-        var tpath = `  <path d="${element.path}" stroke="${element.stroke}" stroke-width="${element.stroke_width}" fill="${element.fill}" />`
+        var tpath = "";
+        if ('translate' in element)
+            tpath = `  <path d="${element.path}" stroke="${element.stroke}" stroke-width="${element.stroke_width}" fill="${element.fill}" transform="${element.translate}" />`
+        else { 
+            tpath = `  <path d="${element.path}" stroke="${element.stroke}" stroke-width="${element.stroke_width}" fill="${element.fill}" />`
+        }
         body_array.push(tpath);
     }
     var body = body_array.join('\n');

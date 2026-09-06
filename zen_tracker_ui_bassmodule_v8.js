@@ -1575,14 +1575,16 @@ class Tracker  {
         gfx.rectangle(0, h-this.charheight, w, this.charheight);
         gfx.fill();
 
-        //var conditions = [
+        // var conditions = [
         //    {path: "M20,0 L20, 60", stroke: "red", stroke_width: "7", fill: "none"},
         //    {path: "M30,0 L30, 60", stroke: "green", stroke_width: "5", fill: "none"},
         //    {path: "M50,0 L50, 60", stroke: "blue", stroke_width: "4", fill: "none"},
-        //    {path: "M80,0 L80, 60", stroke: "white", stroke_width: "3", fill: "none"},
-        //];
-        //var mstr = generate_svg(conditions);
-        //gfx.svg_render(mstr);
+        //    {path: "M80,0 L80, 60", stroke: "white", stroke_width: "3", fill: "none", translate: "translate(0,120)"},
+        // ];
+        // var mstr = generate_svg(conditions);
+        // gfx.svg_render(mstr);
+
+
         this.set_rgb(this.asRGB(...this.theme_colors.data_color), 1.3);
         var load_message = "ZTRK loaded: Waiting for patterns..";
         var load_width = gfx.text_measure(load_message)[0];
