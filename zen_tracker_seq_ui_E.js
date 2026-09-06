@@ -195,12 +195,13 @@ function add_pattern(machine_trk, start, puid){
     }
     var mpattern = {pname: pattern.pname, puid: puid, start: start, length: pattern.length, color: pattern.color};
     sequencer_config.tracks[machine_trk].patterns.push(mpattern);
+    // complicated...  find if there are any patterns attempting to truncate this one, find the proposed buffer-write-length ( depending on truncation or not )
     // finalize()
 };
 
 function delete_pattern(puid){}
 function remove_pattern_from_sequencer(){
-    // should remove data from buffers too.
+    // should remove data from buffer too.
     // finalize()
 };
 
