@@ -139,6 +139,19 @@ const tick_from_row = (row) => row * 16;
 
 // - multi line utils
 
+function finalize(command){
+    /*
+    understands     command. refresh
+                    command. update_buffer
+    */
+    if ('refresh' in command){
+        mgraphics.redraw();
+    }
+    if ('update_buffer' in command){
+        //var puid =        // command.puid and command.start must be supplied too.
+    }
+}
+
 function color_from_kind(kind) { 
     // quick defaults.
     if (kind === "fx") return theme_colors.def_fx_color;
@@ -177,7 +190,7 @@ function getMachineAndPIndexByPUID(puid){
 function add_pattern(machine_trk, start, puid){
     var pattern = getPattrByPUID(sequencer_config.patterns[machine_trk], puid);
     if (pattern === null) { 
-        post(`failed to located pattern by uid ${puid}`)
+        post(`failed to locate pattern by uid ${puid}`)
         return;
     }
     var mpattern = {pname: pattern.pname, puid: puid, start: start, length: pattern.length, color: pattern.color};
@@ -185,7 +198,9 @@ function add_pattern(machine_trk, start, puid){
 };
 
 function delete_pattern(puid){}
-function remove_pattern_from_sequencer(){};
+function remove_pattern_from_sequencer(){
+    // should remove data from buffers too.
+};
 
 function find_pattern_under_cursor(trk, start){
     // this just finds a pattern if the cursor is at the same `start` 
@@ -701,19 +716,21 @@ function insert_pattern_at_cursor(new_pattern_flag, pattern){
     var trk = g_tcaret.col;
     var start = tick_from_row(g_tcaret.row);
 
-    // don't allow adding pattern in the place of an existing pattern.
+    // don't allow adding pattern in the place of an existing pattern. yet.
     var found_idx = find_pattern_under_cursor(trk, start);
     if (found_idx >= 0) return;
 
-    // contains some redundant code. i know.
+    var puid = null;
     if (new_pattern_flag){
         var new_pattern = make_new_pattern(trk, 64);
         sequencer_config.patterns[trk].patterns.push(new_pattern);
-        add_pattern(trk, start, new_pattern.puid);
+        puid = new_pattern.puid;
     } else {
-        add_pattern(trk, start, pattern.puid);
+        puid = pattern.puid;
     }
-    mgraphics.redraw();
+
+    add_pattern(trk, start, puid);
+    finalize({refresh: true, update_buffer: true, puid: puid, start: start});  // not sure if needed.
 }
 
 function remove_pattern_at_cursor(){
@@ -721,8 +738,11 @@ function remove_pattern_at_cursor(){
     var start = tick_from_row(g_tcaret.row);
 
     var found_idx = find_pattern_under_cursor(trk, start);
-    if (found_idx >= 0){ sequencer_config.tracks[trk].patterns.splice(found_idx, 1); }
-    mgraphics.redraw();
+    if (found_idx >= 0){ 
+        var puid = sequencer_config.tracks[trk].patterns[found_idx].puid;
+        sequencer_config.tracks[trk].patterns.splice(found_idx, 1); 
+        finalize({refresh: true, update_buffer: true, puid: puid, start: start});  // not sure if needed.
+    }
 }
 
 function insert_patterns_in_selection(){
