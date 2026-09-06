@@ -195,11 +195,13 @@ function add_pattern(machine_trk, start, puid){
     }
     var mpattern = {pname: pattern.pname, puid: puid, start: start, length: pattern.length, color: pattern.color};
     sequencer_config.tracks[machine_trk].patterns.push(mpattern);
+    // finalize()
 };
 
 function delete_pattern(puid){}
 function remove_pattern_from_sequencer(){
     // should remove data from buffers too.
+    // finalize()
 };
 
 function find_pattern_under_cursor(trk, start){
@@ -399,6 +401,8 @@ function handle_pattern_from_tracker(payload){
     //    write_track_buffer(pattern_ref.track, construct.start, construct.num_ticks, data);
     // }
     // [x]  overwrite one or more regions of the buffer with the data associated with the updated pattern.
+
+    // this may be the meat of // finalize()
     var occurrences = find_pattern_occurrences_for_buffer_write(pattern_ref.track, payload.puid);
     for (const occ of occurrences) {
         write_track_buffer_from_Array2D_floats(pattern_ref.track, occ.start, occ.num_ticks, array2d_float);
@@ -540,7 +544,7 @@ function key_handler(){
         case "B": loop_start(g_tcaret.row*16); return;
         case "E": loop_end(g_tcaret.row*16); return;
         case "L": toggle_looping(); return;
-        case 'C': clone_pattern(); return;
+        case 'D': clone_pattern(); return;   // duplicate
         case 'S': slice_pattern_at_cursor(); return;
     }
 
@@ -677,6 +681,8 @@ function slice_pattern_at_cursor(){
     add_pattern(trk, pattern_b_start, pattern_b.puid);
     
     mgraphics.redraw();
+    // finalize(pattern_a)  ..first one can skip refresh
+    // finalize(refresh, pattern_b)
 }
 
 
@@ -787,6 +793,7 @@ function insert_patterns_in_selection(){
     // post('inserted ' + created + ' pattern(s), skipped ' + skipped + ' occupied lane(s)\n');
     // cancel_selection();
     // mgraphics.redraw();
+    // finalize()
 }
 
 // - DRAWING.

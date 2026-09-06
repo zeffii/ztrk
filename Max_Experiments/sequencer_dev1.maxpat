@@ -9,8 +9,19 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 844.0, 212.0, 1110.0, 1056.0 ],
+        "rect": [ 117.0, 198.0, 1110.0, 1056.0 ],
         "boxes": [
+            {
+                "box": {
+                    "id": "obj-60",
+                    "maxclass": "message",
+                    "numinlets": 2,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 40.0, 50.0, 124.0, 22.0 ],
+                    "text": "debug_empty_buffers"
+                }
+            },
             {
                 "box": {
                     "id": "obj-56",
@@ -319,7 +330,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "127",
+                                    "text": "57",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -408,7 +419,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "117",
+                                    "text": "25",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -453,7 +464,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 127 117 0 -6",
+                                    "text": "keys 57 25 0 57",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -852,7 +863,7 @@
                     "numoutlets": 3,
                     "outlettype": [ "", "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 485.0, 152.0, 208.13671875, 428.0 ],
+                    "patching_rect": [ 485.0, 152.0, 392.87109375, 428.0 ],
                     "textfile": {
                         "filename": "hex_tracker.js",
                         "flags": 0,
@@ -1087,7 +1098,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 330.0, 325.0, 56.0, 25.0 ],
-                                    "text": "127",
+                                    "text": "57",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -1165,7 +1176,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 187.0, 154.0, 22.0 ],
-                                    "text": "117",
+                                    "text": "25",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -1199,7 +1210,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 373.0, 154.0, 22.0 ],
-                                    "text": "keys 127 117 0 -6",
+                                    "text": "keys 57 25 0 57",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -1574,36 +1585,36 @@
                         "boxes": [
                             {
                                 "box": {
-                                    "id": "obj-1",
+                                    "id": "obj-5",
                                     "maxclass": "newobj",
                                     "numinlets": 1,
                                     "numoutlets": 2,
                                     "outlettype": [ "float", "bang" ],
-                                    "patching_rect": [ 20.0, 20.0, 100.0, 0.0 ],
+                                    "patching_rect": [ 20.0, 20.0, 100.0, 22.0 ],
                                     "text": "buffer~ t0_buf",
                                     "varname": "t0_buf"
                                 }
                             },
                             {
                                 "box": {
-                                    "id": "obj-2",
+                                    "id": "obj-6",
                                     "maxclass": "newobj",
                                     "numinlets": 1,
                                     "numoutlets": 2,
                                     "outlettype": [ "float", "bang" ],
-                                    "patching_rect": [ 20.0, 52.0, 100.0, 0.0 ],
+                                    "patching_rect": [ 20.0, 52.0, 100.0, 22.0 ],
                                     "text": "buffer~ t1_buf",
                                     "varname": "t1_buf"
                                 }
                             },
                             {
                                 "box": {
-                                    "id": "obj-3",
+                                    "id": "obj-7",
                                     "maxclass": "newobj",
                                     "numinlets": 1,
                                     "numoutlets": 2,
                                     "outlettype": [ "float", "bang" ],
-                                    "patching_rect": [ 20.0, 84.0, 100.0, 0.0 ],
+                                    "patching_rect": [ 20.0, 84.0, 100.0, 22.0 ],
                                     "text": "buffer~ t2_buf",
                                     "varname": "t2_buf"
                                 }
@@ -2072,7 +2083,7 @@
                 "patchline": {
                     "color": [ 1.0, 0.0, 0.0, 1.0 ],
                     "destination": [ "obj-1", 0 ],
-                    "midpoints": [ 589.068359375, 792.0, 472.0, 792.0, 472.0, 138.0, 15.0, 138.0, 15.0, 150.0, 11.5, 150.0 ],
+                    "midpoints": [ 681.435546875, 792.0, 472.0, 792.0, 472.0, 138.0, 15.0, 138.0, 15.0, 150.0, 11.5, 150.0 ],
                     "order": 1,
                     "source": [ "obj-2", 1 ]
                 }
@@ -2172,6 +2183,12 @@
                 "patchline": {
                     "destination": [ "obj-36", 0 ],
                     "source": [ "obj-56", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-1", 0 ],
+                    "source": [ "obj-60", 0 ]
                 }
             },
             {
