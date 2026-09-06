@@ -308,7 +308,6 @@ function set_output_dir(full_path){
 }
 
 function debug_empty_buffers(){
-    //empty_buffers("buffer_storage");
     empty_buffers_by_range(0, sequencer_config.tracks.length);
 }
 
