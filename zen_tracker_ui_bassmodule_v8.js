@@ -87,6 +87,7 @@ class Tracker  {
             tick_index_color: [0.1, 0.1, 0.1, 1],
             data_color: [0.4, 0.9, 1.0, 1],
             ui_bg_color: [0.1, 0.2, 0.4, 1],
+            pattern_info_bg_color: [0.05, 0.12, 0.24, 1],
             status_bg_color: [0.2, 0.3, 0.2, 1.0],
             status_text_color: [0.9, 0.9, 0.7, 1.0],
             scrollbar_bg_color: [0.2, 0.2, 0.2, 1.0],
@@ -1608,6 +1609,22 @@ class Tracker  {
         gfx.show_text(version_identifier);
     }
 
+    draw_pattern_information(){
+        var gfx = this.mgraphics;
+        var [w, h] = gfx.size;
+
+        var pattern_properties = ` pattern name / machine name / length`;
+        var str_width = gfx.text_measure(pattern_properties)[0];
+
+        this.set_rgb(this.asRGB(...this.theme_colors.pattern_info_bg_color), 2.3);
+        gfx.rectangle(w - str_width - 5, 0, str_width, this.charheight);
+        gfx.fill();
+
+        this.set_rgb(this.asRGB(...this.theme_colors.status_text_color), 1.3);
+        gfx.move_to(w - (str_width + 10), this.charheight * 0.9);
+        gfx.show_text(pattern_properties);
+    }
+
     paint(){
         /*
         when not in edit mode, this could do some pop/push, rather than performing all draw commands..
@@ -1623,6 +1640,7 @@ class Tracker  {
         this.dark_background();
         this.draw_highlighted_lines(4);
         this.draw_tick_position();
+        this.draw_pattern_information();
         this.draw_command_background();
         this.draw_caret();
         this.draw_pattern_data();
