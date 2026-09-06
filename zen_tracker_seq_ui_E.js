@@ -325,6 +325,7 @@ function send_pattern_to_tracker(){
     var pdata = sequencer_config.patterns[pattern_ref.track].patterns[pattern_ref.pindex].data;
 
     var machine_name = sequencer_config.tracks[trk].machine;
+    var track_name = sequencer_config.tracks[trk].trk_name;
     var pattern_exchange_markup = {
         editing_puid: 1,
         puid: pattern.puid,
@@ -332,7 +333,7 @@ function send_pattern_to_tracker(){
         descriptors: {track: sequencer_config.machines[machine_name]},
         data: pdata,
         lexical_track: "",
-        machine_name: machine_name,
+        track_name: track_name,
         pattern_name: pattern.pname
     };
 
