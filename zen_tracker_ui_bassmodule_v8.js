@@ -1453,15 +1453,23 @@ class Tracker  {
             this.set_rgb(this.asRGB(...this.theme_colors.status_text_color), 1.3);
             // mgraphics.move_to(start_x + ((idx[0] + 4) * charwidth), start_y - (0.9 * charheight));
             var locator_width = this.mgraphics.text_measure(caret_string + '  ')[0];
+            var current_descriptor = this.pattern_markup.descriptors.track[idx[1]][1];
             gfx.move_to(locator_width, h - (0.25 * this.charheight));
-            gfx.show_text(this.pattern_markup.descriptors.track[idx[1]][1]);
+            gfx.show_text(current_descriptor);
 
             gfx.move_to(0 + this.charwidth, h - (0.25 * this.charheight));
             gfx.show_text(caret_string);
+            
             var current_channel = "⌇ " + channel_idx + " |";
             var current_octave = " Ξ " + this.#g_pattern_octave + " | ";
             var version_identifier = current_channel + current_octave + this.#g_tracker_version;
             var identifier_width = this.mgraphics.text_measure(version_identifier + ' ')[0];
+
+            // do we have enough space to show this in the statusbar?
+            var descriptor_width = this.mgraphics.text_measure(current_descriptor)[0];
+            var sum_width = (identifier_width + locator_width + descriptor_width);
+            // post(identifier_width, locator_width, descriptor_width, '=', sum_width);
+            if (w < sum_width) return;
 
             gfx.move_to(w - identifier_width, h - (0.25 * this.charheight));
             gfx.show_text(version_identifier);

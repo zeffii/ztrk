@@ -26,7 +26,7 @@ function refresh() { mgraphics.redraw(); }
 function rebuildBuffers() {
     buffers = [];
     for (var i = 0; i < numTracks; i++) {
-        buffers.push(new Buffer("t" + i + "_buf"));
+        buffers.push(new Buffer(`t${i}_buf`));
     }
 }
 rebuildBuffers();
@@ -36,9 +36,9 @@ function colorForValue(v) {
     if (v === -1)    return [0.15, 0.15, 0.18, 1];   // empty
     if (v === -0.75) return [0.9, 0.2, 0.3, 1];      // ^^^
     if (v === -0.5)  return [0.2, 0.6, 0.9, 1];      // ===
-    if (v === 0)     return null;                     // skip
+    if (v === 0)     return null;                    // skip
     var g = Math.min(1, Math.max(0, v));
-    return [g, g, g, 1];                               // >0 greyscale
+    return [g, g, g, 1];                             // >0 greyscale
 }
 
 // ---------- paint every channel of one track, stacked in [y, y+h] ----------
