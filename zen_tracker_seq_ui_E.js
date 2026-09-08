@@ -165,6 +165,15 @@ function finalize(command){
                 sequencer_config.encoded_pattern_cache[command.info.pattern.puid] = array2d_float;
                 write_track_buffer_from_Array2D_floats(command.info.track_index, command.info.pattern.start, command.info.pattern.length, array2d_float);
                 outlet(0, "refresh", "buffer_viz");
+            } else if (command.operation === "insertion"){
+                // {refresh: true, update_buffer: true, puid: puid, start: start, track_index: trk, operation: "insertion"});
+                var pattern_ref = getMachineAndPIndexByPUID(command.puid);
+                var pattern = sequencer_config.patterns[pattern_ref.track].patterns[pattern_ref.pindex];
+                var array2d_str = pattern_data_to_2d_Array_string_cells(pattern.data);
+                var array2d_float = encodeArray2Dstr_to_float(array2d_str);
+                sequencer_config.encoded_pattern_cache[command.puid] = array2d_float;
+                write_track_buffer_from_Array2D_floats(command.track_index, command.start, pattern.length, array2d_float);
+                outlet(0, "refresh", "buffer_viz");
             }
         }
     }
@@ -778,7 +787,7 @@ function insert_pattern_at_cursor(new_pattern_flag, pattern){
     }
 
     add_pattern(trk, start, puid);
-    finalize({refresh: true, update_buffer: true, puid: puid, start: start});  // not sure if needed.
+    finalize({refresh: true, update_buffer: true, puid: puid, start: start, track_index: trk, operation: "insertion"});
 }
 
 function remove_pattern_at_cursor(){
