@@ -160,6 +160,7 @@ function finalize(command){
                 write_track_buffer_from_Array2D_floats(command.trk_idx, command.start, command.samples, array2d);
                 outlet(0, "refresh", "buffer_viz");
             } else if (command.operation === 'restore_underlying_pattern'){
+                // THIS DOES NOT WORK AS EXPECTED
                 // you will be invoking this when a pattern-to-remove was interupting another pattern, and wish to restore that data
                 // command.info = {found_idx: i, pattern: candidate_pattern, track_index: track_index};
                 // this is a lazy implementation, but lets get it to work first. This simply rewrites the pattern data entirely.
