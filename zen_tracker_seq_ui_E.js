@@ -252,7 +252,7 @@ function find_any_pattern_under_cursor(trk, cursor, inclusive = false){
     return found_idx;
 }
 
-function find_pattern_suspended_by_this_pattern(track_index, puid){
+function find_pattern_suspended_by_this_pattern(track_index, puid, pattern_index){
     var other_pattern = null;
     // stuff
 
@@ -373,7 +373,7 @@ function command(instruction) {
             outlet(1, "dictionary", outputDict.name);
             break;
         }
-        case 'save': crate_fullpath_and_save(); break;
+        case 'save': create_fullpath_and_save(); break;
         case 'get_pmarkup': {
             // var markup = this.patcher.getnamed("TrackerView").getnamed("pattern_markup").getvalueof
             // post(markup.length);
@@ -777,8 +777,8 @@ function remove_pattern_at_cursor(){
         var pattern = getPattrByPUID(track, puid);
         var samples = pattern.length;
 
-        var other_pattern = find_pattern_suspended_by_this_pattern(trk_idx, pattern.puid);
-        track.patterns.splice(found_idx, 1); // remove from sequncer
+        var other_pattern = find_pattern_suspended_by_this_pattern(trk_idx, pattern.puid, found_idx);
+        track.patterns.splice(found_idx, 1); // remove from sequencer
 
         // reflect updates.
         if (other_pattern === null){
@@ -1121,7 +1121,7 @@ function save(filepath, content) {
     }
 }
 
-function crate_fullpath_and_save(){
+function create_fullpath_and_save(){
     var filename = getSafeDatetimeFilename(g_song_name);
     var output_dir = g_song_folder;
     if (output_dir !== null){
