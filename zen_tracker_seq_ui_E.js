@@ -252,7 +252,7 @@ function find_any_pattern_under_cursor(trk, cursor, inclusive = false){
     return found_idx;
 }
 
-function find_pattern_suspended_by_this_pattern(pattern){
+function find_pattern_suspended_by_this_pattern(track_index, puid){
     var other_pattern = null;
     // stuff
 
@@ -777,7 +777,7 @@ function remove_pattern_at_cursor(){
         var pattern = getPattrByPUID(track, puid);
         var samples = pattern.length;
 
-        var other_pattern = find_pattern_suspended_by_this_pattern(trk_idx, pattern);
+        var other_pattern = find_pattern_suspended_by_this_pattern(trk_idx, pattern.puid);
         track.patterns.splice(found_idx, 1); // remove from sequncer
 
         // reflect updates.
