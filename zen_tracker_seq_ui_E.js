@@ -148,13 +148,16 @@ function finalize(command){
         mgraphics.redraw();
     }
     if ('update_buffer' in command){
-        //var puid =        // command.puid and command.start must be supplied too.
+
         if ('operation' in command){
             if (command.operation === 'wipe'){
+                // if you know this pattern wasn't interupting other patterns, you can go ahead and overwrite the buffer with zeroes.
                 var array2d = generateEmpty2dArrayFloats(command.trk_idx, command.samples);
                 write_track_buffer_from_Array2D_floats(command.trk_idx, command.start, command.samples, array2d);
-                // this must update the buffer viz if present.   multibuffer_view
                 outlet(0, "refresh", "buffer_viz");
+            } else if (command.operation === 'restore_underlying_pattern'){
+                // you will be invoking this when a pattern-to-remove was interupting another pattern, and wish to restore that data
+
             }
         }
     }
