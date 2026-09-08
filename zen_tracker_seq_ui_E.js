@@ -159,18 +159,24 @@ function finalize(command){
                 var array2d = generateEmpty2dArrayFloats(command.trk_idx, command.samples);
                 write_track_buffer_from_Array2D_floats(command.trk_idx, command.start, command.samples, array2d);
                 outlet(0, "refresh", "buffer_viz");
-            } else if (command.operation === 'restore_underlying_pattern'){
+            } 
+            else if (command.operation === 'restore_underlying_pattern'){
                 // THIS DOES NOT WORK AS EXPECTED
                 // you will be invoking this when a pattern-to-remove was interupting another pattern, and wish to restore that data
                 // command.info = {found_idx: i, pattern: candidate_pattern, track_index: track_index};
+                var candidate_pattern = command.info.pattern;
+                var pattern_ref = getMachineAndPIndexByPUID(candidate_pattern.puid);
+                var pattern = sequencer_config.patterns[pattern_ref.track].patterns[pattern_ref.pindex];
                 // this is a lazy implementation, but lets get it to work first. This simply rewrites the pattern data entirely.
                 // this is ok, but it assumes there aren't any other patterns interupting a longer pattern, hence why surgical with range replacement would be better.
-                var array2d_str = pattern_data_to_2d_Array_string_cells(command.info.pattern.data);
+                var array2d_str = pattern_data_to_2d_Array_string_cells(pattern.data);
                 var array2d_float = encodeArray2Dstr_to_float(array2d_str);
-                sequencer_config.encoded_pattern_cache[command.info.pattern.puid] = array2d_float;
-                write_track_buffer_from_Array2D_floats(command.info.track_index, command.info.pattern.start, command.info.pattern.length, array2d_float);
+                // sequencer_config.encoded_pattern_cache[command.info.pattern.puid] = array2d_float;
+                write_track_buffer_from_Array2D_floats(pattern_ref.track, command.info.pattern.start, pattern.length, array2d_float);
                 outlet(0, "refresh", "buffer_viz");
-            } else if (command.operation === "insertion"){
+
+            } 
+            else if (command.operation === "insertion"){
                 // {refresh: true, update_buffer: true, puid: puid, start: start, track_index: trk, operation: "insertion"});
                 var pattern_ref = getMachineAndPIndexByPUID(command.puid);
                 var pattern = sequencer_config.patterns[pattern_ref.track].patterns[pattern_ref.pindex];
