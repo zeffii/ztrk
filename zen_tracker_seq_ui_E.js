@@ -157,7 +157,14 @@ function finalize(command){
                 outlet(0, "refresh", "buffer_viz");
             } else if (command.operation === 'restore_underlying_pattern'){
                 // you will be invoking this when a pattern-to-remove was interupting another pattern, and wish to restore that data
-
+                // command.info = {found_idx: i, pattern: candidate_pattern, track_index: track_index};
+                // this is a lazy implementation, but lets get it to work first. This simply rewrites the pattern data entirely.
+                // this is ok, but it assumes there aren't any other patterns interupting a longer pattern, hence why surgical with range replacement would be better.
+                var array2d_str = pattern_data_to_2d_Array_string_cells(command.info.pattern.data);
+                var array2d_float = encodeArray2Dstr_to_float(array2d_str);
+                sequencer_config.encoded_pattern_cache[command.info.pattern.puid] = array2d_float;
+                write_track_buffer_from_Array2D_floats(command.info.track_index, command.info.pattern.start, command.info.pattern.length, array2d_float);
+                outlet(0, "refresh", "buffer_viz");
             }
         }
     }
@@ -210,12 +217,6 @@ function add_pattern(machine_trk, start, puid){
     // finalize()
 };
 
-function delete_pattern(puid){}
-function remove_pattern_from_sequencer(){
-    // should remove data from buffer too.
-    // finalize()
-};
-
 function find_pattern_under_cursor(trk, start){
     // this just finds a pattern if the cursor is at the same `start` 
     // as an existing pattern in that track
@@ -254,7 +255,22 @@ function find_any_pattern_under_cursor(trk, cursor, inclusive = false){
 
 function find_pattern_suspended_by_this_pattern(track_index, puid, pattern_index){
     var other_pattern = null;
-    // stuff
+
+    // present a reverse sorted pattern list, last to first pattern.start.
+    var patterns = sequencer_config.tracks[track_index].patterns;
+    var sorted_placements = patterns.slice().sort(function(a, b){ return a.start - b.start; });
+
+    var pattern_to_remove_start = patterns[pattern_index].start;
+    for (let i = patterns.length - 1; i >= 0; i--) {
+        var candidate_pattern = sorted_placements[i];
+        if (candidate_pattern.start > pattern_to_remove_start) { continue; }
+        else if (candidate_pattern.start === pattern_to_remove_start) { continue; }  // the current pattern, no need to puid check ? :) no we do not allow overlapping /w same start.
+        else if ((candidate_pattern.start < pattern_to_remove_start ) && (pattern_to_remove_start < (candidate_pattern.start + candidate_pattern.length)) ){
+            post('found:' , candidate_pattern.pname, i);
+            other_pattern = {found_idx: i, pattern: candidate_pattern, track_index: track_index};
+            break;
+        }
+    }
 
     return other_pattern;
 }
@@ -784,7 +800,8 @@ function remove_pattern_at_cursor(){
         if (other_pattern === null){
             finalize({refresh: true, update_buffer: true, puid: puid, start: start, samples: samples, trk_idx: trk_idx, operation: "wipe"});
         } else {
-            finalize({refresh: true, update_buffer: true, puid: puid, start: start, samples: samples, trk_idx: trk_idx, operation: "restore_underlying_pattern"});
+            // other_pattern {found_idx: i, pattern: candidate_pattern, track_index: track_index};
+            finalize({refresh: true, update_buffer: true, puid: puid, start: start, samples: samples, trk_idx: trk_idx, operation: "restore_underlying_pattern", info: other_pattern});
         }
     }
 }
