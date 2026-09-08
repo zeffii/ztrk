@@ -252,6 +252,13 @@ function find_any_pattern_under_cursor(trk, cursor, inclusive = false){
     return found_idx;
 }
 
+function find_pattern_suspended_by_this_pattern(pattern){
+    var other_pattern = null;
+    // stuff
+
+    return other_pattern;
+}
+
 function next_pname4(){
     // dumb incrementing label, patterns should be named eventually.
     var pname = fmt4(g_next_pname_counter).trim();
@@ -769,10 +776,16 @@ function remove_pattern_at_cursor(){
         var puid = track.patterns[found_idx].puid;
         var pattern = getPattrByPUID(track, puid);
         var samples = pattern.length;
-        // remove
-        track.patterns.splice(found_idx, 1);
+
+        var other_pattern = find_pattern_suspended_by_this_pattern(trk_idx, pattern);
+        track.patterns.splice(found_idx, 1); // remove from sequncer
+
         // reflect updates.
-        finalize({refresh: true, update_buffer: true, puid: puid, start: start, samples: samples, trk_idx: trk_idx, operation: "wipe"}); // simple for now.
+        if (other_pattern === null){
+            finalize({refresh: true, update_buffer: true, puid: puid, start: start, samples: samples, trk_idx: trk_idx, operation: "wipe"});
+        } else {
+            finalize({refresh: true, update_buffer: true, puid: puid, start: start, samples: samples, trk_idx: trk_idx, operation: "restore_underlying_pattern"});
+        }
     }
 }
 
