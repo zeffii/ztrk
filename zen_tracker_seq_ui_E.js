@@ -110,7 +110,11 @@ var sequencer_config = {
 function sequencer_init(){
     var num_tracks = sequencer_config.tracks.length;
     var patcher = this.patcher;
-    return init_track_buffers(patcher, num_tracks);
+
+    init_track_buffers(patcher, num_tracks);
+    debug_empty_buffers();
+    outlet(0, "refresh", "buffer_viz");
+    return ;
 }
 
 // - simulate adding data at runtime.
