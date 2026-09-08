@@ -55,28 +55,20 @@ function empty_buffers_by_range(startTrack, endTrack) {
 		new Buffer(bufname).send("clear");
 		count++;
 	}
-	post(`empty_buffers_by_range: cleared ${count} buffer(s) (t${startTrack}_buf .. t"${endTrack}_buf)\n`);
+	post(`empty_buffers_by_range: cleared ${count} buffer(s) (t${startTrack}_buf .. t${endTrack}_buf)\n`);
 }
 
-/*
+function generateEmpty2dArrayFloats(track_index, num_samples){
+	//var frames = buf.framecount();
+    var buffer_name = get_buffer_name_from_track(track_index);
+    var buf = new Buffer(buffer_name);    
+    var num_channels = buf.channelcount();
 
-function empty_buffers_by_range(startTrack, endTrack) {
-	var count = 0;
-	var missing = [];
-	for (var n = startTrack; n <= endTrack; n++) {
-		var bufname = "t" + n + "_buf";
-		var buf = new Buffer(bufname);
-		if (buf.framecount() > 0) {
-			buf.send("clear");
-			count++;
-		} else {
-			missing.push(bufname);
-		}
-	}
-	post("empty_buffers_by_range: cleared " + count + " buffer(s) (t" + startTrack + "_buf .. t" + endTrack + "_buf)\n");
-	if (missing.length > 0) {
-		post("empty_buffers_by_range: no buffer~ found for: " + missing.join(", ") + "\n");
-	}
+    var celldata_array = [];
+    for (let row_idx = 0; row_idx < num_channels; row_idx += 1){
+        var cell_row_data = [];
+        for (let param_idx = 0; param_idx < num_samples; param_idx += 1){ cell_row_data.push(0.0);  }
+        celldata_array.push(cell_row_data);
+    }
+    return celldata_array;
 }
-
-*/

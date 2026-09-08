@@ -149,6 +149,14 @@ function finalize(command){
     }
     if ('update_buffer' in command){
         //var puid =        // command.puid and command.start must be supplied too.
+        if ('operation' in command){
+            if (command.operation === 'wipe'){
+                var array2d = generateEmpty2dArrayFloats(command.trk_idx, command.samples);
+                write_track_buffer_from_Array2D_floats(command.trk_idx, command.start, command.samples, array2d);
+                // this must update the buffer viz if present.   multibuffer_view
+                outlet(0, "refresh", "buffer_viz");
+            }
+        }
     }
 }
 
@@ -748,14 +756,20 @@ function insert_pattern_at_cursor(new_pattern_flag, pattern){
 }
 
 function remove_pattern_at_cursor(){
-    var trk = g_tcaret.col;
+    var trk_idx = g_tcaret.col;
     var start = tick_from_row(g_tcaret.row);
 
-    var found_idx = find_pattern_under_cursor(trk, start);
+    var found_idx = find_pattern_under_cursor(trk_idx, start);
     if (found_idx >= 0){ 
-        var puid = sequencer_config.tracks[trk].patterns[found_idx].puid;
-        sequencer_config.tracks[trk].patterns.splice(found_idx, 1); 
-        finalize({refresh: true, update_buffer: true, puid: puid, start: start});  // not sure if needed.
+        // get info before removing.
+        var track = sequencer_config.tracks[trk_idx];
+        var puid = track.patterns[found_idx].puid;
+        var pattern = getPattrByPUID(track, puid);
+        var samples = pattern.length;
+        // remove
+        track.patterns.splice(found_idx, 1);
+        // reflect updates.
+        finalize({refresh: true, update_buffer: true, puid: puid, start: start, samples: samples, trk_idx: trk_idx, operation: "wipe"}); // simple for now.
     }
 }
 
