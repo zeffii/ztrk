@@ -161,22 +161,36 @@ function finalize(command){
                 outlet(0, "refresh", "buffer_viz");
             } 
             else if (command.operation === 'restore_underlying_pattern'){
-                // THIS DOES NOT WORK AS EXPECTED
                 // you will be invoking this when a pattern-to-remove was interupting another pattern, and wish to restore that data
                 // command.info = {found_idx: i, pattern: candidate_pattern, track_index: track_index};
                 var candidate_pattern = command.info.pattern;
                 var pattern_ref = getMachineAndPIndexByPUID(candidate_pattern.puid);
                 var pattern = sequencer_config.patterns[pattern_ref.track].patterns[pattern_ref.pindex];
-                // this is a lazy implementation, but lets get it to work first. This simply rewrites the pattern data entirely.
-                // this is ok, but it assumes there aren't any other patterns interupting a longer pattern, hence why surgical with range replacement would be better.
                 var array2d_str = pattern_data_to_2d_Array_string_cells(pattern.data);
                 var array2d_float = encodeArray2Dstr_to_float(array2d_str);
                 // sequencer_config.encoded_pattern_cache[command.info.pattern.puid] = array2d_float;
-                write_track_buffer_from_Array2D_floats(pattern_ref.track, command.info.pattern.start, pattern.length, array2d_float);
-                outlet(0, "refresh", "buffer_viz");
+                
+                var mode = ['surgical', 'lazy'][0];
+                
+                if (mode === 'surgical'){
+                    // note that this is slightly wasteful, as i could slice the pattern data first, then convert to 2d arrays.
+                    var offset = command.start - command.info.pattern.start;
+                    var restore_len = Math.min(command.samples, pattern.length - offset);
+                    var array2d_float_trimmed = array2d_float.slice(offset, offset + restore_len);
+                    write_track_buffer_from_Array2D_floats(pattern_ref.track, command.start, command.samples, array2d_float_trimmed);
+                } else {
+                    // this is a lazy implementation, but lets get it to work first. This simply rewrites the pattern data entirely.
+                    // this is ok, but it assumes there aren't any other patterns interupting a longer pattern, hence why surgical with range replacement would be better.
+                    write_track_buffer_from_Array2D_floats(pattern_ref.track, command.info.pattern.start, pattern.length, array2d_float);
+                }
 
+                outlet(0, "refresh", "buffer_viz");
             } 
             else if (command.operation === "insertion"){
+                // something does doesn't handle yet, if inserted pattern's extent falls within the start, or start+length of other patterns.
+                //
+                // massive bug.
+
                 // {refresh: true, update_buffer: true, puid: puid, start: start, track_index: trk, operation: "insertion"});
                 var pattern_ref = getMachineAndPIndexByPUID(command.puid);
                 var pattern = sequencer_config.patterns[pattern_ref.track].patterns[pattern_ref.pindex];
@@ -233,8 +247,8 @@ function add_pattern(machine_trk, start, puid){
     }
     var mpattern = {pname: pattern.pname, puid: puid, start: start, length: pattern.length, color: pattern.color};
     sequencer_config.tracks[machine_trk].patterns.push(mpattern);
-    // complicated...  find if there are any patterns attempting to truncate this one, find the proposed buffer-write-length ( depending on truncation or not )
-    // finalize()
+
+    // finalize() ??
 };
 
 function find_pattern_under_cursor(trk, start){
