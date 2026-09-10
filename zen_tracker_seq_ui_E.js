@@ -1193,33 +1193,78 @@ function makeFilenameSafe(str, maxLength = 255) {
     return safeStr;
 }
 
+// function save(filepath, content) {
+//     var f = new File(filepath, "write", "TEXT");
+//     if (f.isopen) {
+//         // there's a 32kb limit.
+//         f.open();
+//         f.writestring(content);
+//         f.close();
+//     }
+// }
+
 function save(filepath, content) {
     var f = new File(filepath, "write", "TEXT");
     if (f.isopen) {
-        // there's a 32kb limit.
         f.open();
-        f.writestring(content);
+
+        var chunk_size = 16000; // stay comfortably under the 32k per-call limit
+        var pos = 0;
+        while (pos < content.length) {
+            f.writestring(content.substring(pos, pos + chunk_size));
+            pos += chunk_size;
+        }
         f.close();
     }
 }
 
+// function load_song(filepath){
+    
+//     let f = new File(filepath, "read");
+//     if (!f.isopen) { post("Could not open: " + path + "\n"); return; }
+    
+//     let text = f.readstring(f.eof);
+//     post("Read " + text.length + " characters\n");
+//     f.close();
+    
+//     try {
+//         let data = JSON.parse(text);
+//         if (!data.hasOwnProperty("patterns")) { throw new Error("Missing required key: patterns"); }
+//         if (!data.hasOwnProperty("tracks")) { throw new Error("Missing required key: tracks"); }
+//         if (!data.hasOwnProperty("machines")) { throw new Error("Missing required key: machines"); }
+//         sequencer_config = { ...data };
+//         finalize({refresh: true, update_buffer: true, operation: "write_all"});
+        
+//     } catch (e) {
+//         post("Invalid JSON: " + e + "\n");
+//     }
+// }
+
 function load_song(filepath){
-    
     let f = new File(filepath, "read");
-    if (!f.isopen) { post("Could not open: " + path + "\n"); return; }
-    
-    let text = f.readstring(f.eof);
+    if (!f.isopen) { post("Could not open: " + filepath + "\n"); return; }
+
+    var chunk_size = 16000;
+    var text = "";
+    var remaining = f.eof;
+
+    while (remaining > 0) {
+        var to_read = Math.min(chunk_size, remaining);
+        text += f.readstring(to_read);
+        remaining -= to_read;
+    }
+
     post("Read " + text.length + " characters\n");
     f.close();
-    
+
     try {
         let data = JSON.parse(text);
         if (!data.hasOwnProperty("patterns")) { throw new Error("Missing required key: patterns"); }
         if (!data.hasOwnProperty("tracks")) { throw new Error("Missing required key: tracks"); }
         if (!data.hasOwnProperty("machines")) { throw new Error("Missing required key: machines"); }
-        sequencer_config = { ...data };
+        sequencer_config = { ...data, encoded_pattern_cache: {} };
         finalize({refresh: true, update_buffer: true, operation: "write_all"});
-        
+
     } catch (e) {
         post("Invalid JSON: " + e + "\n");
     }
