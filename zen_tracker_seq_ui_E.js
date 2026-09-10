@@ -118,17 +118,16 @@ function sequencer_init(){
 }
 
 // - simulate adding data at runtime.
-add_pattern(0, 0,   uid_01);
-add_pattern(0, 128, uid_04);
-add_pattern(0, 288, uid_07);
-add_pattern(1, 16,  uid_02);
-add_pattern(1, 192, uid_05);
-add_pattern(2, 64,  uid_03);
-add_pattern(2, 256, uid_06);
+// add_pattern(0, 0,   uid_01);
+// add_pattern(0, 128, uid_04);
+// add_pattern(0, 288, uid_07);
+// add_pattern(1, 16,  uid_02);
+// add_pattern(1, 192, uid_05);
+// add_pattern(2, 64,  uid_03);
+// add_pattern(2, 256, uid_06);
 
 // - one liner utils.
 
-//const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 const ASCII = (key) => String.fromCharCode(key).toUpperCase();
 const fmt4 = (n) => ('0000' + Math.floor(Math.abs(n))).slice(-4) + ' '; 
 const fmt3 = (n) => ('000' + Math.floor(Math.abs(n))).slice(-3) + ' '; 
@@ -139,7 +138,7 @@ const set_rgb = (c, d /*color, dimming*/) => { mgraphics.set_source_rgba(c.r / d
 
 const kind_from_column = (col) => sequencer_config.tracks[col].kind;
 const tick_from_row = (row) => row * 16;
-// const found_in = (list, value) => (list.indexOf(value) !== -1);   (defined in pattern_utils)
+
 
 // - multi line utils
 
@@ -1197,11 +1196,35 @@ function makeFilenameSafe(str, maxLength = 255) {
 function save(filepath, content) {
     var f = new File(filepath, "write", "TEXT");
     if (f.isopen) {
+        // there's a 32kb limit.
         f.open();
         f.writestring(content);
         f.close();
     }
 }
+
+function load_song(filepath){
+    
+    let f = new File(filepath, "read");
+    if (!f.isopen) { post("Could not open: " + path + "\n"); return; }
+    
+    let text = f.readstring(f.eof);
+    post("Read " + text.length + " characters\n");
+    f.close();
+    
+    try {
+        let data = JSON.parse(text);
+        if (!data.hasOwnProperty("patterns")) { throw new Error("Missing required key: patterns"); }
+        if (!data.hasOwnProperty("tracks")) { throw new Error("Missing required key: tracks"); }
+        if (!data.hasOwnProperty("machines")) { throw new Error("Missing required key: machines"); }
+        sequencer_config = { ...data };
+        finalize({refresh: true, update_buffer: true, operation: "write_all"});
+        
+    } catch (e) {
+        post("Invalid JSON: " + e + "\n");
+    }
+}
+
 
 function create_fullpath_and_save(){
     var filename = getSafeDatetimeFilename(g_song_name);
@@ -1210,8 +1233,11 @@ function create_fullpath_and_save(){
         // as output_dir ends in slash, simple concat may suffice x-platform.
         const fullPath = output_dir + filename + ".json";   
         post('writing', fullPath);
-        // var content = JSON.stringify(sequencer_config);          // if g_export_indent === false
-        var content = JSON.stringify(sequencer_config, null, 2);    // if g_export_indent === true
+
+        const sequencer_reduxed = { ...sequencer_config};
+        delete sequencer_reduxed.encoded_pattern_cache;  //drop this key
+        
+        var content = JSON.stringify(sequencer_reduxed, null, 2);    // if g_export_indent === true
         save(fullPath, content);
     } else {
         post('specify output directory using message: set_output_dir $1    , where $1 is the directory including terminating slash')
