@@ -472,9 +472,7 @@ function find_overlapping_patterns_within_occurance(occ){
         overlaps = true;
     }
     return overlaps ? mask : null;
-}
-
-
+};
 
 function handle_pattern_from_tracker(payload){
     post('handle_pattern_from_tracker');
@@ -495,18 +493,16 @@ function handle_pattern_from_tracker(payload){
 
     var occurrences = find_pattern_occurrences_for_buffer_write(pattern_ref.track, payload.puid);
     for (const occ of occurrences) {
-        // [ ] each of these must first figure out if there are sub-patterns or interupt-patterns which will result 
-        // in "lifting the pen" and not writing to certain parts of the buffer in those places.
         var overlaps = find_overlapping_patterns_within_occurance(occ);
         if (overlaps === null){
             write_track_buffer_from_Array2D_floats(pattern_ref.track, occ.start, occ.num_ticks, array2d_float);
         } else {
-            post('riding masked buffer writing!');
+            // post('riding masked buffer writing!');
             write_track_buffer_from_Array2D_floats(pattern_ref.track, occ.start, occ.num_ticks, array2d_float, overlaps);
         }
     }
 
-    // this operation does not current require the sequence-editor view to be refreshed.
+    // this operation does not require the sequence-editor view to be refreshed.
     return;
 };
 
