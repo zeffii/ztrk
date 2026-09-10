@@ -45,7 +45,8 @@ Some milestones i will need to tackle, in no particular order
 Step 3:
 
 - [ ] add user defined machines
-- [ ] add basic set of sampler/effects/synth
+- [ ] add tracks (select machine to add)
+- [ ] add basic set of sampler/effects/synth (call these machines)
 - [ ] implement a subset of utrk (yes, that utrk!)
 - [ ] keyrepeats, need a tidier solution (has been through several iteration, not satisfying yet)
 
