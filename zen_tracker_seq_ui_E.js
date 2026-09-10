@@ -1235,7 +1235,7 @@ function create_fullpath_and_save(){
         post('writing', fullPath);
 
         const sequencer_reduxed = { ...sequencer_config};
-        delete sequencer_reduxed.encoded_pattern_cache;  //drop this key
+        sequencer_reduxed.encoded_pattern_cache = {}; // drop the content. but not the key.
         
         var content = JSON.stringify(sequencer_reduxed, null, 2);    // if g_export_indent === true
         save(fullPath, content);

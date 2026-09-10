@@ -440,7 +440,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "127",
+                                    "text": "30",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -529,7 +529,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "117",
+                                    "text": "126",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -574,7 +574,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 127 117 0 -6",
+                                    "text": "keys 30 126 0 -9",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -1208,7 +1208,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 330.0, 325.0, 56.0, 25.0 ],
-                                    "text": "127",
+                                    "text": "30",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -1286,7 +1286,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 187.0, 154.0, 22.0 ],
-                                    "text": "117",
+                                    "text": "126",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -1320,7 +1320,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 373.0, 154.0, 22.0 ],
-                                    "text": "keys 127 117 0 -6",
+                                    "text": "keys 30 126 0 -9",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -1666,7 +1666,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 1.0, 148.0, 459.0, 590.0 ],
+                    "patching_rect": [ 1.0, 147.0, 459.0, 590.0 ],
                     "textfile": {
                         "filename": "zen_tracker_seq_ui_E.js",
                         "flags": 0,
