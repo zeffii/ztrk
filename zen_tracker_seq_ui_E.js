@@ -72,17 +72,17 @@ var sequencer_config = {
     ],
     patterns: [   /*  This is the pool of patterns to pick from for each machine / trk */
         {trk: 0, patterns: [
-            {pname: "01", puid: uid_01, length: 32, color: [0.2, 0.4, 0.5], data: []},   // 0
-            {pname: "04", puid: uid_04, length: 64, color: [0.2, 0.4, 0.5], data: []},   // 128
-            {pname: "07", puid: uid_07, length: 32, color: [0.2, 0.4, 0.5], data: []}    // 288
+            {pname: "01", puid: uid_01, length: 32, color: [0.2, 0.4, 0.5], data: []},
+            {pname: "04", puid: uid_04, length: 64, color: [0.2, 0.4, 0.5], data: []},
+            {pname: "07", puid: uid_07, length: 32, color: [0.2, 0.4, 0.5], data: []}
         ]},
         {trk: 1, patterns: [
-            {pname: "02", puid: uid_02, length: 48, color: [0.2, 0.4, 0.5], data: []},   // 16
-            {pname: "05", puid: uid_05, length: 16, color: [0.2, 0.4, 0.5], data: []}    // 192
+            {pname: "02", puid: uid_02, length: 48, color: [0.2, 0.4, 0.5], data: []},
+            {pname: "05", puid: uid_05, length: 16, color: [0.2, 0.4, 0.5], data: []}
         ]},
         {trk: 2, patterns: [
-            {pname: "03", puid: uid_03, length: 64, color: [0.9, 0.34, 0.3], data: []},  // 64
-            {pname: "06", puid: uid_06, length: 16, color: [0.9, 0.34, 0.3], data: []}   // 256
+            {pname: "03", puid: uid_03, length: 128, color: [0.9, 0.34, 0.3], data: []},
+            {pname: "06", puid: uid_06, length: 16, color: [0.9, 0.34, 0.3], data: []}
         ]}
     ],
     machines: {
@@ -440,14 +440,14 @@ function command(instruction) {
 }
 
 function find_overlapping_patterns_within_occurance(occ){
+    // odd will contain:  {start: placement.start, num_ticks: num_ticks, trk: track, puid: puid}
     let overlaps = false;
-
     const track_placements = sequencer_config.tracks[occ.trk].patterns;
-    const occ_end = occ.start + occ.length;
-    const mask = new Array(occ.length).fill(false); // false = unmasked = write it
+    const occ_end = occ.start + occ.num_ticks;
+    const mask = new Array(occ.num_ticks).fill(false); // false = unmasked = write it
 
     for (const other of track_placements) {
-        if (other === occ) continue;
+        if (other.puid === occ.puid) continue;
 
         const other_end = other.start + other.length;
         if (other.start >= occ_end || occ.start >= other_end) continue; // no intersection at all
@@ -516,7 +516,7 @@ function find_pattern_occurrences_for_buffer_write(track, puid){
 
         if (num_ticks <= 0) continue; // degenerate: another placement starts at/before this one
 
-        occurrences.push({start: placement.start, num_ticks: num_ticks});
+        occurrences.push({start: placement.start, num_ticks: num_ticks, trk: track, puid: puid});
     }
     return occurrences;
 }
