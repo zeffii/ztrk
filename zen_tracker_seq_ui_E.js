@@ -440,7 +440,7 @@ function command(instruction) {
 }
 
 function find_overlapping_patterns_within_occurance(occ){
-    // odd will contain:  {start: placement.start, num_ticks: num_ticks, trk: track, puid: puid}
+    // occ: {start: placement.start, num_ticks: num_ticks, trk: track, puid: puid}
     let overlaps = false;
     const track_placements = sequencer_config.tracks[occ.trk].patterns;
     const occ_end = occ.start + occ.num_ticks;
@@ -448,6 +448,7 @@ function find_overlapping_patterns_within_occurance(occ){
 
     for (const other of track_placements) {
         if (other.puid === occ.puid) continue;
+        if (other.start <= occ.start) continue; // other started at/before occ — it doesn't interrupt occ, occ interrupts it
 
         const other_end = other.start + other.length;
         if (other.start >= occ_end || occ.start >= other_end) continue; // no intersection at all
