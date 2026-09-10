@@ -37,12 +37,16 @@ Some milestones i will need to tackle, in no particular order
 - [x] basic waveform viewer, selector
 - [x] basic first synth mk2
 - [x] link sequencer to pattern editor (back and forth)
-- [ ] sequencing patterns
-- [ ] implement machine types (preliminary version),
+- [x] sequencing patterns
+- [x] implement machine types (preliminary version),
+- [x] loading / saving songs
+- [x] buffer visualizer
+
+Step 3:
+
+- [ ] add user defined machines
+- [ ] add basic set of sampler/effects/synth
 - [ ] implement a subset of utrk (yes, that utrk!)
-
-Some refinements needed here:
-
 - [ ] keyrepeats, need a tidier solution (has been through several iteration, not satisfying yet)
 
 
