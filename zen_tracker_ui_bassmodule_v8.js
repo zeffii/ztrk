@@ -188,7 +188,15 @@ class Tracker  {
             this.handle_received_pattern(payload);
             return;
         }
+        if (("mode" in payload) && payload.mode === "wipe"){
+            this.#received_first_pattern = false // reset! 
+            // would be nice to set a width of the trackerview here, so the empty message can be read.
+            // [ ] TODO
+            this.mgraphics.redraw();
+            return
+        }
         
+        post("You sent a dictionary that the tracker doesn't understand, so i'm going to just error a bit. thanks.")
         // here some default behaviour
         this.pattern_markup = payload;
         this.faux_pattern = this.pattern_markup.data;

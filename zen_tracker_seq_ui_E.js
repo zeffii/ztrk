@@ -64,7 +64,7 @@ var uid_05 = next_pattern_uid();
 var uid_03 = next_pattern_uid();
 var uid_06 = next_pattern_uid();
 
-var sequencer_config = {
+var default_config = {
     tracks: [
         {trk: 0, trk_name: "gen.00", machine: "notes4+", trk_symbol: "Λ", kind: "gen", patterns: []},    // will just contain references with a puid (see add_pattern)
         {trk: 1, trk_name: "gen.01", machine: "notes5+", trk_symbol: "Λ", kind: "gen", patterns: []},
@@ -107,6 +107,8 @@ var sequencer_config = {
     encoded_pattern_cache: {}
 };
 
+var sequencer_config = { ...default_config};
+
 function sequencer_init(){
     var num_tracks = sequencer_config.tracks.length;
     var patcher = this.patcher;
@@ -118,13 +120,13 @@ function sequencer_init(){
 }
 
 // - simulate adding data at runtime.
-// add_pattern(0, 0,   uid_01);
-// add_pattern(0, 128, uid_04);
-// add_pattern(0, 288, uid_07);
-// add_pattern(1, 16,  uid_02);
-// add_pattern(1, 192, uid_05);
-// add_pattern(2, 64,  uid_03);
-// add_pattern(2, 256, uid_06);
+add_pattern(0, 0,   uid_01);
+add_pattern(0, 128, uid_04);
+add_pattern(0, 288, uid_07);
+add_pattern(1, 16,  uid_02);
+add_pattern(1, 192, uid_05);
+add_pattern(2, 64,  uid_03);
+add_pattern(2, 256, uid_06);
 
 // - one liner utils.
 
@@ -357,6 +359,31 @@ function toggle_looping(){
 }
 
 // - Message handling.  (they can also be called by key handler )
+
+function clear_sequencer(){
+
+    empty_buffers_by_range(0, sequencer_config.tracks.length);
+
+    // get a known good config, and redux it.
+    const temp_config = { ...default_config};
+    // remove pattern_refs from
+    for (let j = 0; j < temp_config.tracks.length; j++) {
+        temp_config.tracks[j].patterns = [];
+    }
+
+    // remove patterns from database.
+    for (let i = 0; i < temp_config.patterns.length; i++) {
+        temp_config.patterns[i].patterns = [];
+    }
+    
+    sequencer_config = { ...temp_config};
+    mgraphics.redraw();
+
+    var message_to_wipe = new Dict('pattern_markup_dict');
+    message_to_wipe.parse(JSON.stringify({"mode": "wipe" }));
+    outlet(1, "dictionary", message_to_wipe.name);
+
+}
 
 function loop(mode){
     g_looping = mode;
