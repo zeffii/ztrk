@@ -250,6 +250,9 @@ function getPatterDataByPUID(puid){
 
 
 function add_pattern(machine_trk, start, puid){
+    /*
+    exclusively add the pattern to the sequencer.
+    */
     var pattern = getPattrByPUID(sequencer_config.patterns[machine_trk], puid);
     if (pattern === null) { 
         post(`failed to locate pattern by uid ${puid}`)
@@ -257,8 +260,6 @@ function add_pattern(machine_trk, start, puid){
     }
     var mpattern = {pname: pattern.pname, puid: puid, start: start, length: pattern.length, color: pattern.color};
     sequencer_config.tracks[machine_trk].patterns.push(mpattern);
-
-    // finalize() ??
 };
 
 function find_pattern_under_cursor(trk, start){
