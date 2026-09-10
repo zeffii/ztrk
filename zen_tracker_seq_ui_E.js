@@ -771,7 +771,7 @@ function slice_pattern_at_cursor(){
     // right now tracker will fill it with 'empty pattern'.
     if (data && data.length > 0) {
         pattern_a.data = data.slice(0, pattern_a_length);
-        pattern_b.data = data.slice(pattern_b_start);
+        pattern_b.data = data.slice(pattern_a_length);
     }
 
     // add to sequencer_config.patterns[trk].patterns   (adds to song-database)
@@ -783,7 +783,7 @@ function slice_pattern_at_cursor(){
     add_pattern(trk, pattern_b_start, pattern_b.puid);
     
     mgraphics.redraw();
-    // finalize(pattern_a)  ..first one can skip refresh
+    // finalize(pattern_a)  ..first one can skip refresh     // it may not be necessary to update the buffer, as the buffer is unchanged
     // finalize(refresh, pattern_b)
 }
 

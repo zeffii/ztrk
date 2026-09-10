@@ -28,22 +28,6 @@ function pattern_data_to_2d_Array_string_cells(data){
     return celldata_array;
 }
 
-// function write_track_buffer_from_Array2D_floats(track, start, num_ticks, array2d){
-
-//     var buffer_name = get_buffer_name_from_track(track);
-//     var buff_track = new Buffer(buffer_name);
-
-//     var rows_to_write = Math.min(num_ticks, array2d.length);
-
-//     for (var row = 0; row < rows_to_write; row++){
-//         var buffer_index = start + row;
-//         for (var col = 0; col < array2d[0].length; col++){
-//             var cell = array2d[row][col];  // is a float now.
-//             buff_track.poke(col+1, buffer_index, cell);
-//         }
-//     }
-// }
-
 function write_track_buffer_from_Array2D_floats(track, start, num_ticks, array2d, mask = null){
 
     var buffer_name = get_buffer_name_from_track(track);
@@ -62,7 +46,6 @@ function write_track_buffer_from_Array2D_floats(track, start, num_ticks, array2d
     }
 }
 
-
 function encodeArray2Dstr_to_float(grid) {
     return grid.map(row => row.map(cell => encode_cell_to_float(cell)));
 }
@@ -78,17 +61,15 @@ function empty_buffers_by_range(startTrack, endTrack) {
 }
 
 function generateEmpty2dArrayFloats(track_index, num_samples){
-	//var frames = buf.framecount();
     var buffer_name = get_buffer_name_from_track(track_index);
     var buf = new Buffer(buffer_name);    
     var num_channels = buf.channelcount();
 
     var celldata_array = [];
-    for (let row_idx = 0; row_idx < num_channels; row_idx += 1){
+    for (let row_idx = 0; row_idx < num_samples; row_idx += 1){
         var cell_row_data = [];
-        for (let param_idx = 0; param_idx < num_samples; param_idx += 1){ cell_row_data.push(0.0);  }
+        for (let col_idx = 0; col_idx < num_channels; col_idx += 1){ cell_row_data.push(0.0); }
         celldata_array.push(cell_row_data);
     }
     return celldata_array;
 }
-
