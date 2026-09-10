@@ -500,23 +500,14 @@ function handle_pattern_from_tracker(payload){
 };
 
 function find_pattern_occurrences_for_buffer_write(track, puid){
-    // all placements on this track, sorted by start — needed regardless of puid,
-    // since a *different* pattern's placement can interrupt this one before its natural end
-    var sorted_placements = sequencer_config.tracks[track].patterns.slice().sort(function(a, b){
-        return a.start - b.start;
-    });
+    var placements = sequencer_config.tracks[track].patterns;
 
     var occurrences = [];
-    for (var i = 0; i < sorted_placements.length; i++) {
-        var placement = sorted_placements[i];
+    for (var i = 0; i < placements.length; i++) {
+        var placement = placements[i];
         if (placement.puid !== puid) continue;
 
-        var next_start = (i + 1 < sorted_placements.length) ? sorted_placements[i + 1].start : Infinity;
-        var num_ticks = Math.min(placement.length, next_start - placement.start);
-
-        if (num_ticks <= 0) continue; // degenerate: another placement starts at/before this one
-
-        occurrences.push({start: placement.start, num_ticks: num_ticks, trk: track, puid: puid});
+        occurrences.push({start: placement.start, num_ticks: placement.length, trk: track, puid: puid});
     }
     return occurrences;
 }
