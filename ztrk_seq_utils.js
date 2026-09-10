@@ -28,7 +28,23 @@ function pattern_data_to_2d_Array_string_cells(data){
     return celldata_array;
 }
 
-function write_track_buffer_from_Array2D_floats(track, start, num_ticks, array2d){
+// function write_track_buffer_from_Array2D_floats(track, start, num_ticks, array2d){
+
+//     var buffer_name = get_buffer_name_from_track(track);
+//     var buff_track = new Buffer(buffer_name);
+
+//     var rows_to_write = Math.min(num_ticks, array2d.length);
+
+//     for (var row = 0; row < rows_to_write; row++){
+//         var buffer_index = start + row;
+//         for (var col = 0; col < array2d[0].length; col++){
+//             var cell = array2d[row][col];  // is a float now.
+//             buff_track.poke(col+1, buffer_index, cell);
+//         }
+//     }
+// }
+
+function write_track_buffer_from_Array2D_floats(track, start, num_ticks, array2d, mask = null){
 
     var buffer_name = get_buffer_name_from_track(track);
     var buff_track = new Buffer(buffer_name);
@@ -36,6 +52,8 @@ function write_track_buffer_from_Array2D_floats(track, start, num_ticks, array2d
     var rows_to_write = Math.min(num_ticks, array2d.length);
 
     for (var row = 0; row < rows_to_write; row++){
+        if (mask && mask[row]) continue; // masked — an overlapping pattern owns this tick
+
         var buffer_index = start + row;
         for (var col = 0; col < array2d[0].length; col++){
             var cell = array2d[row][col];  // is a float now.
@@ -43,6 +61,7 @@ function write_track_buffer_from_Array2D_floats(track, start, num_ticks, array2d
         }
     }
 }
+
 
 function encodeArray2Dstr_to_float(grid) {
     return grid.map(row => row.map(cell => encode_cell_to_float(cell)));

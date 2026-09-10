@@ -187,7 +187,7 @@ function finalize(command){
                 outlet(0, "refresh", "buffer_viz");
             } 
             else if (command.operation === "insertion"){
-                // something does doesn't handle yet, if inserted pattern's extent falls within the start, or start+length of other patterns.
+                // something this doesn't handle yet, if inserted pattern's extent falls within the start, or start+length of other patterns.
                 //
                 // massive bug.
 
@@ -439,6 +439,32 @@ function command(instruction) {
     }
 }
 
+function find_overlapping_patterns_within_occurance(occ){
+    let overlaps = false;
+
+    const track_placements = sequencer_config.tracks[occ.trk].patterns;
+    const occ_end = occ.start + occ.length;
+    const mask = new Array(occ.length).fill(false); // false = unmasked = write it
+
+    for (const other of track_placements) {
+        if (other === occ) continue;
+
+        const other_end = other.start + other.length;
+        if (other.start >= occ_end || occ.start >= other_end) continue; // no intersection at all
+
+        const clip_start = Math.max(occ.start, other.start) - occ.start;
+        const clip_end = Math.min(occ_end, other_end) - occ.start;
+
+        for (let t = clip_start; t < clip_end; t++) {
+            mask[t] = true;
+        }
+        overlaps = true;
+    }
+    return overlaps ? mask : null;
+}
+
+
+
 function handle_pattern_from_tracker(payload){
     post('handle_pattern_from_tracker');
     /*
@@ -456,26 +482,20 @@ function handle_pattern_from_tracker(payload){
     // stash it in the encoded-pattern cache too, since we've just computed it anyway
     sequencer_config.encoded_pattern_cache[payload.puid] = array2d_float;
 
-    // [ ]  overwrite one or more regions of the buffer with the data associated with the updated pattern.
-    // 1. find the occurances of this pattern in << sequencer_config.patterns[pattern_ref.track].patterns >>
-    //    find their starts, and lengths  -
-    //           lengths are calculated either by length or 
-    //           by distance to next pattern in sequence  (whichever is shorter)
-    //    {start: start, num_ticks: num_ticks, data: data}
-    //    this means we can send the same data multiple times, but the buffer writing function will truncate
-    //    the write operation in those parts of the sequence where the pattern is interupted by another pattern before
-    //    its natural end.
-    // for (const[pidx, construct] of datapaste.entries()){}
-    //    write_track_buffer(pattern_ref.track, construct.start, construct.num_ticks, data);
-    // }
-    // [x]  overwrite one or more regions of the buffer with the data associated with the updated pattern.
-
-    // this may be the meat of // finalize()
     var occurrences = find_pattern_occurrences_for_buffer_write(pattern_ref.track, payload.puid);
     for (const occ of occurrences) {
-        write_track_buffer_from_Array2D_floats(pattern_ref.track, occ.start, occ.num_ticks, array2d_float);
+        // [ ] each of these must first figure out if there are sub-patterns or interupt-patterns which will result 
+        // in "lifting the pen" and not writing to certain parts of the buffer in those places.
+        var overlaps = find_overlapping_patterns_within_occurance(occ);
+        if (overlaps === null){
+            write_track_buffer_from_Array2D_floats(pattern_ref.track, occ.start, occ.num_ticks, array2d_float);
+        } else {
+            post('riding masked buffer writing!');
+            write_track_buffer_from_Array2D_floats(pattern_ref.track, occ.start, occ.num_ticks, array2d_float, overlaps);
+        }
     }
 
+    // this operation does not current require the sequence-editor view to be refreshed.
     return;
 };
 
