@@ -226,6 +226,7 @@ function getPattrByPUID(track, puid){
         if (pattern.puid === puid)
             return pattern;
     }
+    post(`getPatterByPUID: failed to locate pattern by uid ${puid}`);
     return null;
 }
 
@@ -236,8 +237,17 @@ function getMachineAndPIndexByPUID(puid){
                 return {track: midx, pindex: idx};
         }
     }
+    post(`getMachineAndPIndexByPUID: failed to locate pattern by uid ${puid}`);
     return null;
 }
+
+function getPatterDataByPUID(puid){
+    var pattern_ref = getMachineAndPIndexByPUID(puid);
+    if (pattern_ref === null) { return null; }
+    var pattern = sequencer_config.patterns[pattern_ref.track].patterns[pattern_ref.pindex];
+    return pattern.data;
+}
+
 
 function add_pattern(machine_trk, start, puid){
     var pattern = getPattrByPUID(sequencer_config.patterns[machine_trk], puid);
@@ -749,14 +759,26 @@ function slice_pattern_at_cursor(){
     
     sequencer_config.tracks[trk].patterns.splice(found_idx, 1); // remove indexed pattern from track list.
 
-    var puid = pattern_to_slice.puid
     var basename = pattern_to_slice.pname;
     var pattern_a = make_new_pattern(trk, pattern_a_length);
     var pattern_b = make_new_pattern(trk, pattern_b_length);
     pattern_a.pname = basename + ":A";
     pattern_b.pname = basename + ":B";
+
+    let data = getPatterDataByPUID(pattern_to_slice.puid);
+    // if pattern_to_slice has data  (this can be called on empty patterns, 
+    // filling it with empty dats may be not be needed, but it might be expected down the line, 
+    // right now tracker will fill it with 'empty pattern'.
+    if (data && data.length > 0) {
+        pattern_a.data = data.slice(0, pattern_a_length);
+        pattern_b.data = data.slice(pattern_b_start);
+    }
+
+    // add to sequencer_config.patterns[trk].patterns   (adds to song-database)
     sequencer_config.patterns[trk].patterns.push(pattern_a);
     sequencer_config.patterns[trk].patterns.push(pattern_b);
+
+    // add to sequencer_config.tracks[trk].patterns     (adds to sequencer)
     add_pattern(trk, pattern_a_start, pattern_a.puid);
     add_pattern(trk, pattern_b_start, pattern_b.puid);
     
