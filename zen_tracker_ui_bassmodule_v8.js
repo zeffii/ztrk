@@ -1606,7 +1606,7 @@ class Tracker  {
         this.set_rgb(this.asRGB(...this.theme_colors.data_color), 1.3);
         var load_message = "ZTRK loaded: Waiting for patterns..";
         var load_width = gfx.text_measure(load_message)[0];
-        gfx.move_to((load_width/2), h/2);
+        gfx.move_to(((w/2.0) - load_width/2), h/2);
         gfx.show_text(load_message);
 
 

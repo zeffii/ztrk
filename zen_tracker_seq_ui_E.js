@@ -1132,13 +1132,23 @@ function draw_pattern_menu(gfx, charheight, charwidth, trk_width, side_width){
     gfx.rectangle(rect_start_x, rect_start_y, trk_width, (num_patterns * charheight) );
     gfx.fill();
 
-    // list the patterns
+    // list the patterns , draw 2hex triggers beside
     for (const [idx, pattern] of sequencer_config.patterns[trk].patterns.entries()){
         var highlight = (selected_pattern_in_menu === idx) ? [0.86, 0.86, 0.86, 1] : [0.7, 0.7, 0.7, 1];
         var indicator = (selected_pattern_in_menu === idx) ? " ←" : "";
+        
+        // pattern identifier (pname)
         gfx.set_source_rgba(...highlight);
         gfx.move_to(rect_start_x + xoffset, rect_start_y + yoffset + (idx * charheight));
         gfx.show_text(pattern.pname + indicator);
+
+        // pattern trigger 
+        gfx.set_source_rgba(0.02, 0.02, 0.02, 1);
+        gfx.rectangle(rect_start_x + trk_width, rect_start_y + (idx * charheight), 2*charwidth, charheight);
+        gfx.fill();
+        gfx.set_source_rgba(0.42, 0.72, 0.99, 1);
+        gfx.move_to(rect_start_x + trk_width, rect_start_y + yoffset + (idx * charheight));
+        gfx.show_text(toPaddedHex(idx, 2));
     }
 
 }
