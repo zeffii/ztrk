@@ -152,7 +152,7 @@ class Tracker  {
         this.faux_pattern = this.make_empty_pattern(this.pattern_markup);
         this.pattern_markup.data = this.faux_pattern;    
         this.mgraphics.redraw();
-        var ch1 = new Buffer("ch1");   // should maybe not do this here.
+        var ch1 = new Buffer("ch1");   // should maybe not do this here.  // THIS IS INVALID NOW> TODO
         clearBuffer(ch1);
     }
 
@@ -192,6 +192,7 @@ class Tracker  {
             this.#received_first_pattern = false // reset! 
             // would be nice to set a width of the trackerview here, so the empty message can be read.
             // [ ] TODO
+            box.size(500, 250);
             this.mgraphics.redraw();
             return
         }

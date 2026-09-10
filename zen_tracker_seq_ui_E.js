@@ -407,6 +407,7 @@ function clear_sequencer(){
 
     var message_to_wipe = new Dict('pattern_markup_dict');
     message_to_wipe.parse(JSON.stringify({"mode": "wipe" }));
+    outlet(0, "refresh", "buffer_viz");
     outlet(1, "dictionary", message_to_wipe.name);
 
 }
