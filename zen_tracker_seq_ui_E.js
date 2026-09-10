@@ -107,6 +107,18 @@ var default_config = {
     encoded_pattern_cache: {}
 };
 
+function get_cached_puid_or_compute_and_cache_it(puid){
+    if (pattern_ref.puid in sequencer_config.encoded_pattern_cache) {
+        return sequencer_config.encoded_pattern_cache[pattern_ref.puid]
+    }
+
+    let pdata = getPatterDataByPUID(pattern_ref.puid);
+    let array2d_str = pattern_data_to_2d_Array_string_cells(pdata);
+    let array2d_float = encodeArray2Dstr_to_float(array2d_str);
+    sequencer_config.encoded_pattern_cache[pattern_ref.puid] = array2d_float;
+    return array2d_float;
+}
+
 var sequencer_config = { ...default_config};
 
 function sequencer_init(){
@@ -149,9 +161,8 @@ function finalize(command){
     understands     command. refresh
                     command. update_buffer
     */
-    if ('refresh' in command){
-        mgraphics.redraw();
-    }
+    if ('refresh' in command){ mgraphics.redraw(); }
+
     if ('update_buffer' in command){
 
         if ('operation' in command){
@@ -199,6 +210,21 @@ function finalize(command){
                 var array2d_float = encodeArray2Dstr_to_float(array2d_str);
                 sequencer_config.encoded_pattern_cache[command.puid] = array2d_float;
                 write_track_buffer_from_Array2D_floats(command.track_index, command.start, pattern.length, array2d_float);
+                outlet(0, "refresh", "buffer_viz");
+            }
+            else if (command.operation === "write_all"){
+                // loop through all tracks, write all data sorted by pref.start 
+                for (const [idx, track] of sequencer_config.tracks.entries()) {
+                    for (const pattern_ref of track.patterns) {
+                        // this is where i should use the encoded_pattern_cache, after first write of a pattern..
+                        // array2d_float = get_cached_puid_or_compute_and_cache_it(puid)
+                        let pdata = getPatterDataByPUID(pattern_ref.puid);
+                        var array2d_str = pattern_data_to_2d_Array_string_cells(pdata);
+                        var array2d_float = encodeArray2Dstr_to_float(array2d_str);
+                        sequencer_config.encoded_pattern_cache[pattern_ref.puid] = array2d_float;
+                        write_track_buffer_from_Array2D_floats(idx, pattern_ref.start, pattern_ref.length, array2d_float);
+                    }
+                }
                 outlet(0, "refresh", "buffer_viz");
             }
         }
@@ -773,11 +799,6 @@ function slice_pattern_at_cursor(){
     /*
     tracks[trk].pattern[0] will resemble 
     {pname: pattern.pname, puid: puid, start: start, length: pattern.length, color: pattern.color};
-
-    [x] copy puid of found pattern
-    [x] remove pattern from track ( do not delete )
-    [x] create new pattern of a_length ( later include the data ), place it at a_start
-    [x] create new pattern of b_length ( later include the data ), place it as b_start
     */
     
     sequencer_config.tracks[trk].patterns.splice(found_idx, 1); // remove indexed pattern from track list.
@@ -806,8 +827,7 @@ function slice_pattern_at_cursor(){
     add_pattern(trk, pattern_b_start, pattern_b.puid);
     
     mgraphics.redraw();
-    // finalize(pattern_a)  ..first one can skip refresh     // it may not be necessary to update the buffer, as the buffer is unchanged
-    // finalize(refresh, pattern_b)
+    // not necessary to update buffer, as will be unchanged by this operation.
 }
 
 
