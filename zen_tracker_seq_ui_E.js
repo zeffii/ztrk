@@ -33,6 +33,8 @@ var g_display_pattern_menu = 0;
 var g_looping = false;
 var g_loop_start = 0;
 var g_loop_end = 128;
+var g_2hex_input = "";
+
 var [rows, cols] = [64, 3];
 var g_tcaret = {row:0, col:0};
 
@@ -155,6 +157,21 @@ const tick_from_row = (row) => row * 16;
 
 
 // - multi line utils
+
+function set_2hex_menu_input(new_char){
+    switch (g_2hex_input.length) {
+        case 0: {
+            g_2hex_input += new_char;
+            return {count: 1};
+        }
+        case 1: {
+            g_2hex_input += new_char;
+            return {count: 2}; // complete
+        }
+    }
+    return {count: 0};
+}
+
 
 function finalize(command){
     /*
@@ -646,6 +663,12 @@ function key_handler(){
     }
 
     const UKEY = ASCII(USER_KEY);
+
+    /*
+    if (g_display_pattern_menu){
+        let result = set_2hex_menu_input(new_char);
+    }
+    */
 
     if (SELECTOR === CTRL){
         if (g_display_pattern_menu){
