@@ -71,7 +71,8 @@ var default_config = {
         {trk: 0, trk_name: "gen.00", machine: "notes4+", trk_symbol: "Λ", kind: "gen", patterns: []},    // will just contain references with a puid (see add_pattern)
         {trk: 1, trk_name: "gen.01", machine: "notes5+", trk_symbol: "Λ", kind: "gen", patterns: []},
         {trk: 2, trk_name: "fx.01",  machine: "FX2+", trk_symbol: "φ", kind: "fx", patterns: []},
-        {trk: 3, trk_name: "druMX",  machine: "DRMS", trk_symbol: "Λ", kind: "gen", patterns: []}
+        {trk: 3, trk_name: "Snare",  machine: "SDR", trk_symbol: "Λ", kind: "gen", patterns: []},
+        {trk: 4, trk_name: "Kdrum",  machine: "KDR", trk_symbol: "Λ", kind: "gen", patterns: []}
     ],
     patterns: [   /*  This is the pool of patterns to pick from for each machine / trk */
         {trk: 0, patterns: [
@@ -87,7 +88,8 @@ var default_config = {
             {pname: "03", puid: uid_03, length: 128, color: [0.9, 0.34, 0.3], data: []},
             {pname: "06", puid: uid_06, length: 16, color: [0.9, 0.34, 0.3], data: []}
         ]},
-        {trk: 3, patterns: []}
+        {trk: 3, patterns: []},
+        {trk: 4, patterns: []}
     ],
     machines: {
         "notes4+": [
@@ -128,6 +130,25 @@ var default_config = {
             ['hh', 'RD Decay', 8], ['hh', 'RD Tune', 8], ['hh', 'RD Amp', 8],
             // Crash
             ['hh', 'CR Decay', 9], ['hh', 'CR Tune', 9], ['hh', 'CR Amp', 9]
+        ],
+        "KDR": [
+            ['b', 'Trigger', 0], 
+            ['hh', 'Start', 1], ['hh', 'End', 1], ['hh', 'Buzz', 1], ['hh', 'Click', 1], ['hh', 'Punch', 1], 
+            ['hh', 'TDecay', 2], ['hh', 'TShape', 2], ['hh', 'BDecay', 2], ['hh', 'DSlope', 2], ['hh', 'DTime', 2], ['hh', 'RSlope', 2],
+        ],
+        "SDR": [
+            ['b', 'Trigger', 0], 
+            ['hhhh', 'Pitch (hz)', 1],
+            ['hh', 'PEnv (ms)', 1],
+            ['hh', 'Decay (ratio)', 1],
+            ['hh', 'noiseAMT', 1],
+            ['hh', 'toneAMT', 1],
+            ['hh', 'Snap', 2],
+            ['hh', 'Brightness', 2],
+            ['hh', 'toneDecay', 2],
+            ['hh', 'noiseDecay', 2],
+            ['hhhh', 'lowcut (hz)', 3],
+            ['hh', 'Stereo (0=mono, 1=wide)', 3]
         ]
     },
     encoded_pattern_cache: {}
@@ -151,7 +172,7 @@ function sequencer_init(){
     var num_tracks = sequencer_config.tracks.length;
     var patcher = this.patcher;
 
-    col = num_tracks;
+    cols = num_tracks;
     init_track_buffers(patcher, num_tracks);
     debug_empty_buffers();
     outlet(0, "refresh", "buffer_viz");

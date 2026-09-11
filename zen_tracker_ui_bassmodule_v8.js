@@ -1324,7 +1324,7 @@ class Tracker  {
         const [offset_x, offset_y] = this.caret_to_location();
         this.mgraphics.set_source_rgba(...this.theme_colors.caret_color);
         this.mgraphics.rectangle(offset_x, offset_y - (0.9 * this.charheight), this.charwidth, this.charheight);
-        this.mgraphics.fill();        
+        this.mgraphics.fill();
 
     }
 
