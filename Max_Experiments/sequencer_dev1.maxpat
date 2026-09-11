@@ -9,8 +9,37 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 969.0, 85.0, 1360.0, 710.0 ],
+        "rect": [ 969.0, 85.0, 1360.0, 1096.0 ],
         "boxes": [
+            {
+                "box": {
+                    "id": "obj-20",
+                    "maxclass": "button",
+                    "numinlets": 1,
+                    "numoutlets": 1,
+                    "outlettype": [ "bang" ],
+                    "parameter_enable": 0,
+                    "patching_rect": [ 779.0, 395.0, 24.0, 24.0 ]
+                }
+            },
+            {
+                "box": {
+                    "code": "// quickly restore song state when js has changed.\r\n\r\nautowatch = 1;\r\n\r\nfunction bang() {\r\n    this.patcher.applydeep(checkAndBang);\r\n}\r\n\r\nfunction checkAndBang(obj) {\r\n    // Check if the object is a loadmess object\r\n    if (obj.maxclass === \"loadmess\") {\r\n        obj.bang();\r\n    }\r\n}",
+                    "filename": "none",
+                    "fontface": 0,
+                    "fontname": "<Monospaced>",
+                    "fontsize": 12.0,
+                    "id": "obj-7",
+                    "maxclass": "v8.codebox",
+                    "numinlets": 1,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 779.0, 434.0, 421.0, 199.0 ],
+                    "saved_object_attributes": {
+                        "parameter_enable": 0
+                    }
+                }
+            },
             {
                 "box": {
                     "id": "obj-88",
@@ -940,7 +969,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "13",
+                                    "text": "100",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -1029,7 +1058,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "36",
+                                    "text": "2",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -1074,7 +1103,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 13 36 0 -4",
+                                    "text": "keys 100 2 0 100",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -1473,7 +1502,7 @@
                     "numoutlets": 3,
                     "outlettype": [ "", "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 485.0, 152.0, 795.328125, 428.0 ],
+                    "patching_rect": [ 485.0, 152.0, 208.13671875, 428.0 ],
                     "textfile": {
                         "filename": "hex_tracker.js",
                         "flags": 0,
@@ -1708,7 +1737,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 330.0, 325.0, 56.0, 25.0 ],
-                                    "text": "13",
+                                    "text": "100",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -1786,7 +1815,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 187.0, 154.0, 22.0 ],
-                                    "text": "36",
+                                    "text": "2",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -1820,7 +1849,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 373.0, 154.0, 22.0 ],
-                                    "text": "keys 13 36 0 -4",
+                                    "text": "keys 100 2 0 100",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -2332,7 +2361,6 @@
             {
                 "patchline": {
                     "destination": [ "obj-1", 0 ],
-                    "disabled": 1,
                     "source": [ "obj-19", 0 ]
                 }
             },
@@ -2340,7 +2368,7 @@
                 "patchline": {
                     "color": [ 1.0, 0.0, 0.0, 1.0 ],
                     "destination": [ "obj-1", 0 ],
-                    "midpoints": [ 882.6640625, 792.0, 472.0, 792.0, 472.0, 138.0, 15.0, 138.0, 15.0, 150.0, 10.5, 150.0 ],
+                    "midpoints": [ 589.068359375, 792.0, 472.0, 792.0, 472.0, 138.0, 15.0, 138.0, 15.0, 150.0, 10.5, 150.0 ],
                     "order": 1,
                     "source": [ "obj-2", 1 ]
                 }
@@ -2350,6 +2378,12 @@
                     "destination": [ "obj-29", 0 ],
                     "order": 0,
                     "source": [ "obj-2", 1 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-7", 0 ],
+                    "source": [ "obj-20", 0 ]
                 }
             },
             {
