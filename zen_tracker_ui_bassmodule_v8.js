@@ -92,7 +92,8 @@ class Tracker  {
             status_text_color: [0.9, 0.9, 0.7, 1.0],
             scrollbar_bg_color: [0.2, 0.2, 0.2, 1.0],
             scrollbar_fg_color: [0.1, 0.1, 0.1, 1.0],
-            divider_gfx_color: [0.8, 0.2, 0.2, 1.0]
+            divider_gfx_color: [0.8, 0.2, 0.2, 1.0],
+            divider_gfx_color2: [0.4, 0.9, 1.0, 0.3]
         };
         this.theme_colors = {...this.default_theme_colors};
 
@@ -1544,6 +1545,7 @@ class Tracker  {
         var top_row_chars = [];
         top_row_chars.push('   ');
 
+        let splitter_start_xlist = [];
         var current_group = 0;
         for (var i = 0; i < Object.keys(this.pattern_markup.descriptors.track).length; i++){
             var element = this.pattern_markup.descriptors.track[i];
@@ -1553,6 +1555,7 @@ class Tracker  {
                 top_row_chars.push(divider);
                 current_group = group;
                 vpffset = 0;
+                splitter_start_xlist.push(top_row_chars.length);
             }
 
             // for (var j = 0; j < (element[0].length + vpffset); j++){
@@ -1564,7 +1567,7 @@ class Tracker  {
         top_row_chars[1] = '╒';
 
         var final_top_row_dividers = top_row_chars.join('');
-
+ 
         /*    if you wish to display a small ID in the middle of the ====  then here's some code to choke on a little.
         var find_group_indices = s => [...s.matchAll(/═+/g)].map(m => m.index + (m[0].length >> 1));
         var group_indices = find_group_indices(final_top_row_dividers);
@@ -1577,6 +1580,17 @@ class Tracker  {
         */
 
         gfx.show_text(final_top_row_dividers);
+
+        // draw a faint track splitter
+        gfx.set_source_rgba(...this.theme_colors.divider_gfx_color2);
+        for (const [idx, count] of splitter_start_xlist.entries()){
+            let splitstart = count + 6;
+            gfx.move_to(splitstart * this.charwidth, this.start_y + (-1 * this.settings_font_size));
+            gfx.line_to(splitstart * this.charwidth, (this.pattern_markup.length + 2) * this.charheight);
+            gfx.stroke();
+        }
+
+
     }
 
     draw_splash(){

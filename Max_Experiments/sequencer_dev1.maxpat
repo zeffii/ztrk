@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 1354.0, 85.0, 1201.0, 838.0 ],
+        "rect": [ 969.0, 85.0, 1360.0, 710.0 ],
         "boxes": [
             {
                 "box": {
@@ -940,7 +940,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "29",
+                                    "text": "13",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -1029,7 +1029,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "124",
+                                    "text": "36",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -1074,7 +1074,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 29 124 0 -12",
+                                    "text": "keys 13 36 0 -4",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -1473,7 +1473,7 @@
                     "numoutlets": 3,
                     "outlettype": [ "", "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 485.0, 152.0, 525.0, 428.0 ],
+                    "patching_rect": [ 485.0, 152.0, 795.328125, 428.0 ],
                     "textfile": {
                         "filename": "hex_tracker.js",
                         "flags": 0,
@@ -1537,7 +1537,7 @@
                     "outlettype": [ "", "int", "", "" ],
                     "parameter_enable": 0,
                     "patching_rect": [ 165.0, 8.0, 100.0, 28.0 ],
-                    "text": "erre3"
+                    "text": "song1"
                 }
             },
             {
@@ -1708,7 +1708,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 330.0, 325.0, 56.0, 25.0 ],
-                                    "text": "29",
+                                    "text": "13",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -1786,7 +1786,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 187.0, 154.0, 22.0 ],
-                                    "text": "124",
+                                    "text": "36",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -1820,7 +1820,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 373.0, 154.0, 22.0 ],
-                                    "text": "keys 29 124 0 -12",
+                                    "text": "keys 13 36 0 -4",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -2166,7 +2166,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 1.0, 146.0, 459.0, 590.0 ],
+                    "patching_rect": [ 1.0, 147.0, 459.0, 590.0 ],
                     "textfile": {
                         "filename": "zen_tracker_seq_ui_E.js",
                         "flags": 0,
@@ -2340,7 +2340,7 @@
                 "patchline": {
                     "color": [ 1.0, 0.0, 0.0, 1.0 ],
                     "destination": [ "obj-1", 0 ],
-                    "midpoints": [ 747.5, 792.0, 472.0, 792.0, 472.0, 138.0, 15.0, 138.0, 15.0, 150.0, 10.5, 150.0 ],
+                    "midpoints": [ 882.6640625, 792.0, 472.0, 792.0, 472.0, 138.0, 15.0, 138.0, 15.0, 150.0, 10.5, 150.0 ],
                     "order": 1,
                     "source": [ "obj-2", 1 ]
                 }
