@@ -44,10 +44,28 @@ Some milestones i will need to tackle, in no particular order
 
 Step 3:
 
+- [x] add pattern from list 
+      - [ ] (using 2hex keys)
+- [ ] set pattern length (has sideeffects)
 - [ ] add user defined machines
 - [ ] add tracks (select machine to add)
 - [ ] add basic set of sampler/effects/synth (call these machines)
-- [ ] implement a subset of utrk (yes, that utrk!)
+     - [ ] drummachine
+     - [ ] sampler simple
+     - [ ] sampler advanced   (subset of utrk!)
+     - [ ] bassline
+     - [ ] leadsynth
+     - [ ] padsynth
+     - [ ] klang
+     - [ ] fungus?
+     - [ ] flange
+     - [ ] reverb
+     - [ ] phase
+     - [ ] distortion
+     - [ ] limiter
+     - [ ] filter
+     - [ ] delay
+     - [ ] chorus
 - [ ] keyrepeats, need a tidier solution (has been through several iteration, not satisfying yet)
 
 
