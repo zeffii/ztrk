@@ -35,7 +35,7 @@ var g_loop_start = 0;
 var g_loop_end = 128;
 var g_2hex_input = "";
 
-var [rows, cols] = [64, 3];
+var [rows, cols] = [64, 4];  // [ ] TODO <-- this should update as a function of sequencer content.
 var g_tcaret = {row:0, col:0};
 
 // selection / editing state / pattern identity.
@@ -70,7 +70,8 @@ var default_config = {
     tracks: [
         {trk: 0, trk_name: "gen.00", machine: "notes4+", trk_symbol: "Λ", kind: "gen", patterns: []},    // will just contain references with a puid (see add_pattern)
         {trk: 1, trk_name: "gen.01", machine: "notes5+", trk_symbol: "Λ", kind: "gen", patterns: []},
-        {trk: 2, trk_name: "fx.01",  machine: "FX2+", trk_symbol: "φ", kind: "fx", patterns: []}
+        {trk: 2, trk_name: "fx.01",  machine: "FX2+", trk_symbol: "φ", kind: "fx", patterns: []},
+        {trk: 3, trk_name: "druMX",  machine: "DRMS", trk_symbol: "Λ", kind: "gen", patterns: []}
     ],
     patterns: [   /*  This is the pool of patterns to pick from for each machine / trk */
         {trk: 0, patterns: [
@@ -85,7 +86,8 @@ var default_config = {
         {trk: 2, patterns: [
             {pname: "03", puid: uid_03, length: 128, color: [0.9, 0.34, 0.3], data: []},
             {pname: "06", puid: uid_06, length: 16, color: [0.9, 0.34, 0.3], data: []}
-        ]}
+        ]},
+        {trk: 3, patterns: []}
     ],
     machines: {
         "notes4+": [
@@ -104,6 +106,28 @@ var default_config = {
         "FX2+": [
             ['b', 'Trigger 1', 0],     ['b', 'Trigger 2', 0],       ['b', 'Trigger 3', 0],       ['b', 'Trigger 4', 0],
             ['ffxxyy', 'Effect 1', 1],  ['ffxxyy', 'Effect 2', 1]
+        ],
+        "DRMS": [
+            ['b', 'Kick', 0], ['b', 'Snare', 0], ['b', 'C-Hat', 0], ['b', 'O-Hat', 0],['b', 'Clap', 0], 
+            ['b', 'Shaker', 0], ['b', 'Clave', 0], ['b', 'Ride', 0], ['b', 'Crash', 0],
+            // Kick
+            ['hh', 'K Punch', 1], ['hh', 'K Decay', 1], ['hh', 'K Tone', 1], ['hh', 'K Tune', 1], ['hh', 'K Amp', 1],
+            // Snare
+            ['hh', 'S Punch', 2], ['hh', 'S Decay', 2], ['hh', 'S Tone', 2], ['hh', 'S Tune', 2], ['hh', 'S Amp', 2],
+            // Closed Hat
+            ['hh', 'CH Decay', 3], ['hh', 'CH Tune', 3], ['hh', 'CH Amp', 3],
+            // Open Hat
+            ['hh', 'OH Decay', 4], ['hh', 'OH Tune', 4], ['hh', 'OH Amp', 4],
+            // Clap
+            ['hh', 'CP Decay', 5], ['hh', 'CP Tune', 5], ['hh', 'CP Amp', 5], 
+            // Shaker
+            ['hh', 'SH Decay', 6], ['hh', 'SH Tune', 6], ['hh', 'SH Amp', 6],
+            // Clave
+            ['hh', 'CL Decay', 7], ['hh', 'CL Tune', 7], ['hh', 'CL Amp', 7],
+            // Ride
+            ['hh', 'RD Decay', 8], ['hh', 'RD Tune', 8], ['hh', 'RD Amp', 8],
+            // Crash
+            ['hh', 'CR Decay', 9], ['hh', 'CR Tune', 9], ['hh', 'CR Amp', 9]
         ]
     },
     encoded_pattern_cache: {}
@@ -127,6 +151,7 @@ function sequencer_init(){
     var num_tracks = sequencer_config.tracks.length;
     var patcher = this.patcher;
 
+    col = num_tracks;
     init_track_buffers(patcher, num_tracks);
     debug_empty_buffers();
     outlet(0, "refresh", "buffer_viz");
@@ -161,12 +186,11 @@ const tick_from_row = (row) => row * 16;
 function set_2hex_menu_input(new_char){
     switch (g_2hex_input.length) {
         case 0: {
-            g_2hex_input += new_char;
-            return {count: 1};
+            g_2hex_input += new_char;  return {count: 1};
         }
         case 1: {
             g_2hex_input += new_char;
-            return {count: 2}; // complete
+            g_display_pattern_menu = 0;  return {count: 2}; // complete
         }
     }
     return {count: 0};
@@ -666,7 +690,9 @@ function key_handler(){
 
     /*
     if (g_display_pattern_menu){
-        let result = set_2hex_menu_input(new_char);
+        // if UKEY in 0123456789ABCDEF
+            set_2hex_menu_input(new_char);
+
     }
     */
 
