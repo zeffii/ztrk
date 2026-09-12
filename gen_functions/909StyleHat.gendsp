@@ -1,12 +1,12 @@
 // 909-style Hi-hat — oscillator cluster + noise, two-stage decay, attack burst
 
-Param amp(0.8);
-Param tone(0.5);
-Param decayRate(0.15);     // seconds
-Param decayShape(0.3);     // 0 = short/closed, 1 = long tail/open
-Param attackEnergy(0.4);
-Param pitch(2200);         // Hz
-Param attackTime(4);       // ms
+Param amp(0.8);            // (type=coeff, default=0.8, scale=[0,1])
+Param tone(0.5);           // (type=coeff, default=0.5, scale=[0,1])
+Param decayRate(0.15);     // (type=s, default=0.15, scale=[0.02,2.0])
+Param decayShape(0.3);     // (type=coeff, default=0.3, scale=[0,1])
+Param attackEnergy(0.4);   // (type=coeff, default=0.4, scale=[0,1])
+Param pitch(2200);         // (type=hz, default=2200, scale=[800,6000])
+Param attackTime(4);       // (type=ms, default=4, scale=[1,30])
 
 History trig_prev(0);
 History env_fast(0), env_slow(0), burst_env(0);

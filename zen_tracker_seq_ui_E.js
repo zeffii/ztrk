@@ -144,7 +144,7 @@ var default_config = {
             ['hh', 'Snap', 2], ['hh', 'Brightness', 2], ['hh', 'toneDecay', 2], ['hh', 'noiseDecay', 2],
             ['hhhh', 'lowcut (hz)', 3], ['hh', 'Stereo (0=mono, 1=wide)', 3]
         ],
-        "HTX": [
+        "HTX": [   // might be better for clap sounds.
             ['b', 'Trigger', 0], 
             ['hh', 'Amp |(t:coeff, d:0.8, s:[0,1.0])', 1], 
             ['hhhh', 'Pitch |(t:hz, d:2200, s:[800,6000])', 1], 
@@ -153,7 +153,17 @@ var default_config = {
             ['hh', 'Damp |(t:coeff, d:0.35, s:[0,0.95])', 1], 
             ['hhhh', 'Res Freq |(t:hz, d:4000, s:[1500,8000])', 2], 
             ['hh', 'Res AMT |(t:coeff, d:0.85, s:[0,0.9])', 2]
-        ]
+        ],
+            "HTX2": [
+            ['b', 'Trigger', 0], 
+            ["hh", "Amp |(t:coeff, d:0.8, s:[0,1])", 1], 
+            ["hh", "Tone |(t:coeff, d:0.5, s:[0,1])", 1], 
+            ["hh", "Decay Rate |(t:s, d:0.15, s:[0.02,2])", 1], 
+            ["hh", "Decay Shape |(t:coeff, d:0.3, s:[0,1])", 1], 
+            ["hh", "Attack Energy |(t:coeff, d:0.4, s:[0,1])", 1], 
+            ["hhhh", "Pitch |(t:hz, d:2200, s:[800,6000])", 2], 
+            ["hh", "Attack Time |(t:ms, d:4, s:[1,30])", 2]
+    ]
     },
     encoded_pattern_cache: {}
 };

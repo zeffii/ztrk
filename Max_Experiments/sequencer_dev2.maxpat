@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 458.0, 85.0, 1703.0, 1052.0 ],
+        "rect": [ 145.0, 85.0, 1703.0, 1052.0 ],
         "boxes": [
             {
                 "box": {
@@ -1882,7 +1882,7 @@
                             }
                         ]
                     },
-                    "patching_rect": [ 1298.5, 575.0, 80.0, 22.0 ],
+                    "patching_rect": [ 817.0, 671.0, 80.0, 22.0 ],
                     "presentation": 1,
                     "presentation_rect": [ 1357.0, 924.0, 100.0, 22.0 ],
                     "text": "p TorqReverb"
@@ -7705,7 +7705,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "29",
+                                    "text": "110",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -7794,7 +7794,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "124",
+                                    "text": "45",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -7839,7 +7839,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 29 124 2048 -12",
+                                    "text": "keys 110 45 0 110",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -8473,7 +8473,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 330.0, 325.0, 56.0, 25.0 ],
-                                    "text": "29",
+                                    "text": "110",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -8551,7 +8551,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 187.0, 154.0, 22.0 ],
-                                    "text": "124",
+                                    "text": "45",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -8585,7 +8585,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 373.0, 154.0, 22.0 ],
-                                    "text": "keys 29 124 2048 -12",
+                                    "text": "keys 110 45 0 110",
                                     "varname": "input_keys[1]"
                                 }
                             },
