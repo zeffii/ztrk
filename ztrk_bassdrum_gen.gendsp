@@ -1,0 +1,142 @@
+// ============================================================
+// FSM KickXP-inspired kick  –  Param version
+// ============================================================
+
+// ---- State ----
+History prevTrig(0);
+History envPhase(0);
+History oscPhase(0);
+History amp(0);
+History decAmp(0);
+History bAmp(0);
+History cAmp(0);
+History freq(50);
+History lastOut(0);
+History antiClick(0);
+
+// latched values (sampled on trigger)
+History startFrqL(145);
+History endFrqL(50);
+History buzzL(55);
+History clickL(28);
+History punchL(47);
+History tDecayL(30);
+History tShapeL(27);
+History bDecayL(55);
+History cDecayL(55);
+History dSlopeL(1);
+History dTimeL(32);
+History rSlopeL(105);
+History volL(200);
+
+// ---- Parameters (with original-style defaults) ----
+Param Start(145);     // 1-240
+Param End(50);        // 1-240
+Param Buzz(55);       // 0-100
+Param Click(28);      // 0-100
+Param Punch(47);      // 0-100
+Param TDecay(30);     // 1-240
+Param TShape(27);     // 1-240
+Param BDecay(55);     // 1-240
+Param CDecay(55);     // 1-240
+Param DSlope(1);      // 1-240
+Param DTime(32);      // 1-240
+Param RSlope(105);    // 1-240
+Param Volume(200);    // 0-240   (velocity / overall level)
+
+// ---- Trigger (inlet 1) ----
+Trig = in1;
+rising = (Trig > 0.5) && (prevTrig <= 0.5);
+prevTrig = Trig;
+
+// ---- Latch parameters on rising edge ----
+startFrqL = rising ? Start  : startFrqL;
+endFrqL   = rising ? End    : endFrqL;
+buzzL     = rising ? Buzz   : buzzL;
+clickL    = rising ? Click  : clickL;
+punchL    = rising ? Punch  : punchL;
+tDecayL   = rising ? TDecay : tDecayL;
+tShapeL   = rising ? TShape : tShapeL;
+bDecayL   = rising ? BDecay : bDecayL;
+cDecayL   = rising ? CDecay : cDecayL;
+dSlopeL   = rising ? DSlope : dSlopeL;
+dTimeL    = rising ? DTime  : dTimeL;
+rSlopeL   = rising ? RSlope : rSlopeL;
+volL      = rising ? Volume : volL;
+
+// ---- Map to internal ranges ----
+sr   = samplerate;
+odsr = 1 / sr;
+
+startHz = 33 * pow(128, startFrqL / 240);
+endHz   = 33 * pow(16,  endFrqL   / 240);
+ratio   = endHz / max(startHz, 1);
+
+tDecay  = (tDecayL / 240) * (1/400) * (44100 * odsr);
+tShape  = tShapeL / 240;
+
+dSlope  = pow(20, dSlopeL/240 - 1) * 25 * odsr;
+dTime   = dTimeL * sr / 240;
+rSlope  = pow(20, rSlopeL/240 - 1) * 25 * odsr;
+
+bDecay  = bDecayL / 240;
+cDecay  = cDecayL / 240;
+buzzAmt = 3 * (buzzL / 100);
+clickAmt= clickL / 100;
+punchAmt= punchL / 100;
+vol     = 0.5 * (volL / 128) * 0.7;
+
+// ---- Trigger reset ----
+envPhase  = rising ? 0 : envPhase + 1;
+oscPhase  = rising ? clickAmt : oscPhase;
+antiClick = rising ? lastOut : antiClick * 0.98;
+amp       = rising ? 1 : amp;
+bAmp      = rising ? buzzAmt : bAmp;
+cAmp      = rising ? clickAmt : cAmp;
+
+// ---- Frequency envelope ----
+envPoint = envPhase * tDecay;
+shaped   = pow(max(envPoint, 0), tShape * 2);
+curFreq  = startHz * pow(ratio, shaped);
+
+cVal     = pow(1/256, cDecay * envPhase * (odsr * 20));
+curFreq  = curFreq * (1 + 2 * punchAmt * cVal * cVal * cVal);
+curFreq  = min(curFreq, 10000);
+freq     = curFreq;
+
+// ---- Amplitude envelope ----
+if (envPhase < dTime) {
+    decAmp = dSlope;
+    amp    = 1 - decAmp * envPhase;
+} else {
+    amp = 1 - dSlope * dTime;
+    if (amp > 0) {
+        decAmp = rSlope;
+        amp    = amp - decAmp * (envPhase - dTime);
+    }
+}
+amp = max(amp, 0);
+
+// decays
+bAmp = buzzAmt * pow(1/256, bDecay * envPhase * (odsr * 10));
+cAmp = clickAmt * cVal;
+
+// ---- Oscillator ----
+inc = freq / sr;
+oscPhase = wrap(oscPhase + inc, 0, 1);
+xSin = sin(oscPhase * twopi);
+
+// Buzz (classic KickXP positive-half trick)
+buzzSig = 0;
+if (xSin > 0) {
+    buzzSig = amp * vol * bAmp * xSin * cos(oscPhase * twopi);
+}
+
+body = antiClick + amp * vol * xSin - buzzSig;
+
+// Click approximation
+clickEnv = pow(1/256, cDecay * envPhase * (odsr * 30));
+clickSig = amp * vol * clickAmt * clickEnv * noise() * 0.55;
+
+out1 = body + clickSig;
+lastOut = out1;
