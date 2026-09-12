@@ -1,0 +1,83 @@
+// 909-style Hi-hat — oscillator cluster + noise, two-stage decay, attack burst
+
+Param amp(0.8);
+Param tone(0.5);
+Param decayRate(0.15);     // seconds
+Param decayShape(0.3);     // 0 = short/closed, 1 = long tail/open
+Param attackEnergy(0.4);
+Param pitch(2200);         // Hz
+Param attackTime(4);       // ms
+
+History trig_prev(0);
+History env_fast(0), env_slow(0), burst_env(0);
+History ph1(0), ph2(0), ph3(0), ph4(0), ph5(0), ph6(0);
+History hp1(0), hp2(0), hp3(0);
+
+// classic 909-style inharmonic ratio set
+r1 = 1.0;
+r2 = 1.288;
+r3 = 1.483;
+r4 = 1.634;
+r5 = 1.951;
+r6 = 2.546;
+
+// --- trigger ---
+trig = in1 > 0.5 && trig_prev <= 0.5;
+trig_prev = in1;
+
+// --- two-stage decay envelope ---
+fast_coeff = pow(0.001, 1 / (decayRate * 0.25 * samplerate));
+slow_time  = decayRate * (1 + decayShape * 6);
+slow_coeff = pow(0.001, 1 / (slow_time * samplerate));
+
+env_fast = trig ? 1 : env_fast * fast_coeff;
+env_slow = trig ? 1 : env_slow * slow_coeff;
+
+env = env_fast * (1 - decayShape) + env_slow * decayShape;
+
+// --- attack burst (independent transient layer) ---
+burst_coeff = pow(0.001, 1 / ((attackTime / 1000) * samplerate));
+burst_env = trig ? 1 : burst_env * burst_coeff;
+burst_sig = (noise() * 2 - 1) * burst_env * attackEnergy;
+
+// --- oscillator cluster ---
+ph1 = ph1 + pitch * r1 / samplerate;
+if (ph1 > 1) ph1 = ph1 - 1;
+osc1 = ph1 < 0.5 ? 1 : -1;
+
+ph2 = ph2 + pitch * r2 / samplerate;
+if (ph2 > 1) ph2 = ph2 - 1;
+osc2 = ph2 < 0.5 ? 1 : -1;
+
+ph3 = ph3 + pitch * r3 / samplerate;
+if (ph3 > 1) ph3 = ph3 - 1;
+osc3 = ph3 < 0.5 ? 1 : -1;
+
+ph4 = ph4 + pitch * r4 / samplerate;
+if (ph4 > 1) ph4 = ph4 - 1;
+osc4 = ph4 < 0.5 ? 1 : -1;
+
+ph5 = ph5 + pitch * r5 / samplerate;
+if (ph5 > 1) ph5 = ph5 - 1;
+osc5 = ph5 < 0.5 ? 1 : -1;
+
+ph6 = ph6 + pitch * r6 / samplerate;
+if (ph6 > 1) ph6 = ph6 - 1;
+osc6 = ph6 < 0.5 ? 1 : -1;
+
+osc_mix = (osc1 + osc2 + osc3 + osc4 + osc5 + osc6) / 6;
+
+// --- noise layer ---
+n = noise() * 2 - 1;
+hp1 = n  - 0.7 * hp1;
+hp2 = hp1 - 0.7 * hp2;
+hp3 = hp2 - 0.7 * hp3;
+noise_layer = hp3;
+
+// --- tone crossfade + envelope + burst ---
+body = osc_mix * (1 - tone) + noise_layer * tone;
+
+shaped = tanh((body * env + burst_sig) * 2.5) * amp;
+
+out1 = shaped;
+out2 = shaped;
