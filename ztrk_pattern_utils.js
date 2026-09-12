@@ -417,3 +417,13 @@ function generate_svg(conditions){
     var body = body_array.join('\n');
     return start_line + body + end_line;
 }
+
+function splitAtFirstPipe(str) {
+    const index = str.indexOf('|');
+    if (index === -1) {
+        // No pipe found, return original string or null as needed
+        return [str, null];
+    }
+    // Split at the first occurrence
+    return [str.slice(0, index), str.slice(index + 1)];
+}

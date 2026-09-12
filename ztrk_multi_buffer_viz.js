@@ -52,6 +52,17 @@ var playhead = -1; // frame index, -1 = don't draw
 // debug aid: cap how many channels of each buffer get drawn.
 // 0/unset means "show all channels" (default behavior).
 var max_channels_per_buffer = 0;
+var display_channel_info = true;
+
+function toggle_channel_info(){
+	display_channel_info = !display_channel_info;
+}
+
+function toggle(command){
+	switch (command){
+		case 'info': toggle_channel_info();
+	}
+}
 
 function chans_per_buffer(n) {
 	n = Math.floor(n);
@@ -252,6 +263,8 @@ function drawRow(bufObj, name, y, w, rowH, s, e) {
 			mgraphics.fill();
 		}
 	}
+
+	if (!display_channel_info) return;
 
 	// row label (buffer name, framecount, channel count)
 	mgraphics.set_source_rgba([0.7, 0.7, 0.7, 1.0]);

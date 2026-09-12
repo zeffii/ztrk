@@ -72,7 +72,8 @@ var default_config = {
         {trk: 1, trk_name: "gen.01", machine: "notes5+", trk_symbol: "Λ", kind: "gen", patterns: []},
         {trk: 2, trk_name: "fx.01",  machine: "FX2+", trk_symbol: "φ", kind: "fx", patterns: []},
         {trk: 3, trk_name: "Snare",  machine: "SDR", trk_symbol: "Λ", kind: "gen", patterns: []},
-        {trk: 4, trk_name: "Kdrum",  machine: "KDR", trk_symbol: "Λ", kind: "gen", patterns: []}
+        {trk: 4, trk_name: "Kdrum",  machine: "KDR", trk_symbol: "Λ", kind: "gen", patterns: []},
+        {trk: 5, trk_name: "Hat",  machine: "HTX", trk_symbol: "Λ", kind: "gen", patterns: []}
     ],
     patterns: [   /*  This is the pool of patterns to pick from for each machine / trk */
         {trk: 0, patterns: [
@@ -89,6 +90,7 @@ var default_config = {
             {pname: "06", puid: uid_06, length: 16, color: [0.9, 0.34, 0.3], data: []}
         ]},
         {trk: 3, patterns: []},
+        {trk: 4, patterns: []},
         {trk: 4, patterns: []}
     ],
     machines: {
@@ -138,17 +140,19 @@ var default_config = {
         ],
         "SDR": [
             ['b', 'Trigger', 0], 
-            ['hhhh', 'Pitch (hz)', 1],
-            ['hh', 'PEnv (ms)', 1],
-            ['hh', 'Decay (ratio)', 1],
-            ['hh', 'noiseAMT', 1],
-            ['hh', 'toneAMT', 1],
-            ['hh', 'Snap', 2],
-            ['hh', 'Brightness', 2],
-            ['hh', 'toneDecay', 2],
-            ['hh', 'noiseDecay', 2],
-            ['hhhh', 'lowcut (hz)', 3],
-            ['hh', 'Stereo (0=mono, 1=wide)', 3]
+            ['hhhh', 'Pitch (hz)', 1], ['hh', 'PEnv (ms)', 1], ['hh', 'Decay (ratio)', 1], ['hh', 'noiseAMT', 1], ['hh', 'toneAMT', 1],
+            ['hh', 'Snap', 2], ['hh', 'Brightness', 2], ['hh', 'toneDecay', 2], ['hh', 'noiseDecay', 2],
+            ['hhhh', 'lowcut (hz)', 3], ['hh', 'Stereo (0=mono, 1=wide)', 3]
+        ],
+        "HTX": [
+            ['b', 'Trigger', 0], 
+            ['hh', 'Amp |(t:coeff, d:0.8, s:[0,1.0])', 1], 
+            ['hhhh', 'Pitch |(t:hz, d:2200, s:[800,6000])', 1], 
+            ['hh', 'Brightness |(t:coeff, d:0.7, s:[0,0.95])', 1], 
+            ['hh', 'Decay |(t:s, d:0.12, s:[0.02,2.0])', 1], 
+            ['hh', 'Damp |(t:coeff, d:0.35, s:[0,0.95])', 1], 
+            ['hhhh', 'Res Freq |(t:hz, d:4000, s:[1500,8000])', 2], 
+            ['hh', 'Res AMT |(t:coeff, d:0.85, s:[0,0.9])', 2]
         ]
     },
     encoded_pattern_cache: {}

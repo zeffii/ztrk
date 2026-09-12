@@ -272,6 +272,7 @@ class Tracker  {
     moveCaret(dr, dc) {
         this.#caret.row = clamp(this.#caret.row + dr, 0, this.rows - 1);
         this.#caret.col = clamp(this.#caret.col + dc, 0, this.cols - 1);
+        this.pass_column_info_to_outlet2();
     }
 
     getSelectionRect() {
@@ -407,6 +408,16 @@ class Tracker  {
                 }
             }
         }
+    }
+
+    pass_column_info_to_outlet2(){
+        post('called!!');
+        var outputDict = new Dict('pattern_col_dict');
+        var idx = this.wheres_the_caret();
+        var current_descriptor = this.pattern_markup.descriptors.track[idx[1]][1];
+        var [descriptor_head, descriptor_tail] = splitAtFirstPipe(current_descriptor);
+        outputDict.parse(JSON.stringify({track: idx[1], head: descriptor_head, tail: descriptor_tail || "<no info, lazy?>"}));
+        this.send(2, "dictionary", outputDict.name);
     }
 
     // remove this function.
@@ -1466,7 +1477,10 @@ class Tracker  {
             var locator_width = this.mgraphics.text_measure(caret_string + '  ')[0];
             var current_descriptor = this.pattern_markup.descriptors.track[idx[1]][1];
             gfx.move_to(locator_width, h - (0.25 * this.charheight));
-            gfx.show_text(current_descriptor);
+            
+            // descriptors can contain a pipe symbol, used for extra info
+            var [descriptor_head, descriptor_tail] = splitAtFirstPipe(current_descriptor);
+            gfx.show_text(descriptor_head);
 
             gfx.move_to(0 + this.charwidth, h - (0.25 * this.charheight));
             gfx.show_text(caret_string);
@@ -1477,7 +1491,7 @@ class Tracker  {
             var identifier_width = this.mgraphics.text_measure(version_identifier + ' ')[0];
 
             // do we have enough space to show this in the statusbar?
-            var descriptor_width = this.mgraphics.text_measure(current_descriptor)[0];
+            var descriptor_width = this.mgraphics.text_measure(descriptor_head)[0];
             var sum_width = (identifier_width + locator_width + descriptor_width);
             // post(identifier_width, locator_width, descriptor_width, '=', sum_width);
             if (w < sum_width) return;
