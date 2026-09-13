@@ -19,6 +19,11 @@ function titleCase(varName) {
 
 function hexCode(type) {return type === 'hz' ? 'hhhh' : 'hh'; }
 
+function getBeforeDelimiter(str, delimiter) {
+    const index = str.indexOf(delimiter);
+    return index === -1 ? str : str.substring(0, index);
+}
+
 function splitTopLevel(str) {
     // Splits on commas that are NOT inside [ ] brackets, so scale=[0,1]
     // stays intact as one segment instead of being cut in half.
@@ -42,14 +47,28 @@ function splitTopLevel(str) {
 function parseMetaComment(commentBody) {
     const meta = {};
     for (const part of splitTopLevel(commentBody)) {
-        const idx = part.indexOf('=');
-        if (idx === -1) continue;
-        const key = part.slice(0, idx).trim();
-        let value = part.slice(idx + 1).trim();
+        const trimmed = part.trim();
+        if (trimmed === '') continue;
+        const idx = trimmed.indexOf('=');
+        // fall back to ':' so both "type=hz" and "log:true" style separators work
+        const colonIdx = trimmed.indexOf(':');
+        const sepIdx = idx !== -1 ? idx : colonIdx;
+
+        if (sepIdx === -1) {
+            // bare flag token, e.g. "log" with no value at all
+            meta[trimmed] = true;
+            continue;
+        }
+
+        const key = trimmed.slice(0, sepIdx).trim();
+        let value = trimmed.slice(sepIdx + 1).trim();
+
         if (key === 'scale' && value.startsWith('[')) {
             const nums = value.slice(1, -1).split(',').map(s => Number(s.trim())).filter(n => !Number.isNaN(n));
             meta.scaleMin = nums[0];
             meta.scaleMax = nums[1];
+        } else if (value === 'true' || value === 'false') {
+            meta[key] = (value === 'true');
         } else {
             meta[key] = value;
         }
@@ -99,6 +118,7 @@ function parseSource(src) {
             default: meta.default,
             min: meta.scaleMin,
             max: meta.scaleMax,
+            log: !!meta.log,
             group,
         });
         sawParamInGroup = true;
@@ -111,8 +131,11 @@ function bitsForType(type) {
     return type === 'hz' ? 16 : 8;
 }
 
-function rawToNormalized(rawValue, min, max, type) {
-    if (type === 'hz') {
+// isLog now comes from the param itself (type==='hz' OR explicit log flag),
+// not solely from type — this is what lets Attack/DecayT/Release (type=s,
+// explicit "log" token) get log-curve treatment too.
+function rawToNormalized(rawValue, min, max, isLog) {
+    if (isLog) {
         // log scale — guard against non-positive values, which log() can't handle
         if (min <= 0 || rawValue <= 0) return 0;
         return Math.log(rawValue / min) / Math.log(max / min);
@@ -120,11 +143,11 @@ function rawToNormalized(rawValue, min, max, type) {
     return (rawValue - min) / (max - min);
 }
 
-function rawToHex(rawValue, min, max, type) {
+function rawToHex(rawValue, min, max, type, isLog) {
     const bits = bitsForType(type);
     const hexDigits = bits / 4;
     const maxInt = Math.pow(2, bits) - 1;
-    let t = rawToNormalized(rawValue, min, max, type);
+    let t = rawToNormalized(rawValue, min, max, isLog);
     t = Math.max(0, Math.min(1, t)); // clamp in case default sits outside scale
     const encoded = Math.round(t * maxInt);
     return encoded.toString(16).toUpperCase().padStart(hexDigits, '0');
@@ -145,14 +168,17 @@ function generate(src) {
     }
     
     const rows = ok.map(p => {
-        const metaStr = `${p.displayName} |(t:${p.type}, d:${p.default}, s:[${p.min},${p.max}])`;
-        const defaultHex = rawToHex(Number(p.default), Number(p.min), Number(p.max), p.type);
+        const isLog = p.type === 'hz' || p.log;
+        const logStr = p.log ? ', log:true' : ''; // only echo the flag if it was explicitly set in source
+        const defaultHex = rawToHex(Number(p.default), Number(p.min), Number(p.max), p.type, isLog);
+        const metaStr = `${p.displayName} |(t:${p.type}, d:${p.default}, s:[${p.min},${p.max}]${logStr}, dval:${defaultHex})`;
         return `[${JSON.stringify(hexCode(p.type))}, ${JSON.stringify(metaStr)}, ${p.group}], // default hex: ${defaultHex}`;
     });
     
     const body = [
         `        ['b', 'Trigger', 0], `,
-        ...rows.map(r => '        ' + r)
+        /*...rows.map(r => '        ' + r)*/
+        ...rows.map(r => '        ' + getBeforeDelimiter(r, '//'))
     ].join('\n');
     
     const output = `    "${machineName}": [\n${body}\n    ]`;
