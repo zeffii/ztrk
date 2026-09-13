@@ -72,10 +72,11 @@ var default_config = {
     tracks: [
         {trk: 0, trk_name: "gen.00", machine: "notes4+", trk_symbol: "K", kind: "ctrl", patterns: []},    // will just contain references with a puid (see add_pattern)
         {trk: 1, trk_name: "key.01", machine: "NVDP5", trk_symbol: "K", kind: "ctrl", patterns: []},
-        {trk: 2, trk_name: "fx.01",  machine: "FX2+", trk_symbol: "φ", kind: "fx", patterns: []},
-        {trk: 3, trk_name: "Snare",  machine: "SDR", trk_symbol: "Λ", kind: "gen", patterns: []},
-        {trk: 4, trk_name: "Kdrum",  machine: "KDR", trk_symbol: "Λ", kind: "gen", patterns: []},
-        {trk: 5, trk_name: "Hat",  machine: "HTX2", trk_symbol: "Λ", kind: "gen", patterns: []}
+        {trk: 2, trk_name: "Juno",  machine: "JUNO6", trk_symbol: "Λ", kind: "gen", patterns: []},
+        {trk: 3, trk_name: "fx.01",  machine: "FX2+", trk_symbol: "φ", kind: "fx", patterns: []},
+        {trk: 4, trk_name: "Snare",  machine: "SDR", trk_symbol: "Λ", kind: "gen", patterns: []},
+        {trk: 5, trk_name: "Kdrum",  machine: "KDR", trk_symbol: "Λ", kind: "gen", patterns: []},
+        {trk: 6, trk_name: "Hat",  machine: "HTX2", trk_symbol: "Λ", kind: "gen", patterns: []}
     ],
     patterns: [   /*  This is the pool of patterns to pick from for each machine / trk */
         {trk: 0, patterns: [
@@ -86,15 +87,16 @@ var default_config = {
             {pname: "02", puid: uid_02, length: 48, color: RGBA_2_RGB(theme_colors.def_ctrl_color), data: []},
             {pname: "05", puid: uid_05, length: 16, color: RGBA_2_RGB(theme_colors.def_ctrl_color), data: []}
         ]},
-        {trk: 2, patterns: [
+        {trk: 2, patterns: []},
+        {trk: 3, patterns: [
             {pname: "03", puid: uid_03, length: 128, color: [0.9, 0.34, 0.3], data: []},
             {pname: "06", puid: uid_06, length: 16, color: [0.9, 0.34, 0.3], data: []}
         ]},
-        {trk: 3, patterns: [
+        {trk: 4, patterns: [
             {pname: "07", puid: uid_07, length: 32, color: [0.2, 0.4, 0.5], data: []}
         ]},
-        {trk: 4, patterns: []},
-        {trk: 4, patterns: []}
+        {trk: 5, patterns: []},
+        {trk: 6, patterns: []}
     ],
     machines: {
         "notes4+": getMachineInfo("ctrl", "notes4+"),
@@ -104,7 +106,8 @@ var default_config = {
         "KDR": getMachineInfo("gen", "KDR"),
         "SDR": getMachineInfo("gen", "SDR"),
         "HTX": getMachineInfo("gen", "HTX"),
-        "HTX2": getMachineInfo("gen", "HTX2")
+        "HTX2": getMachineInfo("gen", "HTX2"),
+        "JUNO6": getMachineInfo("gen", "JUNO6")
     },
     encoded_pattern_cache: {}
 };
@@ -137,11 +140,11 @@ function sequencer_init(){
 // - simulate adding data at runtime.
 add_pattern(0, 0,   uid_01);
 add_pattern(0, 128, uid_04);
-add_pattern(3, 16,  uid_07);
+add_pattern(4, 16,  uid_07);
 add_pattern(1, 16,  uid_02);
 add_pattern(1, 192, uid_05);
-add_pattern(2, 64,  uid_03);
-add_pattern(2, 256, uid_06);
+add_pattern(3, 64,  uid_03);
+add_pattern(3, 256, uid_06);
 
 // - one liner utils.
 
