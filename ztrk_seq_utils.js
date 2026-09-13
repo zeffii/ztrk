@@ -1,5 +1,7 @@
 include("ztrk_pattern_utils.js");
 
+const RGBA_2_RGB = (col) => col.slice(0, 3);
+
 function get_buffer_name_from_track(track){
     return "t" + track + "_buf";
 }
@@ -73,3 +75,4 @@ function generateEmpty2dArrayFloats(track_index, num_samples){
     }
     return celldata_array;
 }
+

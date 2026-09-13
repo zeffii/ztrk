@@ -13,7 +13,7 @@ var theme_colors = {
     edit_indicator_color: [0.9, 0.5, 0.5, 1.0],
     def_gen_color: [0.2, 0.4, 0.5, 1.0],
     def_fx_color: [0.9, 0.34, 0.3, 1.0],
-    def_ctrl_color: [0.1, 0.2, 0.48, 1.0],
+    def_ctrl_color: [0.1, 0.4, 0.61, 1.0],
     time_markers: [0.4, 0.9, 1.0, 1.0],
     ticks_column: [0.4, 0.9, 1.0, 1.0],
     bg_color: [0.1, 0.2, 0.4, 1.0],
@@ -79,19 +79,20 @@ var default_config = {
     ],
     patterns: [   /*  This is the pool of patterns to pick from for each machine / trk */
         {trk: 0, patterns: [
-            {pname: "01", puid: uid_01, length: 32, color: [0.1, 0.2, 0.48], data: []},
-            {pname: "04", puid: uid_04, length: 64, color: [0.1, 0.2, 0.48], data: []},
-            {pname: "07", puid: uid_07, length: 32, color: [0.1, 0.2, 0.48], data: []}
+            {pname: "01", puid: uid_01, length: 32, color: RGBA_2_RGB(theme_colors.def_ctrl_color), data: []},
+            {pname: "04", puid: uid_04, length: 64, color: RGBA_2_RGB(theme_colors.def_ctrl_color), data: []}
         ]},
         {trk: 1, patterns: [
-            {pname: "02", puid: uid_02, length: 48, color: [0.2, 0.4, 0.5], data: []},
-            {pname: "05", puid: uid_05, length: 16, color: [0.2, 0.4, 0.5], data: []}
+            {pname: "02", puid: uid_02, length: 48, color: RGBA_2_RGB(theme_colors.def_ctrl_color), data: []},
+            {pname: "05", puid: uid_05, length: 16, color: RGBA_2_RGB(theme_colors.def_ctrl_color), data: []}
         ]},
         {trk: 2, patterns: [
             {pname: "03", puid: uid_03, length: 128, color: [0.9, 0.34, 0.3], data: []},
             {pname: "06", puid: uid_06, length: 16, color: [0.9, 0.34, 0.3], data: []}
         ]},
-        {trk: 3, patterns: []},
+        {trk: 3, patterns: [
+            {pname: "07", puid: uid_07, length: 32, color: [0.2, 0.4, 0.5], data: []}
+        ]},
         {trk: 4, patterns: []},
         {trk: 4, patterns: []}
     ],
@@ -136,7 +137,7 @@ function sequencer_init(){
 // - simulate adding data at runtime.
 add_pattern(0, 0,   uid_01);
 add_pattern(0, 128, uid_04);
-add_pattern(0, 288, uid_07);
+add_pattern(3, 16,  uid_07);
 add_pattern(1, 16,  uid_02);
 add_pattern(1, 192, uid_05);
 add_pattern(2, 64,  uid_03);
@@ -149,7 +150,6 @@ const fmt4 = (n) => ('0000' + Math.floor(Math.abs(n))).slice(-4) + ' ';
 const fmt3 = (n) => ('000' + Math.floor(Math.abs(n))).slice(-3) + ' '; 
 
 const asRGBobj = (col) => ({r: col[0], g: col[1], b: col[2]});
-const RGBA_2_RGB = (col) => col.slice(0, 3);
 const set_rgb = (c, d /*color, dimming*/) => { mgraphics.set_source_rgba(c.r / d, c.g / d, c.b / d, 1); }
 
 const kind_from_column = (col) => sequencer_config.tracks[col].kind;
@@ -1128,7 +1128,8 @@ function draw_patterns(){
 
             // Outline Rect  ( i'm not happy about the outline colour being locked.. it's OK for now. _
             set_rgb(color, 0.7);
-            if (track.kind === "fx"){ set_rgb({r:0.9 ,g: 0.34, b: 0.2}, 0.5); }        
+            if (track.kind === "fx"){ set_rgb({r:0.9 ,g: 0.34, b: 0.2}, 0.5); }
+            else if (track.kind === "ctrl"){ set_rgb({r:0.62 ,g: 0.84, b: 0.99}, 1.2); }
             mgraphics.rectangle(rect_start_x, rect_start_y, trk_width, ((pattern.length / 16) * charheight) );
             mgraphics.stroke();
 
