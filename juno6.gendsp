@@ -1,0 +1,153 @@
+
+// Juno-06-style monophonic synth — DCO/HPF/VCF/ENV/VCA/LFO
+// in1 = gate (>0.5 = note on, sustained while held)
+// in2 = pitch in Hz
+
+// --- DCO ---
+Param saw(0.7);            // (type=coeff, default=0.7, scale=[0,1])
+Param pulse(0.0);          // (type=coeff, default=0.0, scale=[0,1])
+Param sub(0.3);            // (type=coeff, default=0.3, scale=[0,1])
+Param noiseLvl(0.0);       // (type=coeff, default=0.0, scale=[0,1])
+Param pwm(0.5);            // (type=coeff, default=0.5, scale=[0,1])
+Param pwmLfoDepth(0.0);    // (type=coeff, default=0.0, scale=[0,1])
+Param range(0);            // (type=semitones, default=0, scale=[-24,24])
+
+// --- HPF ---
+Param hpfCutoff(40);       // (type=hz, default=40, scale=[20,2000], log)
+
+// --- VCF ---
+Param cutoff(1200);        // (type=hz, default=1200, scale=[40,10000], log)
+Param resonance(0.3);      // (type=coeff, default=0.3, scale=[0,1])
+Param envAmount(0.0);      // (type=bipolar, default=0.0, scale=[-1,1])
+Param lfoDepth(0.0);       // (type=coeff, default=0.0, scale=[0,1])
+Param keyTrack(0.3);       // (type=coeff, default=0.3, scale=[0,1])
+
+// --- ENV (shared ADSR: drives VCF always, VCA if envMode) ---
+Param attack(0.005);       // (type=s, default=0.005, scale=[0.001,4], log)
+Param decayT(0.3);         // (type=s, default=0.3, scale=[0.001,8], log)
+Param sustain(0.6);        // (type=coeff, default=0.6, scale=[0,1])
+Param release(0.3);        // (type=s, default=0.3, scale=[0.001,8], log)
+
+// --- VCA ---
+Param level(0.8);          // (type=coeff, default=0.8, scale=[0,1])
+Param envMode(1);          // (type=bool, default=1, scale=[0,1])
+
+// --- LFO ---
+Param lfoRate(5.0);        // (type=hz, default=5.0, scale=[0.05,20], log)
+Param lfoDelay(0.0);       // (type=s, default=0.0, scale=[0,4], log)
+
+// --- persistent state ---
+History gate_prev(0);
+History envStage(0), env(0);
+History dcoPhase(0), subPhase(0), lfoPhase(0), lfoDelayRamp(0);
+History hpfState(0);
+History vcf1(0), vcf2(0), vcf3(0), vcf4(0);
+History vcaSmooth(0);
+
+// =========================================================
+// --- trigger / gate ---
+// =========================================================
+trigOn  = in1 > 0.5 && gate_prev <= 0.5;
+trigOff = in1 <= 0.5 && gate_prev > 0.5;
+gate_prev = in1;
+
+// =========================================================
+// --- shared ADSR envelope ---
+// =========================================================
+atkCoeff = exp(-1 / (attack * samplerate));
+decCoeff = exp(-1 / (decayT * samplerate));
+relCoeff = exp(-1 / (release * samplerate));
+
+if (trigOn) { envStage = 1; }
+if (trigOff) { envStage = 4; }
+
+if (envStage == 1) {
+    env = env + (1.0 - env) * (1 - atkCoeff);
+    if (env >= 0.999) { envStage = 2; env = 1.0; }
+} else if (envStage == 2) {
+    env = env + (sustain - env) * (1 - decCoeff);
+    if (env <= sustain + 0.001) { envStage = 3; env = sustain; }
+} else if (envStage == 3) {
+    env = sustain;
+} else if (envStage == 4) {
+    env = env + (0.0 - env) * (1 - relCoeff);
+    if (env <= 0.0005) { envStage = 0; env = 0.0; }
+} else {
+    env = 0.0;
+}
+
+// =========================================================
+// --- LFO (shared source, with delay-ramp fade-in per note) ---
+// =========================================================
+if (trigOn) { lfoDelayRamp = 0; }
+
+lfoPhase = lfoPhase + lfoRate / samplerate;
+if (lfoPhase > 1) lfoPhase = lfoPhase - 1;
+lfoSineRaw = sin(lfoPhase * twopi);
+
+lfoDelayInc = lfoDelay > 0.0005 ? (1.0 / (lfoDelay * samplerate)) : 1.0;
+lfoDelayRamp = lfoDelayRamp + lfoDelayInc;
+if (lfoDelayRamp > 1) lfoDelayRamp = 1;
+
+lfoSine = lfoSineRaw * lfoDelayRamp;
+
+// =========================================================
+// --- DCO ---
+// =========================================================
+finalPitch = in2 * pow(2, range / 12);
+
+dcoPhase = dcoPhase + finalPitch / samplerate;
+if (dcoPhase > 1) dcoPhase = dcoPhase - 1;
+sawWave = dcoPhase * 2 - 1;
+
+pwmMod = pwm + pwmLfoDepth * lfoSine * 0.5;
+pwmMod = pwmMod < 0.05 ? 0.05 : (pwmMod > 0.95 ? 0.95 : pwmMod);
+pulseWave = dcoPhase < pwmMod ? 1 : -1;
+
+subPhase = subPhase + (finalPitch / 2) / samplerate;
+if (subPhase > 1) subPhase = subPhase - 1;
+subWave = subPhase < 0.5 ? 1 : -1;
+
+noiseWave = noise() * 2 - 1;
+
+dcoMix = saw * sawWave + pulse * pulseWave + sub * subWave + noiseLvl * noiseWave;
+
+// =========================================================
+// --- HPF (one-pole, same trick as the snare's lowcut) ---
+// =========================================================
+hpfCoeff = exp(-2 * pi * hpfCutoff / samplerate);
+hpfState = dcoMix + hpfCoeff * (hpfState - dcoMix);
+hpfOut = dcoMix - hpfState;
+
+// =========================================================
+// --- VCF (Moog-approximation: 4-stage one-pole cascade + feedback) ---
+// =========================================================
+refPitch = 261.6256; // C4 — key-tracking reference
+
+keyTrackOct = keyTrack * log2(finalPitch / refPitch);
+envOct = envAmount * env * 4.0;      // up to +/-4 octaves at extremes
+lfoOct = lfoDepth * lfoSine * 2.0;   // up to +/-2 octaves at full depth
+
+cutoffFinal = cutoff * pow(2, keyTrackOct + envOct + lfoOct);
+cutoffFinal = cutoffFinal < 20 ? 20 : (cutoffFinal > samplerate * 0.45 ? samplerate * 0.45 : cutoffFinal);
+
+g = 1 - exp(-2 * pi * cutoffFinal / samplerate);
+fb = resonance * 4.0;
+
+stage0_in = hpfOut - fb * vcf4;
+vcf1 = vcf1 + g * (stage0_in - vcf1);
+vcf2 = vcf2 + g * (vcf1 - vcf2);
+vcf3 = vcf3 + g * (vcf2 - vcf3);
+vcf4 = vcf4 + g * (vcf3 - vcf4);
+
+// =========================================================
+// --- VCA ---
+// =========================================================
+vcaTarget = envMode > 0.5 ? env : (in1 > 0.5 ? 1.0 : 0.0);
+vcaSmoothCoeff = exp(-1 / (0.002 * samplerate)); // fixed 2ms anti-click smoothing
+vcaSmooth = vcaSmooth + (vcaTarget - vcaSmooth) * (1 - vcaSmoothCoeff);
+
+shaped = tanh(vcf4 * vcaSmooth * level * 1.2) * 0.9;
+
+out1 = shaped;
+out2 = shaped;
