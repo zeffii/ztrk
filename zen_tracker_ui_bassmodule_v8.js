@@ -138,9 +138,9 @@ class Tracker  {
 
     bang(){
         this.send(0, this.g_pattern_playhead);
-        if (this.faux_pattern){
-             this.send(1, this.faux_pattern[this.g_pattern_playhead]);
-        }
+        // if (this.faux_pattern){
+        //      this.send(1, this.faux_pattern[this.g_pattern_playhead]);
+        // }
         this.mgraphics.redraw();
         //post('latest', this.g_pattern_playhead);
     }

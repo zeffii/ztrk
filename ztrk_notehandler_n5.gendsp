@@ -5,10 +5,15 @@ NoteChannel(pTick, nTrig, idx, buf, counter, running, cur_note, v, lookaheadMs) 
 
     note      = peek(buf, pTick, idx, 0, channels=1);
     velocity  = peek(buf, pTick, idx + 1, 0, channels=1);
-    duration  = peek(buf, pTick, idx + 2, 0, channels=1);
+    duration_raw = peek(buf, pTick, idx + 2, 0, channels=1);
     next_note = peek(buf, pTick_next, idx, 0, channels=1);
 
-    is_noteoff = (note == 0.5 || note == 0.75);
+    durMin = 10.0;
+    durMax = 4000.0;
+    duration = durMin * pow(durMax / durMin, duration_raw / 255.0);
+
+    // is_noteoff = (note == 0.5 || note == 0.75);
+    is_noteoff = (note > -0.9 && note < -0.3);
     lookaheadSamples = lookaheadMs * samplerate / 1000.0;
 
     if (nTrig == 1.0) {
@@ -48,12 +53,8 @@ History c5(0), r5(0), n5(0), v5(0);
 trig = in1;
 tick = in2;
 
-tn1, tn2, tn3, c1, r1, n1, v1     = NoteChannel(tick, trig, 0,  buf, c1, r1, n1, v1, lookaheadMs);
-tn4, tn5, tn6, c2, r2, n2, v2     = NoteChannel(tick, trig, 4,  buf, c2, r2, n2, v2, lookaheadMs);
-tn7, tn8, tn9, c3, r3, n3, v3     = NoteChannel(tick, trig, 8,  buf, c3, r3, n3, v3, lookaheadMs);
-tn10, tn11, tn12, c4, r4, n4, v4  = NoteChannel(tick, trig, 12, buf, c4, r4, n4, v4, lookaheadMs);
-tn13, tn14, tn15, c5, r5, n5, v5  = NoteChannel(tick, trig, 16, buf, c5, r5, n5, v5, lookaheadMs);
-
-out1,  out2,  out3,  out4,  out5  = tn1, tn4, tn7, tn10, t13;
-out6,  out7,  out8,  out9,  out10 = tn2, tn5, tn8, tn11, t14;
-out11, out12, out13, out14, out15 = tn3, tn6, tn9, tn12, t14;
+out1, out6, out11, c1, r1, n1, v1     = NoteChannel(tick, trig, 0,  buf, c1, r1, n1, v1, lookaheadMs);
+out2, out7, out12, c2, r2, n2, v2     = NoteChannel(tick, trig, 4,  buf, c2, r2, n2, v2, lookaheadMs);
+out3, out8, out13, c3, r3, n3, v3     = NoteChannel(tick, trig, 8,  buf, c3, r3, n3, v3, lookaheadMs);
+out4, out9, out14, c4, r4, n4, v4     = NoteChannel(tick, trig, 12, buf, c4, r4, n4, v4, lookaheadMs);
+out5, out10, out15, c5, r5, n5, v5    = NoteChannel(tick, trig, 16, buf, c5, r5, n5, v5, lookaheadMs);
