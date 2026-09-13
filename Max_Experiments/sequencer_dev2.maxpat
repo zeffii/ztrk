@@ -1758,7 +1758,7 @@
                             }
                         ]
                     },
-                    "patching_rect": [ 1211.0, 671.0, 53.0, 22.0 ],
+                    "patching_rect": [ 1128.0, 671.0, 53.0, 22.0 ],
                     "text": "p HatXP",
                     "varname": "hihatXP"
                 }
@@ -1772,7 +1772,7 @@
                     "numoutlets": 5,
                     "outlettype": [ "signal", "signal", "", "float", "list" ],
                     "parameter_enable": 1,
-                    "patching_rect": [ 1218.0, 706.0, 48.0, 136.0 ],
+                    "patching_rect": [ 1135.0, 706.0, 48.0, 136.0 ],
                     "saved_attribute_attributes": {
                         "valueof": {
                             "parameter_longname": "live.gain~[3]",
@@ -1793,7 +1793,7 @@
                     "maxclass": "ezdac~",
                     "numinlets": 2,
                     "numoutlets": 0,
-                    "patching_rect": [ 1223.0, 862.0, 36.0, 36.0 ]
+                    "patching_rect": [ 1140.0, 862.0, 36.0, 36.0 ]
                 }
             },
             {
@@ -3573,7 +3573,7 @@
                             }
                         ]
                     },
-                    "patching_rect": [ 1128.0, 671.0, 59.0, 22.0 ],
+                    "patching_rect": [ 913.0, 943.0, 59.0, 22.0 ],
                     "text": "p ClapXP",
                     "varname": "clapXP"
                 }
@@ -9457,7 +9457,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "127",
+                                    "text": "110",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -9546,7 +9546,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "117",
+                                    "text": "45",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -9591,7 +9591,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 127 117 0 -6",
+                                    "text": "keys 110 45 0 110",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -9990,7 +9990,7 @@
                     "numoutlets": 3,
                     "outlettype": [ "", "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 580.0, 152.0, 227.9296875, 428.0 ],
+                    "patching_rect": [ 580.0, 152.0, 491.8359375, 428.0 ],
                     "textfile": {
                         "filename": "hex_tracker.js",
                         "flags": 0,
@@ -10225,7 +10225,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 330.0, 325.0, 56.0, 25.0 ],
-                                    "text": "127",
+                                    "text": "110",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -10303,7 +10303,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 187.0, 154.0, 22.0 ],
-                                    "text": "117",
+                                    "text": "45",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -10337,7 +10337,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 373.0, 154.0, 22.0 ],
-                                    "text": "keys 127 117 0 -6",
+                                    "text": "keys 110 45 0 110",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -10919,7 +10919,7 @@
                 "patchline": {
                     "color": [ 1.0, 0.0, 0.0, 1.0 ],
                     "destination": [ "obj-1", 0 ],
-                    "midpoints": [ 693.96484375, 758.0, 547.0, 758.0, 547.0, 138.0, 15.0, 138.0, 15.0, 150.0, 11.5, 150.0 ],
+                    "midpoints": [ 825.91796875, 758.0, 547.0, 758.0, 547.0, 138.0, 15.0, 138.0, 15.0, 150.0, 11.5, 150.0 ],
                     "order": 1,
                     "source": [ "obj-2", 1 ]
                 }

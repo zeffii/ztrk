@@ -12,6 +12,13 @@ const MachineDatabase = {
             ['nnn', 'Note 2', 0],     ['hh', 'Volume 2', 0],     ['hh', 'Duration 2', 0],
             ['nnn', 'Note 3', 0],     ['hh', 'Volume 3', 0],     ['hh', 'Duration 3', 0],
             ['nnn', 'Note 4', 0],     ['hh', 'Volume 4', 0],     ['hh', 'Duration 4', 0]
+        ],
+        "NVDP5": [  // (note , volume, duration, pan), x 5
+            ['nnn', 'Note 0', 0],     ['hh', 'Volume 0', 0],     ['hh', 'Duration 0', 0],     ['hh', 'Pan 0', 0],
+            ['nnn', 'Note 1', 1],     ['hh', 'Volume 1', 1],     ['hh', 'Duration 1', 1],     ['hh', 'Pan 0', 1],
+            ['nnn', 'Note 2', 2],     ['hh', 'Volume 2', 2],     ['hh', 'Duration 2', 2],     ['hh', 'Pan 0', 2],
+            ['nnn', 'Note 3', 3],     ['hh', 'Volume 3', 3],     ['hh', 'Duration 3', 3],     ['hh', 'Pan 0', 3],
+            ['nnn', 'Note 4', 4],     ['hh', 'Volume 4', 4],     ['hh', 'Duration 4', 4],     ['hh', 'Pan 0', 4]
         ]
     },
     "fx": {

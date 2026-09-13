@@ -71,7 +71,7 @@ var uid_06 = next_pattern_uid();
 var default_config = {
     tracks: [
         {trk: 0, trk_name: "gen.00", machine: "notes4+", trk_symbol: "K", kind: "ctrl", patterns: []},    // will just contain references with a puid (see add_pattern)
-        {trk: 1, trk_name: "gen.01", machine: "notes5+", trk_symbol: "K", kind: "ctrl", patterns: []},
+        {trk: 1, trk_name: "key.01", machine: "NVDP5", trk_symbol: "K", kind: "ctrl", patterns: []},
         {trk: 2, trk_name: "fx.01",  machine: "FX2+", trk_symbol: "φ", kind: "fx", patterns: []},
         {trk: 3, trk_name: "Snare",  machine: "SDR", trk_symbol: "Λ", kind: "gen", patterns: []},
         {trk: 4, trk_name: "Kdrum",  machine: "KDR", trk_symbol: "Λ", kind: "gen", patterns: []},
@@ -98,7 +98,7 @@ var default_config = {
     ],
     machines: {
         "notes4+": getMachineInfo("ctrl", "notes4+"),
-        "notes5+": getMachineInfo("ctrl", "notes5+"),
+        "NVDP5": getMachineInfo("ctrl", "NVDP5"),
         "FX2+": getMachineInfo("fx", "FX2+"),
         "DRMS": getMachineInfo("gen", "DRMS"), 
         "KDR": getMachineInfo("gen", "KDR"),
@@ -251,6 +251,7 @@ function color_from_kind(kind) {
     // quick defaults.
     if (kind === "fx") return theme_colors.def_fx_color;
     if (kind === "gen") return theme_colors.def_gen_color;
+    if (kind === "ctrl") return theme_colors.def_ctrl_color;
     return theme_colors.def_gen_color;
 }
 
