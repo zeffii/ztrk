@@ -54,12 +54,14 @@ Step 3:
      - [ ] sampler simple
      - [ ] sampler advanced   (subset of utrk!)
      - [ ] bassline
-     - [ ] leadsynth
+     - [x] kickdrum
+     - [x] hats
+     - [x] leadsynth
      - [ ] padsynth
      - [ ] klang
      - [ ] fungus?
      - [ ] flange
-     - [ ] reverb
+     - [x] reverb
      - [ ] phase
      - [ ] distortion
      - [ ] limiter
