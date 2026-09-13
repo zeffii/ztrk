@@ -48,12 +48,12 @@ History c5(0), r5(0), n5(0), v5(0);
 trig = in1;
 tick = in2;
 
-tn1, tn2, tn3, c1, r1, n1, v1    = NoteChannel(tick, trig, 0,  buf, c1, r1, n1, v1, lookaheadMs);
-tn4, tn5, tn6, c2, r2, n2, v2    = NoteChannel(tick, trig, 4,  buf, c2, r2, n2, v2, lookaheadMs);
-tn7, tn8, tn9, c3, r3, n3, v3    = NoteChannel(tick, trig, 8,  buf, c3, r3, n3, v3, lookaheadMs);
-tn10, tn11, tn12, c4, r4, n4, v4 = NoteChannel(tick, trig, 12, buf, c4, r4, n4, v4, lookaheadMs);
-tn13, tn14, tn15, c5, r5, n5, v5 = NoteChannel(tick, trig, 12, buf, c5, r5, n5, v5, lookaheadMs);
+tn1, tn2, tn3, c1, r1, n1, v1     = NoteChannel(tick, trig, 0,  buf, c1, r1, n1, v1, lookaheadMs);
+tn4, tn5, tn6, c2, r2, n2, v2     = NoteChannel(tick, trig, 4,  buf, c2, r2, n2, v2, lookaheadMs);
+tn7, tn8, tn9, c3, r3, n3, v3     = NoteChannel(tick, trig, 8,  buf, c3, r3, n3, v3, lookaheadMs);
+tn10, tn11, tn12, c4, r4, n4, v4  = NoteChannel(tick, trig, 12, buf, c4, r4, n4, v4, lookaheadMs);
+tn13, tn14, tn15, c5, r5, n5, v5  = NoteChannel(tick, trig, 16, buf, c5, r5, n5, v5, lookaheadMs);
 
-out1,  out2,  out3,  out4,  out5    = tn1, tn4, tn7, tn10, t13;
-out6,  out7,  out8,  out9,  out10   = tn2, tn5, tn8, tn11, t14;
-out11, out12, out13, out14, out15   = tn3, tn6, tn9, tn12, t14;
+out1,  out2,  out3,  out4,  out5  = tn1, tn4, tn7, tn10, t13;
+out6,  out7,  out8,  out9,  out10 = tn2, tn5, tn8, tn11, t14;
+out11, out12, out13, out14, out15 = tn3, tn6, tn9, tn12, t14;
