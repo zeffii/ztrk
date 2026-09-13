@@ -13,6 +13,7 @@ var theme_colors = {
     edit_indicator_color: [0.9, 0.5, 0.5, 1.0],
     def_gen_color: [0.2, 0.4, 0.5, 1.0],
     def_fx_color: [0.9, 0.34, 0.3, 1.0],
+    def_ctrl_color: [0.1, 0.2, 0.48, 1.0],
     time_markers: [0.4, 0.9, 1.0, 1.0],
     ticks_column: [0.4, 0.9, 1.0, 1.0],
     bg_color: [0.1, 0.2, 0.4, 1.0],
@@ -69,8 +70,8 @@ var uid_06 = next_pattern_uid();
 
 var default_config = {
     tracks: [
-        {trk: 0, trk_name: "gen.00", machine: "notes4+", trk_symbol: "Λ", kind: "gen", patterns: []},    // will just contain references with a puid (see add_pattern)
-        {trk: 1, trk_name: "gen.01", machine: "notes5+", trk_symbol: "Λ", kind: "gen", patterns: []},
+        {trk: 0, trk_name: "gen.00", machine: "notes4+", trk_symbol: "K", kind: "ctrl", patterns: []},    // will just contain references with a puid (see add_pattern)
+        {trk: 1, trk_name: "gen.01", machine: "notes5+", trk_symbol: "K", kind: "ctrl", patterns: []},
         {trk: 2, trk_name: "fx.01",  machine: "FX2+", trk_symbol: "φ", kind: "fx", patterns: []},
         {trk: 3, trk_name: "Snare",  machine: "SDR", trk_symbol: "Λ", kind: "gen", patterns: []},
         {trk: 4, trk_name: "Kdrum",  machine: "KDR", trk_symbol: "Λ", kind: "gen", patterns: []},
@@ -78,9 +79,9 @@ var default_config = {
     ],
     patterns: [   /*  This is the pool of patterns to pick from for each machine / trk */
         {trk: 0, patterns: [
-            {pname: "01", puid: uid_01, length: 32, color: [0.2, 0.4, 0.5], data: []},
-            {pname: "04", puid: uid_04, length: 64, color: [0.2, 0.4, 0.5], data: []},
-            {pname: "07", puid: uid_07, length: 32, color: [0.2, 0.4, 0.5], data: []}
+            {pname: "01", puid: uid_01, length: 32, color: [0.1, 0.2, 0.48], data: []},
+            {pname: "04", puid: uid_04, length: 64, color: [0.1, 0.2, 0.48], data: []},
+            {pname: "07", puid: uid_07, length: 32, color: [0.1, 0.2, 0.48], data: []}
         ]},
         {trk: 1, patterns: [
             {pname: "02", puid: uid_02, length: 48, color: [0.2, 0.4, 0.5], data: []},
