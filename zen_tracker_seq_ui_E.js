@@ -39,7 +39,7 @@ var g_loop_start = 0;
 var g_loop_end = 128;
 var g_2hex_input = "";
 
-var [rows, cols] = [64, 4];  // [ ] TODO <-- this should update as a function of sequencer content.
+var [rows, cols] = [64, 7];  // [ ] TODO <-- this should update as a function of sequencer content.  (load song already updates this)
 var g_tcaret = {row:0, col:0};
 
 // selection / editing state / pattern identity.
@@ -1410,6 +1410,8 @@ function load_song(filepath){
         if (!data.hasOwnProperty("machines")) { throw new Error("Missing required key: machines"); }
         sequencer_config = { ...data, encoded_pattern_cache: {} };
         finalize({refresh: true, update_buffer: true, operation: "write_all"});
+
+        cols = sequencer_config.tracks.length;
 
     } catch (e) {
         post("Invalid JSON: " + e + "\n");
