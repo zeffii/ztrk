@@ -1697,9 +1697,10 @@ class Tracker  {
         this.#g_Mouse = [x, y];
         if (this.#g_in_edit_mode){
             this.find_cell_under_cursor(x, y);
+            this.pass_column_info_to_outlet2(); // or trigger a non opp moveCaret ? .. probably more sane.
         }
         this.mgraphics.redraw();
-        post(button);
+        // post(button);
     }
 
     ondrag(x, y, button){ 
