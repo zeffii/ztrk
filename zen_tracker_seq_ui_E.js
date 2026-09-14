@@ -9,6 +9,8 @@ mgraphics.init();
 mgraphics.relative_coords = 0;
 mgraphics.autofill = 0;
 
+var _ztrk_initialized = false;
+
 var theme_colors = {
     edit_indicator_color: [0.9, 0.5, 0.5, 1.0],
     def_gen_color: [0.2, 0.4, 0.5, 1.0],
@@ -1189,7 +1191,12 @@ function draw_songname(gfx, h){
     gfx.show_text(`${g_song_name} @ ${abbreviated_folder_structure}`);
 }
 
-sequencer_init();
+function loadbang(){
+    if (_ztrk_initialized) return;
+    _ztrk_initialized = true;
+    // post(`ztrk loadbang: patcher =${this.patcher.getattr("varname")}, boxes =${this.patcher.count}\m `);
+    sequencer_init();
+}
 
 function paint(){
 
@@ -1396,7 +1403,7 @@ function init_track_buffers(patcher, num_tracks) {
     per track exists with the correct sr/size/chans, creating only
     what's missing, and returns Buffer() handles keyed by track index.
     */
-    opts = {};
+    let opts = {};
     var sr      = opts.sr      || 1000;   // nominal declared sample rate (not audio driver sr)
     var nsamps  = opts.nsamps  || 2048;   // buffer length in samples (ticks)
     var chans   = opts.chans   || 48;     // channels per buffer

@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 680.0, 143.0, 1437.0, 1122.0 ],
+        "rect": [ 199.0, 218.0, 1634.0, 1132.0 ],
         "boxes": [
             {
                 "box": {
@@ -7248,7 +7248,7 @@
                     "numoutlets": 1,
                     "outlettype": [ "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 610.0, 132.0, 475.8359375, 16.0 ],
+                    "patching_rect": [ 610.0, 132.0, 172.34375, 16.0 ],
                     "textfile": {
                         "filename": "ztrk_parameter_at_cursor.js",
                         "flags": 0,
@@ -15101,7 +15101,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "29",
+                                    "text": "127",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -15190,7 +15190,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "124",
+                                    "text": "117",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -15235,7 +15235,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 29 124 0 -12",
+                                    "text": "keys 127 117 0 -6",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -15634,7 +15634,7 @@
                     "numoutlets": 3,
                     "outlettype": [ "", "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 591.0, 156.0, 537.0, 502.0 ],
+                    "patching_rect": [ 591.0, 156.0, 525.0, 428.0 ],
                     "textfile": {
                         "filename": "hex_tracker.js",
                         "flags": 0,
@@ -15869,7 +15869,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 330.0, 325.0, 56.0, 25.0 ],
-                                    "text": "29",
+                                    "text": "127",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -15947,7 +15947,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 187.0, 154.0, 22.0 ],
-                                    "text": "124",
+                                    "text": "117",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -15981,7 +15981,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 373.0, 154.0, 22.0 ],
-                                    "text": "keys 29 124 0 -12",
+                                    "text": "keys 127 117 0 -6",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -16338,7 +16338,9 @@
             },
             {
                 "box": {
-                    "id": "obj-68",
+                    "bgcolor": [ 0.28627450980392155, 0.3411764705882353, 0.7411764705882353, 1.0 ],
+                    "color": [ 0.17254901960784313, 0.3176470588235294, 0.5019607843137255, 1.0 ],
+                    "id": "obj-3",
                     "maxclass": "newobj",
                     "numinlets": 0,
                     "numoutlets": 0,
@@ -16352,7 +16354,7 @@
                             "modernui": 1
                         },
                         "classnamespace": "box",
-                        "rect": [ 59.0, 107.0, 200.0, 400.0 ],
+                        "rect": [ 59.0, 107.0, 132.0, 332.0 ],
                         "boxes": [
                             {
                                 "box": {
@@ -16361,7 +16363,7 @@
                                     "numinlets": 1,
                                     "numoutlets": 2,
                                     "outlettype": [ "float", "bang" ],
-                                    "patching_rect": [ 20.0, 20.0, 100.0, 22.0 ],
+                                    "patching_rect": [ 20.0, 20.0, 100.0, 0.0 ],
                                     "text": "buffer~ t0_buf",
                                     "varname": "t0_buf"
                                 }
@@ -16373,7 +16375,7 @@
                                     "numinlets": 1,
                                     "numoutlets": 2,
                                     "outlettype": [ "float", "bang" ],
-                                    "patching_rect": [ 20.0, 52.0, 100.0, 22.0 ],
+                                    "patching_rect": [ 20.0, 52.0, 100.0, 0.0 ],
                                     "text": "buffer~ t1_buf",
                                     "varname": "t1_buf"
                                 }
@@ -16385,7 +16387,7 @@
                                     "numinlets": 1,
                                     "numoutlets": 2,
                                     "outlettype": [ "float", "bang" ],
-                                    "patching_rect": [ 20.0, 84.0, 100.0, 22.0 ],
+                                    "patching_rect": [ 20.0, 84.0, 100.0, 0.0 ],
                                     "text": "buffer~ t2_buf",
                                     "varname": "t2_buf"
                                 }
@@ -16397,7 +16399,7 @@
                                     "numinlets": 1,
                                     "numoutlets": 2,
                                     "outlettype": [ "float", "bang" ],
-                                    "patching_rect": [ 20.0, 116.0, 100.0, 22.0 ],
+                                    "patching_rect": [ 20.0, 116.0, 100.0, 0.0 ],
                                     "text": "buffer~ t3_buf",
                                     "varname": "t3_buf"
                                 }
@@ -16409,7 +16411,7 @@
                                     "numinlets": 1,
                                     "numoutlets": 2,
                                     "outlettype": [ "float", "bang" ],
-                                    "patching_rect": [ 20.0, 148.0, 100.0, 22.0 ],
+                                    "patching_rect": [ 20.0, 148.0, 100.0, 0.0 ],
                                     "text": "buffer~ t4_buf",
                                     "varname": "t4_buf"
                                 }
@@ -16421,7 +16423,7 @@
                                     "numinlets": 1,
                                     "numoutlets": 2,
                                     "outlettype": [ "float", "bang" ],
-                                    "patching_rect": [ 20.0, 180.0, 100.0, 22.0 ],
+                                    "patching_rect": [ 20.0, 180.0, 100.0, 0.0 ],
                                     "text": "buffer~ t5_buf",
                                     "varname": "t5_buf"
                                 }
@@ -16433,7 +16435,7 @@
                                     "numinlets": 1,
                                     "numoutlets": 2,
                                     "outlettype": [ "float", "bang" ],
-                                    "patching_rect": [ 20.0, 212.0, 100.0, 22.0 ],
+                                    "patching_rect": [ 20.0, 212.0, 100.0, 0.0 ],
                                     "text": "buffer~ t6_buf",
                                     "varname": "t6_buf"
                                 }
@@ -16441,7 +16443,7 @@
                         ],
                         "lines": []
                     },
-                    "patching_rect": [ 7.0, 19.0, 100.0, 22.0 ],
+                    "patching_rect": [ 6.5, 19.0, 100.0, 22.0 ],
                     "text": "p buffer_storage",
                     "varname": "buffer_storage"
                 }
@@ -16590,7 +16592,7 @@
                 "patchline": {
                     "color": [ 1.0, 0.0, 0.0, 1.0 ],
                     "destination": [ "obj-1", 0 ],
-                    "midpoints": [ 859.5, 758.0, 547.0, 758.0, 547.0, 138.0, 15.0, 138.0, 15.0, 150.0, 11.209401726722717, 150.0 ],
+                    "midpoints": [ 853.5, 758.0, 547.0, 758.0, 547.0, 138.0, 15.0, 138.0, 15.0, 150.0, 11.209401726722717, 150.0 ],
                     "order": 1,
                     "source": [ "obj-2", 1 ]
                 }
@@ -16605,14 +16607,14 @@
             {
                 "patchline": {
                     "destination": [ "obj-49", 0 ],
-                    "midpoints": [ 1118.5, 669.313255906105, 560.0, 669.313255906105, 560.0, 129.0, 619.5, 129.0 ],
+                    "midpoints": [ 1106.5, 669.313255906105, 560.0, 669.313255906105, 560.0, 129.0, 619.5, 129.0 ],
                     "source": [ "obj-2", 2 ]
                 }
             },
             {
                 "patchline": {
                     "destination": [ "obj-2", 2 ],
-                    "midpoints": [ 598.5, 121.0, 945.8333333333333, 121.0 ],
+                    "midpoints": [ 598.5, 121.0, 937.8333333333333, 121.0 ],
                     "source": [ "obj-22", 1 ]
                 }
             },
