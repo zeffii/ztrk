@@ -76,3 +76,27 @@ function generateEmpty2dArrayFloats(track_index, num_samples){
     return celldata_array;
 }
 
+function generateSongName(){
+    const onsets = ['z', 'k', 'v', 'th', 'br', 'kr', 'sl', 'gr', 'dr', 'sh', 'n', 'm', 'fl', 'st', 'r'];
+    const vowels = ['a', 'e', 'i', 'o', 'u', 'ae', 'ei', 'ou'];
+    const codas  = ['', '', 'n', 'r', 'sh', 'th', 'l', 'k', 'x', 'v'];
+
+    function pick(arr){
+        return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function makeSyllable(){
+        return `${pick(onsets)}${pick(vowels)}${pick(codas)}`;
+    }
+
+    function makeWord(minSyll = 2, maxSyll = 3){
+        const count = minSyll + Math.floor(Math.random() * (maxSyll - minSyll + 1));
+        let word = '';
+        for (let i = 0; i < count; i += 1){
+            word += makeSyllable();
+        }
+        return word.charAt(0).toUpperCase() + word.slice(1);
+    }
+
+    return `${makeWord()} ${makeWord()}`;
+}
