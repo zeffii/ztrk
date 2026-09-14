@@ -411,7 +411,7 @@ class Tracker  {
     }
 
     pass_column_info_to_outlet2(){
-        post('called!!');
+        // post('called!!');
         var outputDict = new Dict('pattern_col_dict');
         var idx = this.wheres_the_caret();
         var current_descriptor = this.pattern_markup.descriptors.track[idx[1]][1];
@@ -432,6 +432,26 @@ class Tracker  {
         // this affects new input, not existing pattern data
         this.#g_pattern_octave = clamp(this.#g_pattern_octave + offset, 0, 7);
 
+    }
+
+    handle_paste_default_cell_value(){
+        var idx = this.wheres_the_caret();
+        var current_descriptor = this.pattern_markup.descriptors.track[idx[1]][1];
+        var [descriptor_head, descriptor_tail] = splitAtFirstPipe(current_descriptor);
+        if (descriptor_tail){
+            post(descriptor_tail);
+
+            const getDval = (str) => {
+                const m = str.match(/dval:\s*([0-9A-F]{4}|[0-9A-F]{2})/);
+                return m ? m[1] : null;
+            };
+            let dval = getDval(descriptor_tail);
+            if (dval) { post(dval); }
+            else { post(`No default found, in ${current_descriptor}`); }
+        }
+        else { 
+            post(`Incomplete descriptor: ${current_descriptor}`); 
+        }
     }
 
     handle_delete_selection(pattern){
@@ -1149,6 +1169,7 @@ class Tracker  {
             var C_KEY = 3;
             var V_KEY = 22;
             var X_KEY = 24;
+            var T_KEY = 116;
             var [UP_KEY, DOWN_KEY] = [30, 31];
             var [LEFT_KEY, RIGHT_KEY] = [28, 29];
             var SELECTOR = this.#g_key_codes[2];
@@ -1156,6 +1177,8 @@ class Tracker  {
             var [MINUS, PLUS] = [95, 43];   // not the numkeys at the moment.     (+shift) /
             var [MINUS1, PLUS1] = [45, 61];   // not the numkeys at the moment.            /  ---- same keys, but different int depending on accelerator pressed.
             var [MINUS2, PLUS2] = [165, 215];   // not the numkeys at the moment. (+altGr) / 
+
+            const userkey_in = (array) => found_in(array, USER_KEY);   // helper to avoid passing USER_KEY manually.
 
             /*
             -- TODO 
@@ -1238,7 +1261,9 @@ class Tracker  {
                     case PAGE_DOWN: this.moveCaret(16, 0); break;
                     default: return;
                 }
-
+            } else if (userkey_in([T_KEY])){
+                post("pressed T!");
+                this.handle_paste_default_cell_value();
             } else {
                 this.#started_selection_mode = false;
                 this.#anchor = null;
