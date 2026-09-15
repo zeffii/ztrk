@@ -1254,14 +1254,31 @@ function draw_songname(gfx, h){
 }
 
 function draw_patternprops_menu(gfx, w, h){
+    
+    const trk = g_tcaret.col;
+    const cursor = tick_from_row(g_tcaret.row);
+    const found_idx = find_any_pattern_under_cursor(trk, cursor, inclusive = true);
+    if (found_idx === -1){ 
+        var parameters = [
+            "Pattern Properties               ",
+            "no pattern under cursor          ",
+            " ",
+            "          Esc to close           "
+        ];
+    }
+    else {
+        var pref = sequencer_config.tracks[trk].patterns[found_idx];
+        var parameters = [
+            "Pattern Properties              ",
+            `Length: ${pref.length} (512 max)`,
+            `Name:   ${pref.pname}`,
+            `Color:  ${pref.color}`,
+            `uid:    ${pref.puid}`,
+            " ",
+            "          Esc to close          "
+        ];
+    }
 
-    var parameters = [
-        "Pattern Properties               ",
-        "Length: [             ] (512 max)",
-        "Name:   [                       ]",
-        "Color:  [                       ]",
-        "uid:    [                       ]" 
-    ];
     var xmpl_text = parameters[0];
     var num_chars = xmpl_text.length + 2;  // indent.
 
