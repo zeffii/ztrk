@@ -5,14 +5,14 @@ what remains after fear, is my true form.
 
 special thanks to:
 - federico foderaro (jsui / v8ui)
-- Philip Meyer ( signal based sequencing )
+- Philip Meyer ( signal based sequencing, and inspiration Sir!)
 - axers fall (gen, codebox)
 - Wellenfront Max Lab (mc)
 - starakajian
 - Andrew Robinson
 - matt wright
 - toneparticle (gen, codebox)
-- claud, grok, chatgpt, qwen.
+- claud, grok, chatgpt, qwen, deepseek.
 
 without these folks, this tracker would have taken much longer to make.
 */
@@ -446,12 +446,22 @@ class Tracker  {
                 return m ? m[1] : null;
             };
             let dval = getDval(descriptor_tail);
-            if (dval) { post(dval); }
+            if (dval) { 
+                /*
+                at some point this will delegate to a handler, 
+                perhaps move the cursor if it is not at the start of the cell, then insert.
+                */
+                post(dval); 
+            }
             else { post(`No default found, in ${current_descriptor}`); }
         }
         else { 
             post(`Incomplete descriptor: ${current_descriptor}`); 
         }
+    }
+
+    handle_paste_current_cell_value(){
+        post("yikes!.... undecided how to do this.");
     }
 
     handle_delete_selection(pattern){
@@ -1170,6 +1180,7 @@ class Tracker  {
             var V_KEY = 22;
             var X_KEY = 24;
             var T_KEY = 116;
+            var CTRL_AND_T = 20;
             var [UP_KEY, DOWN_KEY] = [30, 31];
             var [LEFT_KEY, RIGHT_KEY] = [28, 29];
             var SELECTOR = this.#g_key_codes[2];
@@ -1178,6 +1189,7 @@ class Tracker  {
             var [MINUS1, PLUS1] = [45, 61];   // not the numkeys at the moment.            /  ---- same keys, but different int depending on accelerator pressed.
             var [MINUS2, PLUS2] = [165, 215];   // not the numkeys at the moment. (+altGr) / 
 
+            const ASCII = (key) => String.fromCharCode(key).toUpperCase();  // ..duplicate. (how about a ztrk_general_functions.js for tools that are cross editor ? )
             const userkey_in = (array) => found_in(array, USER_KEY);   // helper to avoid passing USER_KEY manually.
 
             /*
@@ -1226,6 +1238,7 @@ class Tracker  {
                     case C_KEY: this.handle_copy_selection(this.faux_pattern); return;
                     case V_KEY: this.handle_paste_selection(this.faux_pattern); return;
                     case X_KEY: this.handle_delete_selection(this.faux_pattern); return;
+                    case CTRL_AND_T: this.handle_paste_current_cell_value(); return;
                     case PAGE_UP: this.scroll_pattern(-16); return;
                     case PAGE_DOWN: this.scroll_pattern(+16); return;
                     default: break;
@@ -1263,7 +1276,7 @@ class Tracker  {
                 }
             } else if (userkey_in([T_KEY])){
                 post("pressed T!");
-                this.handle_paste_default_cell_value();
+                this.handle_paste_default_cell_value(); return;
             } else {
                 this.#started_selection_mode = false;
                 this.#anchor = null;

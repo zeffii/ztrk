@@ -1,5 +1,6 @@
 include("ztrk_seq_utils.js");
 include("ztrk_MachineDB.js");  // for getMachineInfo(kind, name);
+// include("ztrk_pattern_utils.js");  <-- might have to.
 
 autowatch = 1;
 outlets = 2;
@@ -1293,7 +1294,7 @@ function draw_patternprops_menu(gfx, w, h){
     gfx.rectangle(px_location, py_location, prop_w, prop_h);
     gfx.fill();
 
-    // add items.
+    // add items.  slightly verbose but helps debug.
     let menu_text_color = [0.96, 0.96, 0.96, 1.0];
     for (const [idx, item] of parameters.entries()) {
         gfx.set_source_rgba(1, 1, 1, 1.0);
@@ -1304,8 +1305,8 @@ function draw_patternprops_menu(gfx, w, h){
         } else if (item.startsWith("Color:")){
 
             // add the color..
-            gfx.set_source_rgba(...pref.color, 1.0);
             var color_rect_y = py_location + (idx * charheight) + (0.25 * charheight);
+            gfx.set_source_rgba(...pref.color, 1.0);
             gfx.rectangle(px_location + prop_w - 40, color_rect_y , 30, charheight);
             gfx.fill();
             
