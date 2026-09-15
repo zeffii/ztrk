@@ -115,6 +115,12 @@ var default_config = {
 };
 
 function get_cached_puid_or_compute_and_cache_it(puid){
+    /*
+    the idea here was to cache the float computed version of the pattern based on the puid
+    but i might wire this in towards the end to avoid an extra layer of indirection. ..i wonder if there's
+    an inflection point where storing chaches like this is more of a problem than computing fresh ones.
+    maybe there should be a cleanup stage, upon rewriting, whipe based on time? or number of cached puids?
+    */
     if (pattern_ref.puid in sequencer_config.encoded_pattern_cache) {
         return sequencer_config.encoded_pattern_cache[pattern_ref.puid]
     }
