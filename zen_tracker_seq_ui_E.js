@@ -332,7 +332,7 @@ function find_any_pattern_under_cursor(trk, cursor, inclusive = false){
     // slightly more elaborate pattern finder, will check all patterns in the track
     // if any of the patterns has a condition where the cursor falls within start + length
     // then this is the pattern we want to slice (or navigate to, if inclusive).
-    // we should search in reverse, from bottom of track to top :)
+    // searching in reverse, from bottom of track to top,
     var found_idx = -1;
     var patterns = sequencer_config.tracks[trk].patterns;
     for (let i = patterns.length - 1; i >= 0; i--) {
@@ -718,7 +718,7 @@ function key_handler(){
         case "B": loop_start(g_tcaret.row*16); return;
         case "E": loop_end(g_tcaret.row*16); return;
         case "L": toggle_looping(); return;
-        case 'D': clone_pattern_at_cursor(); return;   // duplicate
+        case 'D': clone_pattern_at_cursor(); return;   // duplicate and place at tail of current pattern
         case 'C': clone_pattern_in_place(); return;   // clone-in-place
         case 'S': slice_pattern_at_cursor(); return;
     }
@@ -787,40 +787,31 @@ function hit_test(x, y){
 
 // - editing actions
 
-// these all operate on g_selected_pattern_idx. hooked up for real where the
-// math is trivial (clone / move lane / extend); left dummy where the actual
-// pattern *content* would need to be touched, since that lives outside this UI.
-
-
-// this function clones the pattern and places it at the end of the current pattern.  
 function clone_pattern_at_cursor(){
+    /*
+    this function clones the pattern and places it at the end of the current pattern.
+    */
 
     var trk = g_tcaret.col;
     var cursor = tick_from_row(g_tcaret.row);
-    // inclusive=true: cloning should still work if the caret sits right on
-    // the source pattern's start row, unlike slice which only cares about
-    // ticks strictly inside the pattern.
     var found_idx = find_any_pattern_under_cursor(trk, cursor, true);
+    if (found_idx < 0) return;
 
-    if (found_idx < 0) return; // no pattern under cursor
+    var patr_ref = sequencer_config.tracks[trk].patterns[found_idx];
+    var new_pattern = make_new_pattern(trk, patr_ref.length);
+    new_pattern.pname = patr_ref.pname + ":C";
 
-    var src = sequencer_config.tracks[trk].patterns[found_idx];
-
-    var new_pattern = make_new_pattern(trk, src.length);
-    new_pattern.pname = src.pname + ":copy";
-
-    let data = getPatterDataByPUID(src.puid);
+    let data = getPatterDataByPUID(patr_ref.puid);
     if (data && data.length > 0) {
         new_pattern.data = data.slice(); // copy the row array, same approach slice_pattern_at_cursor uses
     }
 
-    // add to sequencer_config.patterns[trk].patterns (song-database)
-    sequencer_config.patterns[trk].patterns.push(new_pattern);
+    sequencer_config.patterns[trk].patterns.push(new_pattern); // add clone to song-database
 
     // place the clone immediately after the source pattern in the sequencer
-    var new_start = src.start + src.length;
+    var new_start = patr_ref.start + patr_ref.length;
     if (pattern_overlaps(trk, new_start, new_pattern.length)) {
-        post(`clone_pattern_at_cursor: no room immediately after ${src.pname}, clone added to song-database only`);
+        post(`clone_pattern_at_cursor: no room immediately after ${patr_ref.pname}, clone added to song-database only`);
         mgraphics.redraw();
         return;
     }
@@ -834,28 +825,24 @@ function clone_pattern_in_place(){
     var trk = g_tcaret.col;
     var cursor = tick_from_row(g_tcaret.row);
     var found_idx = find_any_pattern_under_cursor(trk, cursor, true);
+    if (found_idx < 0) return;
 
-    if (found_idx < 0) return; // no pattern under cursor
+    var patr_ref = sequencer_config.tracks[trk].patterns[found_idx];
+    var new_pattern = make_new_pattern(trk, patr_ref.length);
+    new_pattern.pname = patr_ref.pname + ":C";
 
-    var mpattern = sequencer_config.tracks[trk].patterns[found_idx];
-
-    var new_pattern = make_new_pattern(trk, mpattern.length);
-    new_pattern.pname = mpattern.pname + ":copy";
-
-    let data = getPatterDataByPUID(mpattern.puid);
+    let data = getPatterDataByPUID(patr_ref.puid);
     if (data && data.length > 0) {
         new_pattern.data = data.slice();
     }
 
-    // add the clone to the song-database
-    sequencer_config.patterns[trk].patterns.push(new_pattern);
+    sequencer_config.patterns[trk].patterns.push(new_pattern); // add clone to song-database
 
-    // repoint this occurrence at the clone, same start/length — no repositioning,
+    // change the pattern reference to point to the clone and its properties. same start/length — no repositioning,
     // other occurrences of the original puid (if any) are untouched.
-    mpattern.puid = new_pattern.puid;
-    mpattern.pname = new_pattern.pname;
-    mpattern.color = new_pattern.color;
-
+    patr_ref.puid = new_pattern.puid;
+    patr_ref.pname = new_pattern.pname;
+    patr_ref.color = new_pattern.color;
     mgraphics.redraw();
 }
 
