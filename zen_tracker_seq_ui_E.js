@@ -73,7 +73,7 @@ var uid_06 = next_pattern_uid();
 var default_config = {
     tracks: [
         {trk: 0, trk_name: "gen.00", machine: "notes4+", trk_symbol: "K", kind: "ctrl", patterns: []},    // will just contain references with a puid (see add_pattern)
-        {trk: 1, trk_name: "key.01", machine: "NVDP5", trk_symbol: "K", kind: "ctrl", patterns: []},
+        {trk: 1, trk_name: "key.01", machine: "NVDP5", trk_symbol: "K", kind: "ctrl", patterns: []},      // like:  {pname: "01", puid: "1789336785399_0", start: 0, length: 32, color: [0.1, 0.4, 0.61] }
         {trk: 2, trk_name: "Juno",  machine: "JUNO6", trk_symbol: "Λ", kind: "gen", patterns: []},
         {trk: 3, trk_name: "fx.01",  machine: "FX2+", trk_symbol: "φ", kind: "fx", patterns: []},
         {trk: 4, trk_name: "Snare",  machine: "SDR", trk_symbol: "Λ", kind: "gen", patterns: []},
@@ -227,8 +227,6 @@ function finalize(command){
             } 
             else if (command.operation === "insertion"){
                 // something this doesn't handle yet, if inserted pattern's extent falls within the start, or start+length of other patterns.
-                //
-                // massive bug.
 
                 // {refresh: true, update_buffer: true, puid: puid, start: start, track_index: trk, operation: "insertion"});
                 var pattern_ref = getMachineAndPIndexByPUID(command.puid);
