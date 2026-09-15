@@ -1258,6 +1258,7 @@ function draw_patternprops_menu(gfx, w, h){
     const trk = g_tcaret.col;
     const cursor = tick_from_row(g_tcaret.row);
     const found_idx = find_any_pattern_under_cursor(trk, cursor, inclusive = true);
+
     if (found_idx === -1){ 
         var parameters = [
             "Pattern Properties               ",
@@ -1270,17 +1271,17 @@ function draw_patternprops_menu(gfx, w, h){
         var pref = sequencer_config.tracks[trk].patterns[found_idx];
         var parameters = [
             "Pattern Properties              ",
+            " ",
             `Length: ${pref.length} (512 max)`,
             `Name:   ${pref.pname}`,
             `Color:  ${pref.color}`,
-            `uid:    ${pref.puid}`,
+            `uid:    ${pref.puid} (immutable)`,
             " ",
             "          Esc to close          "
         ];
     }
 
-    var xmpl_text = parameters[0];
-    var num_chars = xmpl_text.length + 2;  // indent.
+    var num_chars = Math.max(...parameters.map(s => s.length)) + 2;  // find longest string, and pad with 2.
 
     var prop_w = num_chars * charwidth;
     var prop_h = ((parameters.length + .5) * charheight);
@@ -1293,13 +1294,30 @@ function draw_patternprops_menu(gfx, w, h){
     gfx.fill();
 
     // add items.
+    let menu_text_color = [0.96, 0.96, 0.96, 1.0];
     for (const [idx, item] of parameters.entries()) {
         gfx.set_source_rgba(1, 1, 1, 1.0);
         if (item.startsWith("uid:")){
-            gfx.set_source_rgba(9.3, 0.3, 0.6, 1.0);
+            gfx.set_source_rgba(0.6, 0.6, 0.6, 1.0);
+            gfx.move_to(px_location + charwidth, py_location + charheight + (idx * charheight));
+            gfx.show_text(item);
+        } else if (item.startsWith("Color:")){
+
+            // add the color..
+            gfx.set_source_rgba(...pref.color, 1.0);
+            var color_rect_y = py_location + (idx * charheight) + (0.25 * charheight);
+            gfx.rectangle(px_location + prop_w - 40, color_rect_y , 30, charheight);
+            gfx.fill();
+            
+            gfx.set_source_rgba(...menu_text_color);
+            gfx.move_to(px_location + charwidth, py_location + charheight + (idx * charheight));
+            gfx.show_text(item);
+
+        } else {
+            gfx.set_source_rgba(...menu_text_color);
+            gfx.move_to(px_location + charwidth, py_location + charheight + (idx * charheight));
+            gfx.show_text(item);
         }
-        gfx.move_to(px_location + charwidth, py_location + charheight + (idx * charheight));
-        gfx.show_text(item);
     }
 }
 
