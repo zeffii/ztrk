@@ -30,7 +30,7 @@ var side_width = 0;
 var global_tick = 0;
 
 var g_env = get_environment(); post(g_env);
-var g_song_name = "Demo Song";
+var g_song_name = generateSongName();
 var g_song_folder = null;
 var g_in_edit_mode = 0;
 var g_display_pattern_menu = 0;
@@ -407,7 +407,8 @@ function toggle_pattern_menu_visibility(){
 }
 
 function toggle_pattern_properties_visibility(){
-
+    g_display_pattern_props = !g_display_pattern_props; 
+    mgraphics.redraw();
 }
 
 function toggle_looping(){
@@ -661,6 +662,13 @@ function key_handler(){
     // space toggles edit mode
     if (USER_KEY === SPACE){
         g_in_edit_mode = !g_in_edit_mode;
+
+        // exiting edit-mode also exists any menus.
+        if (!g_in_edit_mode){
+            g_display_pattern_menu = 0;
+            g_display_pattern_props = 0;
+        }
+
         mgraphics.redraw();
         return;
     }
@@ -720,13 +728,13 @@ function key_handler(){
         case "N": insert_pattern_at_cursor(true, null); return; // new empty pattern.
         case "X": remove_pattern_at_cursor(); return;
         case "I": toggle_pattern_menu_visibility(); return;
-        case 'P': toggle_pattern_properties_visibility(); return;
+        case "P": toggle_pattern_properties_visibility(); return;
         case "B": loop_start(g_tcaret.row*16); return;
         case "E": loop_end(g_tcaret.row*16); return;
         case "L": toggle_looping(); return;
-        case 'D': clone_pattern_at_cursor(); return;   // duplicate and place at tail of current pattern
-        case 'C': clone_pattern_in_place(); return;   // clone-in-place
-        case 'S': slice_pattern_at_cursor(); return;
+        case "D": clone_pattern_at_cursor(); return;   // duplicate and place at tail of current pattern
+        case "C": clone_pattern_in_place(); return;   // clone-in-place
+        case "S": slice_pattern_at_cursor(); return;
     }
 
     if (USER_KEY === ENTER){
@@ -1245,12 +1253,39 @@ function draw_songname(gfx, h){
     gfx.show_text(`${g_song_name} @ ${abbreviated_folder_structure}`);
 }
 
-function loadbang(){
-    if (_ztrk_initialized) return;
-    _ztrk_initialized = true;
-    // post(`ztrk loadbang: patcher =${this.patcher.getattr("varname")}, boxes =${this.patcher.count}\m `);
-    sequencer_init();
+function draw_patternprops_menu(gfx, w, h){
+
+    var parameters = [
+        "Pattern Properties               ",
+        "Length: [             ] (512 max)",
+        "Name:   [                       ]",
+        "Color:  [                       ]",
+        "uid:    [                       ]" 
+    ];
+    var xmpl_text = parameters[0];
+    var num_chars = xmpl_text.length + 2;  // indent.
+
+    var prop_w = num_chars * charwidth;
+    var prop_h = ((parameters.length + .5) * charheight);
+    var px_location = (w/2) - (prop_w/2);
+    var py_location = (h/2) - (prop_h/2);
+
+    // add background
+    gfx.set_source_rgba(0, 0, 0, 1.0);
+    gfx.rectangle(px_location, py_location, prop_w, prop_h);
+    gfx.fill();
+
+    // add items.
+    for (const [idx, item] of parameters.entries()) {
+        gfx.set_source_rgba(1, 1, 1, 1.0);
+        if (item.startsWith("uid:")){
+            gfx.set_source_rgba(9.3, 0.3, 0.6, 1.0);
+        }
+        gfx.move_to(px_location + charwidth, py_location + charheight + (idx * charheight));
+        gfx.show_text(item);
+    }
 }
+
 
 function paint(){
 
@@ -1279,6 +1314,7 @@ function paint(){
     draw_track_cursor();
 
     if (g_display_pattern_menu) draw_pattern_menu(gfx, charheight, charwidth, trk_width, side_width);
+    else if (g_display_pattern_props) draw_patternprops_menu(gfx, w, h);
 };
 
 // -- MOUSE HANDLING
@@ -1499,4 +1535,15 @@ function init_track_buffers(patcher, num_tracks) {
     }
 
     return buffers;
+}
+
+function loadbang(){
+    /*
+    once max has settled down and all the objects expected to be in the patcher are all instantiated fully, this max will trigger 
+    this function. We use this to prepare ztrk for use.
+    */
+    if (_ztrk_initialized) return;
+    _ztrk_initialized = true;
+    // post(`ztrk loadbang: patcher =${this.patcher.getattr("varname")}, boxes =${this.patcher.count}\m `);
+    sequencer_init();
 }
