@@ -59,7 +59,7 @@ function empty_buffers_by_range(startTrack, endTrack) {
 		new Buffer(bufname).send("clear");
 		count++;
 	}
-	post(`empty_buffers_by_range: cleared ${count} buffer(s) (t${startTrack}_buf .. t${endTrack}_buf)\n`);
+	post(`empty_buffers_by_range: cleared ${count-1} buffer(s) (t${startTrack}_buf .. t${endTrack}_buf)\n`);
 }
 
 function generateEmpty2dArrayFloats(track_index, num_samples){

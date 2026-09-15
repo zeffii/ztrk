@@ -34,6 +34,7 @@ var g_song_name = "Demo Song";
 var g_song_folder = null;
 var g_in_edit_mode = 0;
 var g_display_pattern_menu = 0;
+var g_display_pattern_props = 0;
 var g_looping = false;
 var g_loop_start = 0;
 var g_loop_end = 128;
@@ -405,6 +406,10 @@ function toggle_pattern_menu_visibility(){
     mgraphics.redraw();
 }
 
+function toggle_pattern_properties_visibility(){
+
+}
+
 function toggle_looping(){
     g_looping = !g_looping;
     mgraphics.redraw();
@@ -715,6 +720,7 @@ function key_handler(){
         case "N": insert_pattern_at_cursor(true, null); return; // new empty pattern.
         case "X": remove_pattern_at_cursor(); return;
         case "I": toggle_pattern_menu_visibility(); return;
+        case 'P': toggle_pattern_properties_visibility(); return;
         case "B": loop_start(g_tcaret.row*16); return;
         case "E": loop_end(g_tcaret.row*16); return;
         case "L": toggle_looping(); return;
@@ -742,6 +748,8 @@ function key_handler(){
 
     if (USER_KEY === ESCAPE){
         cancel_selection();
+        g_display_pattern_menu = 0;
+        g_display_pattern_props = 0;
         return;
     }
 
@@ -797,21 +805,21 @@ function clone_pattern_at_cursor(){
     var found_idx = find_any_pattern_under_cursor(trk, cursor, true);
     if (found_idx < 0) return;
 
-    var patr_ref = sequencer_config.tracks[trk].patterns[found_idx];
-    var new_pattern = make_new_pattern(trk, patr_ref.length);
-    new_pattern.pname = patr_ref.pname + ":C";
+    var pattern_ref = sequencer_config.tracks[trk].patterns[found_idx];
+    var new_pattern = make_new_pattern(trk, pattern_ref.length);
+    new_pattern.pname = pattern_ref.pname + ":C";
 
-    let data = getPatterDataByPUID(patr_ref.puid);
+    let data = getPatterDataByPUID(pattern_ref.puid);
     if (data && data.length > 0) {
-        new_pattern.data = data.slice(); // copy the row array, same approach slice_pattern_at_cursor uses
+        new_pattern.data = data.slice();
     }
 
     sequencer_config.patterns[trk].patterns.push(new_pattern); // add clone to song-database
 
     // place the clone immediately after the source pattern in the sequencer
-    var new_start = patr_ref.start + patr_ref.length;
-    if (pattern_overlaps(trk, new_start, new_pattern.length)) {
-        post(`clone_pattern_at_cursor: no room immediately after ${patr_ref.pname}, clone added to song-database only`);
+    var new_start = pattern_ref.start + pattern_ref.length;
+    if (pattern_overlaps(trk, new_start, new_pattern.length)) {   // this avoids placing a pattern where (one.start) exists already
+        post(`clone_pattern_at_cursor: no room immediately after ${pattern_ref.pname}, clone added to song-database only`);
         mgraphics.redraw();
         return;
     }
@@ -821,17 +829,20 @@ function clone_pattern_at_cursor(){
 }
 
 function clone_pattern_in_place(){
+    /*
+    this function clones the pattern and replaces the current pattern with the clone.
+    */
 
     var trk = g_tcaret.col;
     var cursor = tick_from_row(g_tcaret.row);
     var found_idx = find_any_pattern_under_cursor(trk, cursor, true);
     if (found_idx < 0) return;
 
-    var patr_ref = sequencer_config.tracks[trk].patterns[found_idx];
-    var new_pattern = make_new_pattern(trk, patr_ref.length);
-    new_pattern.pname = patr_ref.pname + ":C";
+    var pattern_ref = sequencer_config.tracks[trk].patterns[found_idx];
+    var new_pattern = make_new_pattern(trk, pattern_ref.length);
+    new_pattern.pname = pattern_ref.pname + ":C";
 
-    let data = getPatterDataByPUID(patr_ref.puid);
+    let data = getPatterDataByPUID(pattern_ref.puid);
     if (data && data.length > 0) {
         new_pattern.data = data.slice();
     }
@@ -840,9 +851,9 @@ function clone_pattern_in_place(){
 
     // change the pattern reference to point to the clone and its properties. same start/length — no repositioning,
     // other occurrences of the original puid (if any) are untouched.
-    patr_ref.puid = new_pattern.puid;
-    patr_ref.pname = new_pattern.pname;
-    patr_ref.color = new_pattern.color;
+    pattern_ref.puid = new_pattern.puid;
+    pattern_ref.pname = new_pattern.pname;
+    pattern_ref.color = new_pattern.color;
     mgraphics.redraw();
 }
 
