@@ -200,12 +200,6 @@ class Tracker  {
             this.mgraphics.redraw();
             return
         }
-        if ('active_view' in payload){
-            post('set me to active!!');
-            this.#g_in_edit_mode = true;
-            this.mgraphics.redraw();
-            return;
-        }
         
         post("You sent a dictionary that the tracker doesn't understand, so i'm going to just error a bit. thanks.")
         // here some default behaviour
@@ -259,7 +253,6 @@ class Tracker  {
         this.update_v8_boxsize(this.cols, null);
 
         this.#received_first_pattern = true;
-        set_active_view('tracker');
         this.#g_in_edit_mode = true;
         this.gfx_refresh_and_write_buffers_and_dispatch({send_back: false, origin: "handle_received_pattern function"})
     }
