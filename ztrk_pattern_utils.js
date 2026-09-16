@@ -383,6 +383,15 @@ function getRotatedIndex(that, old_idx){
     return tempval;
 }
 
+function getShiftedRow(that, idx){
+    let shifted_row = idx;
+    if (that.pattern_row_shift !== 0){
+        shifted_row = getRotatedIndex(that, idx);
+    }
+    return shifted_row;
+}
+
+
 function clearBuffer(buf){
 	var samples = new Array;
 	var frames = buf.framecount();

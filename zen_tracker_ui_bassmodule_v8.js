@@ -419,16 +419,6 @@ class Tracker  {
 
     }
 
-    handle_paste_default_cell_value(){
-        var idx = this.wheres_the_caret();
-        let row_value = utils_get_defaults_for_markup([this.pattern_markup.descriptors.track[idx[1]]]);
-        post(row_value);
-    }
-
-    handle_paste_current_cell_value(){
-        post("yikes!.... undecided how to do this.");
-    }
-
     handle_delete_selection(pattern){
 
         //[x]  handles shifted rows
@@ -744,16 +734,28 @@ class Tracker  {
                 return;
             }
 
-            let idx = this.#caret.row;
-            let shifted_row = idx;
-            if (this.pattern_row_shift !== 0){
-                shifted_row = getRotatedIndex(this, idx);
-            }
-
+            let shifted_row = getShiftedRow(this, this.#caret.row); // less confusing
             let pattern = this.faux_pattern;
+
             pattern[shifted_row] = replaceAt(pattern[shifted_row], 0, row_values, row_values.length);
             this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: true});
         }
+    }
+
+    handle_paste_default_cell_value(){
+        // you can think of this as a subset of rowpaste.
+        let idx = this.wheres_the_caret();
+        let row_value = utils_get_defaults_for_markup([this.pattern_markup.descriptors.track[idx[1]]]);
+        if (row_value) {  
+            const param_at_position = getParameterTypeAtPosition(this.pattern_markup.lexical_track, this.#caret.col);
+            post(param_at_position.start, param_at_position.end);
+
+        }
+        post(row_value);
+    }
+
+    handle_paste_current_cell_value(){
+        post("yikes!.... undecided how to do this.");
     }
 
     /* ---------- Keyboard Input Handler ------------*/
@@ -1085,20 +1087,20 @@ class Tracker  {
     }
 
 
-    pattern_input_handler(key, caret, desciptor, pattern){
+    pattern_input_handler(key, caret, descriptor, pattern){
 
         var mutates = false;
-        const param_at_position = getParameterTypeAtPosition(desciptor.lexical_track, caret.col);
+        const param_at_position = getParameterTypeAtPosition(descriptor.lexical_track, caret.col);
         if (param_at_position == null){
             return;  // in space column
         }
 
         switch (param_at_position.type) {
-            case 'nnn': { mutates = this.handle_note_input(key, caret, desciptor, pattern); break; }
-            case 'hh': {  mutates = this.handle_2hex_input(key, caret, desciptor, pattern); break; }
-            case 'b': {   mutates = this.handle_trigger_input(key, caret, desciptor, pattern); break; }
-            case 'hhhh': { mutates = this.handle_4hex_input(key, caret, desciptor, pattern, param_at_position); break; }
-            case 'ffxxyy': { mutates = this.handle_ffxxyy_input(key, caret, desciptor, pattern, param_at_position); break; }
+            case 'nnn': { mutates = this.handle_note_input(key, caret, descriptor, pattern); break; }
+            case 'hh': {  mutates = this.handle_2hex_input(key, caret, descriptor, pattern); break; }
+            case 'b': {   mutates = this.handle_trigger_input(key, caret, descriptor, pattern); break; }
+            case 'hhhh': { mutates = this.handle_4hex_input(key, caret, descriptor, pattern, param_at_position); break; }
+            case 'ffxxyy': { mutates = this.handle_ffxxyy_input(key, caret, descriptor, pattern, param_at_position); break; }
             default:
                 return;
         }
