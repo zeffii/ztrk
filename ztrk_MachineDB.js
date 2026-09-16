@@ -63,7 +63,7 @@ const MachineDatabase = {
             ['hh', 'Res AMT |(t:coeff, d:0.85, s:[0,0.9])', 2]
         ],
         "HTX2": [
-            ['b', 'Trigger', 0], 
+            ['b', 'Trigger', 0],
             ["hh", "Amp |(t:coeff, d:0.8, s:[0,1])", 1], // default hex: CC
             ["hh", "Tone |(t:coeff, d:0.5, s:[0,1])", 1], // default hex: 80
             ["hh", "Decay Rate |(t:s, d:0.15, s:[0.02,2])", 1], // default hex: 11
@@ -73,27 +73,27 @@ const MachineDatabase = {
             ["hh", "Attack Time |(t:ms, d:4, s:[1,30])", 2] // default hex: 1A
         ],
         "JUNO6": [
-            ["hh", "Saw |(t:coeff, d:0.7, s:[0,1], dval: B3)", 0], // default hex: B3
-            ["hh", "Pulse |(t:coeff, d:0.0, s:[0,1], dval: 00)", 0], // default hex: 00
-            ["hh", "Sub |(t:coeff, d:0.3, s:[0,1], dval: 4D)", 0], // default hex: 4D
-            ["hh", "Noise Lvl |(t:coeff, d:0.0, s:[0,1], dval: 00)", 0], // default hex: 00
-            ["hh", "Pwm |(t:coeff, d:0.5, s:[0,1], dval: 80)", 1], // default hex: 80
-            ["hh", "Pwm Lfo Depth |(t:coeff, d:0.0, s:[0,1], dval: 00)", 1], // default hex: 00
-            ["hh", "Range |(t:semitones, d:0, s:[-24,24], dval: 80)", 1], // default hex: 80
-            ["hhhh", "Hpf Cutoff |(t:hz, d:40, s:[20,2000], dval: 2688)", 2], // default hex: 2688
-            ["hhhh", "Cutoff |(t:hz, d:1200, s:[40,10000], dval: 9DB1)", 3], // default hex: 9DB1
-            ["hh", "Resonance |(t:coeff, d:0.3, s:[0,1], dval: 4D)", 3], // default hex: 4D
-            ["hh", "Env Amount |(t:bipolar, d:0.0, s:[-1,1], dval: 80)", 3], // default hex: 80
-            ["hh", "Lfo Depth |(t:coeff, d:0.0, s:[0,1], dval: 00)", 3], // default hex: 00
-            ["hh", "Key Track |(t:coeff, d:0.3, s:[0,1], dval: 4D)", 3], // default hex: 4D
-            ["hh", "Attack |(t:s, d:0.005, s:[0.001,4], dval: 00)", 4], // default hex: 00
-            ["hh", "Decay T |(t:s, d:0.3, s:[0.001,8], dval: 0A)", 4], // default hex: 0A
-            ["hh", "Sustain |(t:coeff, d:0.6, s:[0,1], dval: 99)", 4], // default hex: 99
-            ["hh", "Release |(t:s, d:0.3, s:[0.001,8], dval: 0A)", 4], // default hex: 0A
-            ["hh", "Level |(t:coeff, d:0.8, s:[0,1], dval: CC)", 5], // default hex: CC
-            ["hh", "Env Mode |(t:bool, d:1, s:[0,1], dval: FF)", 5], // default hex: FF
-            ["hhhh", "Lfo Rate |(t:hz, d:5.0, s:[0.05,20], dval: C4C4)", 6], // default hex: C4C4
-            ["hh", "Lfo Delay |(t:s, d:0.0, s:[0,4], dval: 00)", 6] // default hex: 00
+            ["hh", "Saw |(t:coeff, d:0.7, s:[0,1], dval: B3)", 0],
+            ["hh", "Pulse |(t:coeff, d:0.0, s:[0,1], dval: 00)", 0],
+            ["hh", "Sub |(t:coeff, d:0.3, s:[0,1], dval: 4D)", 0],
+            ["hh", "Noise Lvl |(t:coeff, d:0.0, s:[0,1], dval: 00)", 0],
+            ["hh", "Pwm |(t:coeff, d:0.5, s:[0,1], dval: 80)", 1],
+            ["hh", "Pwm Lfo Depth |(t:coeff, d:0.0, s:[0,1], dval: 00)", 1],
+            ["hh", "Range |(t:semitones, d:0, s:[-24,24], dval: 80)", 1],
+            ["hhhh", "Hpf Cutoff |(t:hz, d:40, s:[20,2000], dval: 2688)", 2],
+            ["hhhh", "Cutoff |(t:hz, d:1200, s:[40,10000], dval: 9DB1)", 3],
+            ["hh", "Resonance |(t:coeff, d:0.3, s:[0,1], dval: 4D)", 3],
+            ["hh", "Env Amount |(t:bipolar, d:0.0, s:[-1,1], dval: 80)", 3],
+            ["hh", "Lfo Depth |(t:coeff, d:0.0, s:[0,1], dval: 00)", 3],
+            ["hh", "Key Track |(t:coeff, d:0.3, s:[0,1], dval: 4D)", 3],
+            ["hh", "Attack |(t:s, d:0.005, s:[0.001,4], dval: 00)", 4],
+            ["hh", "Decay T |(t:s, d:0.3, s:[0.001,8], dval: 0A)", 4],
+            ["hh", "Sustain |(t:coeff, d:0.6, s:[0,1], dval: 99)", 4],
+            ["hh", "Release |(t:s, d:0.3, s:[0.001,8], dval: 0A)", 4],
+            ["hh", "Level |(t:coeff, d:0.8, s:[0,1], dval: CC)", 5],
+            ["hh", "Env Mode |(t:bool, d:1, s:[0,1], dval: FF)", 5],
+            ["hhhh", "Lfo Rate |(t:hz, d:5.0, s:[0.05,20], dval: C4C4)", 6],
+            ["hh", "Lfo Delay |(t:s, d:0.0, s:[0,4], dval: 00)", 6]
         ]
     }
 }

@@ -45,6 +45,7 @@ class Tracker  {
     #anchor = null;
     #g_pattern_octave = 4;           // [ todo, implement current octave for input ]
     #g_tracker_version = "ztrk v.007";
+    #g_keyrepeat = 0;
 
     constructor(pattern_markup, mgraphics, options = {} ){
 
@@ -1167,6 +1168,8 @@ class Tracker  {
 
         if (this.#g_in_edit_mode){
 
+            post(' inside keyhandler:  ', this.#g_keyrepeat, ", ", this.#g_key_codes);
+
             var SHIFT = 512;
             var ALT = 2048;
             var CTRL = 4352;
@@ -1225,7 +1228,7 @@ class Tracker  {
             }
 
             if (isShiftDown){
-                if (ASCII('I')){
+                if (ASCII(USER_KEY) === 'I'){
                     if (this.handle_interpolate_selection(this.faux_pattern)){ return; } 
                 }
                 switch(USER_KEY){
@@ -1261,6 +1264,7 @@ class Tracker  {
             const shift_or_ctrlshift = found_in([SHIFT, CTRL_SHIFT], SELECTOR);
             if (shift_or_ctrlshift && direction_input){
                 if (this.#started_selection_mode){
+                    this.#g_keyrepeat += 1;
                     post('modifying selection rectangle\n');
                 } else {
                     // means the section is going to start at cursor index x, y, w, h where w and h are 1.
@@ -1281,6 +1285,7 @@ class Tracker  {
             } else {
                 this.#started_selection_mode = false;
                 this.#anchor = null;
+                this.#g_keyrepeat = 0;
             }
 
             if (direction_input){
