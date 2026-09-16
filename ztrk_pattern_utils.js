@@ -428,10 +428,10 @@ function splitAtFirstPipe(str) {
     return [str.slice(0, index), str.slice(index + 1)];
 }
 
-function utils_get_defaults_for_markup(descriptors){
+function utils_get_defaults_for_markup(track){
 
     let return_string = [];
-    for (const [idx, param] of descriptors.track.entries()){
+    for (const [idx, param] of track.entries()){
 
         var current_descriptor = param[1];
         var [descriptor_head, descriptor_tail] = splitAtFirstPipe(current_descriptor);

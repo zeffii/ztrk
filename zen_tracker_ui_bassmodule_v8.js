@@ -421,28 +421,8 @@ class Tracker  {
 
     handle_paste_default_cell_value(){
         var idx = this.wheres_the_caret();
-        var current_descriptor = this.pattern_markup.descriptors.track[idx[1]][1];
-        var [descriptor_head, descriptor_tail] = splitAtFirstPipe(current_descriptor);
-        if (descriptor_tail){
-            post(descriptor_tail);
-
-            const getDval = (str) => {
-                const m = str.match(/dval:\s*([0-9A-F]{4}|[0-9A-F]{2})/);
-                return m ? m[1] : null;
-            };
-            let dval = getDval(descriptor_tail);
-            if (dval) { 
-                /*
-                at some point this will delegate to a handler, 
-                perhaps move the cursor if it is not at the start of the cell, then insert.
-                */
-                post(dval); 
-            }
-            else { post(`No default found, in ${current_descriptor}`); }
-        }
-        else { 
-            post(`Incomplete descriptor: ${current_descriptor}`); 
-        }
+        let row_value = utils_get_defaults_for_markup([this.pattern_markup.descriptors.track[idx[1]]]);
+        post(row_value);
     }
 
     handle_paste_current_cell_value(){
@@ -758,7 +738,7 @@ class Tracker  {
     handle_paste_row(options){
         if ('kind' in options){
 
-            let row_values = utils_get_defaults_for_markup(this.pattern_markup.descriptors);
+            let row_values = utils_get_defaults_for_markup(this.pattern_markup.descriptors.track);
             if (row_values === null) {
                 post('invalud defaults', row_values);
                 return;
@@ -1718,7 +1698,6 @@ class Tracker  {
     paint(){
         /*
         when not in edit mode, this could do some pop/push, rather than performing all draw commands..
-
         */
 
         this.get_text_width_and_height();
