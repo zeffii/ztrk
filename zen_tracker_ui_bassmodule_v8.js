@@ -194,8 +194,6 @@ class Tracker  {
         // here some default behaviour
         this.pattern_markup = payload;
         this.faux_pattern = this.pattern_markup.data;
-        // this.mgraphics.redraw();
-        // this.write_buffers(this);
         this.gfx_refresh_and_write_buffers_and_dispatch({send_back: false, origin: "dictionary function"})
     }
 
@@ -230,9 +228,6 @@ class Tracker  {
 
         this.pattern_markup = payload;
 
-        //this.faux_pattern = this.make_empty_pattern(payload);
-        //this.pattern_markup.data = this.faux_pattern;        
-
         if (payload.data.length === 0){
             this.faux_pattern = this.make_empty_pattern(payload);
             this.pattern_markup.data = this.faux_pattern;
@@ -246,8 +241,6 @@ class Tracker  {
         this.rows = this.pattern_markup.length;
         this.update_v8_boxsize(this.cols, null);
 
-        // this.mgraphics.redraw();
-        // this.write_buffers(this);
         this.#received_first_pattern = true;
         this.gfx_refresh_and_write_buffers_and_dispatch({send_back: false, origin: "handle_received_pattern function"})
     }
@@ -495,8 +488,6 @@ class Tracker  {
             }
 
             this.push_to_live();
-            // this.push_to_buffers();
-            // this.refresh();
             this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: true});
             return true;
         }
@@ -588,8 +579,6 @@ class Tracker  {
             }
 
             this.push_to_live();
-            // this.push_to_buffers();
-            // this.refresh();
             this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: true});
             return true;
         }
@@ -647,8 +636,6 @@ class Tracker  {
             }
 
             this.push_to_live();
-            // this.push_to_buffers();
-            // this.refresh();
             this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: true});
             return true;
         }
@@ -691,8 +678,6 @@ class Tracker  {
             }
 
             this.push_to_live();
-            // this.push_to_buffers();
-            // this.refresh();
             this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: true});
             return true;
         }
@@ -766,8 +751,6 @@ class Tracker  {
             }
 
             this.push_to_live();
-            // this.push_to_buffers();
-            // this.refresh();
             this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: true});
         }
     }
@@ -1591,7 +1574,7 @@ class Tracker  {
             if (wdim > 0){
                 this.set_rgb(this.asRGB(...this.theme_colors.scrollbar_fg_color), 1.0);
                 gfx.rectangle(this.start_x, 0, wdim, 10);
-                gfx.fill();            
+                gfx.fill();
             }
         }
 
@@ -1607,7 +1590,7 @@ class Tracker  {
             if (hdim > 0){
                 this.set_rgb(this.asRGB(...this.theme_colors.scrollbar_fg_color), 1.0);  // this.scrollbar_fg_color
                 gfx.rectangle(0, (this.start_y - this.charheight), 10, hdim);
-                gfx.fill();                            
+                gfx.fill();
             }
         }
 
