@@ -184,6 +184,44 @@ function set_2hex_menu_input(new_char){
     return {count: 0};
 }
 
+/*
+var g_text_input_buffer = "";
+var g_text_input_max_len = 24;   // sane cap for pattern names etc
+
+function start_text_field_input(initial_value){
+    g_text_input_buffer = initial_value || "";
+}
+
+function set_text_field_input(new_char){
+
+    switch (new_char) {
+        case "ENTER": {
+            return {done: true, cancelled: false, value: g_text_input_buffer};
+        }
+        case "ESC": {
+            g_text_input_buffer = "";
+            return {done: true, cancelled: true, value: ""};
+        }
+        case "BACKSPACE": {
+            g_text_input_buffer = g_text_input_buffer.slice(0, -1);
+            return {done: false, cancelled: false, value: g_text_input_buffer};
+        }
+        case "SPACE": {
+            if (g_text_input_buffer.length < g_text_input_max_len){
+                g_text_input_buffer += " ";
+            }
+            return {done: false, cancelled: false, value: g_text_input_buffer};
+        }
+        default: {
+            // 0-9, A-Z only — anything else silently ignored
+            if (/^[0-9A-Z]$/.test(new_char) && g_text_input_buffer.length < g_text_input_max_len){
+                g_text_input_buffer += new_char;
+            }
+            return {done: false, cancelled: false, value: g_text_input_buffer};
+        }
+    }
+}
+*/
 
 function finalize(command){
     /*
@@ -867,11 +905,6 @@ function clone_pattern_in_place(){
 }
 
 function extend_pattern(delta_ticks){
-    // if (g_selected_pattern_idx < 0) return;
-    // var p = sequence_data[g_selected_pattern_idx];
-    // var new_length = p.length + delta_ticks;
-    // if (new_length < 16) new_length = 16; // floor at one row-group
-    // p.length = new_length;
     // post('resized pattern ' + p.pname + ' to length ' + p.length + '\n');
     // mgraphics.redraw();
 }

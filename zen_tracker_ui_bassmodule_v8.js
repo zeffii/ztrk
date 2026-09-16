@@ -161,15 +161,6 @@ class Tracker  {
         this.mgraphics.redraw();
     }
 
-
-    keys(a1, a2, a3, a4) {
-        if (a1 === 32 && this.#g_mouse_on_rect){
-            this.#g_in_edit_mode = !this.#g_in_edit_mode;
-            this.mgraphics.redraw();
-        }
-        this.#g_key_codes = [a1, a2, a3, a4];
-    }
-
     dictionary(dictName) {
         // this is called when a dictionary is passed into the object, it should probably do some update?
         // expect error here.
@@ -1154,6 +1145,14 @@ class Tracker  {
         this.refresh();
     }
 
+    keys(a1, a2, a3, a4) {
+        if (a1 === 32 && this.#g_mouse_on_rect){   // Spacebar
+            this.#g_in_edit_mode = !this.#g_in_edit_mode;
+            this.mgraphics.redraw();
+        }
+        this.#g_key_codes = [a1, a2, a3, a4];
+    }
+
 
     key_handler(){
 
@@ -1180,6 +1179,7 @@ class Tracker  {
             var V_KEY = 22;
             var X_KEY = 24;
             var T_KEY = 116;
+            var SPACE = 32;
             var CTRL_AND_T = 20;
             var [UP_KEY, DOWN_KEY] = [30, 31];
             var [LEFT_KEY, RIGHT_KEY] = [28, 29];
@@ -1192,6 +1192,9 @@ class Tracker  {
             const ASCII = (key) => String.fromCharCode(key).toUpperCase();  // ..duplicate. (how about a ztrk_general_functions.js for tools that are cross editor ? )
             const userkey_in = (array) => found_in(array, USER_KEY);   // helper to avoid passing USER_KEY manually.
 
+            let isAltDown = (SELECTOR === ALT);
+            let isShiftDown = (SELECTOR === SHIFT);
+            let isCtrlDown = (SELECTOR === CTRL);
             /*
             -- TODO 
             - ctrl + pgup/down scrolls the pattern, 
@@ -1206,11 +1209,10 @@ class Tracker  {
 
             */
 
-            if (SELECTOR === ALT){
+            if (isAltDown){
                 if (found_in([UP_KEY, DOWN_KEY], USER_KEY)){
                     if (this.handle_shift_selection(this.faux_pattern, USER_KEY)){ return; }
                 }
-
                 if (found_in([MINUS2, PLUS2], USER_KEY)){
                     // when holding alt, the userkey for minus and plus are different numbers, hence not MINUS but MINUS2..lame.?
                     const NOTES_ONLY = true;
@@ -1222,8 +1224,8 @@ class Tracker  {
                 }
             }
 
-            if (SELECTOR === SHIFT){
-                if (String.fromCharCode(USER_KEY).toUpperCase() === 'I'){
+            if (isShiftDown){
+                if (ASCII('I')){
                     if (this.handle_interpolate_selection(this.faux_pattern)){ return; } 
                 }
                 switch(USER_KEY){
@@ -1233,7 +1235,7 @@ class Tracker  {
                 }
             }
 
-            if (SELECTOR === CTRL){
+            if (isCtrlDown){
                 switch(USER_KEY) {
                     case C_KEY: this.handle_copy_selection(this.faux_pattern); return;
                     case V_KEY: this.handle_paste_selection(this.faux_pattern); return;
@@ -1241,6 +1243,7 @@ class Tracker  {
                     case CTRL_AND_T: this.handle_paste_current_cell_value(); return;
                     case PAGE_UP: this.scroll_pattern(-16); return;
                     case PAGE_DOWN: this.scroll_pattern(+16); return;
+                    // case SPACE: post('WTF?!'); return;   Keys function needs to resolve this CTRL
                     default: break;
                 }
             }
@@ -1272,10 +1275,8 @@ class Tracker  {
                 switch(USER_KEY) {
                     case PAGE_UP: this.moveCaret(-16, 0); break;
                     case PAGE_DOWN: this.moveCaret(16, 0); break;
-                    default: return;
                 }
             } else if (userkey_in([T_KEY])){
-                post("pressed T!");
                 this.handle_paste_default_cell_value(); return;
             } else {
                 this.#started_selection_mode = false;
