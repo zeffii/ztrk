@@ -202,7 +202,7 @@ function set_2hex_menu_input(new_char){
     return {count: 0};
 }
 
-/*
+
 function start_text_field_input(initial_value){
     g_text_input_buffer = initial_value || "";
 }
@@ -235,7 +235,7 @@ function set_text_field_input(new_char){
         }
     }
 }
-*/
+
 
 function finalize(command){
     /*
@@ -647,6 +647,7 @@ function handle_pattern_from_tracker(payload){
 
 function handle_patternprops_key(USER_KEY, ASCII_KEY){
 
+    let [ENTER, ESCAPE, DELETE, SPACE, UP_KEY, DOWN_KEY] = [13, 27, 127, 32, 30, 31];
     var trk = g_tcaret.col;
     var cursor = tick_from_row(g_tcaret.row);
     var found_idx = find_any_pattern_under_cursor(trk, cursor, true);
@@ -745,20 +746,33 @@ function key_handler(){
     var ALT = 2048;
     var CTRL = 4352;
     var CTRL_ALT = 6400;
-
+    
     var ENTER = 13;
     var ESCAPE = 27;
     var SPACE = 32;
-
+    
     var CTRL_ALT_S = 223;   // these have different USER_KEYS when combined with the two modifiers.
     var CTRL_ALT_O = 243;
     var [UP_KEY, DOWN_KEY] = [30, 31];
     var [LEFT_KEY, RIGHT_KEY] = [28, 29];
     var [MINUS1, PLUS1] = [45, 61]; // reuse the pattern editor's octave keys for length
     var arrows = [UP_KEY, DOWN_KEY, LEFT_KEY, RIGHT_KEY];
-
+    
     var SELECTOR = g_key_codes[2];
     var USER_KEY = g_key_codes[0];
+    const UKEY = ASCII(USER_KEY);
+
+    if (g_display_pattern_props){
+        handle_patternprops_key(USER_KEY, ASCII(USER_KEY));
+        post(g_text_input_buffer);
+    }
+
+    /*
+    if (g_display_pattern_menu){
+        // if UKEY in 0123456789ABCDEF
+            set_2hex_menu_input(new_char);
+    }
+    */
 
     // space toggles edit mode
     if (USER_KEY === SPACE){
@@ -785,15 +799,6 @@ function key_handler(){
         return;
     }
 
-    const UKEY = ASCII(USER_KEY);
-
-    /*
-    if (g_display_pattern_menu){
-        // if UKEY in 0123456789ABCDEF
-            set_2hex_menu_input(new_char);
-
-    }
-    */
 
     if (SELECTOR === CTRL){
         if (g_display_pattern_menu){
@@ -872,6 +877,7 @@ function key_handler(){
             default: return;
         }
     }
+   
 }
 
 // - hit testing : inverse of the rect math used in paint() ---
