@@ -44,6 +44,10 @@ function set_active_view(view_name){
     g_ui_state.set("active_view", view_name);
 }
 
+var g_editing_prop_field = null;  // null = navigating, "length" or "name" = editing that field
+var g_text_input_buffer = "";
+var g_text_input_max_len = 24;   // sane cap for pattern names etc
+
 var g_env = get_environment(); post(g_env);
 var g_song_name = generateSongName();
 var g_song_folder = null;
@@ -199,9 +203,6 @@ function set_2hex_menu_input(new_char){
 }
 
 /*
-var g_text_input_buffer = "";
-var g_text_input_max_len = 24;   // sane cap for pattern names etc
-
 function start_text_field_input(initial_value){
     g_text_input_buffer = initial_value || "";
 }
@@ -227,8 +228,7 @@ function set_text_field_input(new_char){
             return {done: false, cancelled: false, value: g_text_input_buffer};
         }
         default: {
-            // 0-9, A-Z only — anything else silently ignored
-            if (/^[0-9A-Z]$/.test(new_char) && g_text_input_buffer.length < g_text_input_max_len){
+            if (/^[0-9A-Z_]$/.test(new_char) && g_text_input_buffer.length < g_text_input_max_len){
                 g_text_input_buffer += new_char;
             }
             return {done: false, cancelled: false, value: g_text_input_buffer};
@@ -644,6 +644,53 @@ function handle_pattern_from_tracker(payload){
     // this operation does not require the sequence-editor view to be refreshed.
     return;
 };
+
+function handle_patternprops_key(USER_KEY, ASCII_KEY){
+
+    var trk = g_tcaret.col;
+    var cursor = tick_from_row(g_tcaret.row);
+    var found_idx = find_any_pattern_under_cursor(trk, cursor, true);
+    if (found_idx === -1) { return; }
+    var pref = sequencer_config.tracks[trk].patterns[found_idx];
+
+    if (g_editing_prop_field !== null){
+        // currently inside a field's own text-capture mode
+        var result;
+        if (USER_KEY === ENTER){ result = set_text_field_input("ENTER"); }
+        else if (USER_KEY === ESCAPE){ result = set_text_field_input("ESC"); }
+        else if (USER_KEY === DELETE){ result = set_text_field_input("BACKSPACE"); }
+        else if (USER_KEY === SPACE && g_editing_prop_field === "name"){ result = set_text_field_input("SPACE"); }
+        else { result = set_text_field_input(ASCII_KEY); }
+
+        if (result.done){
+            if (!result.cancelled){
+                if (g_editing_prop_field === "name"){ pref.pname = result.value; }
+                if (g_editing_prop_field === "length"){
+                    var newLen = parseInt(result.value, 10);
+                    if (!isNaN(newLen) && newLen > 0 && newLen <= 512){ pref.length = newLen; }
+                }
+            }
+            g_editing_prop_field = null;
+        }
+        mgraphics.redraw();
+        return;
+    }
+
+    // navigating between fields (not yet editing)
+    switch(USER_KEY){
+        case UP_KEY: selected_prop_field = (selected_prop_field + 1) % 2; break;
+        case DOWN_KEY: selected_prop_field = (selected_prop_field + 1) % 2; break; // 2 fields for now: Length, Name
+        case ENTER:
+            g_editing_prop_field = (selected_prop_field === 0) ? "length" : "name";
+            var initial = (selected_prop_field === 0) ? String(pref.length) : pref.pname;
+            start_text_field_input(initial);
+            break;
+        case ESCAPE:
+            g_display_pattern_props = 0;
+            break;
+    }
+    mgraphics.redraw();
+}
 
 function find_pattern_occurrences_for_buffer_write(track, puid){
     var placements = sequencer_config.tracks[track].patterns;
@@ -1322,7 +1369,7 @@ function draw_patternprops_menu(gfx, w, h){
         var parameters = [
             "Pattern Properties              ",
             " ",
-            `Length: ${pref.length} (512 max)`,
+            `Length: ${pref.length}█ (512 max)`,
             `Name:   ${pref.pname}`,
             `Color:  ${pref.color}`,
             `uid:    ${pref.puid} (immutable)`,

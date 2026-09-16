@@ -761,7 +761,14 @@ class Tracker  {
         let row_value = utils_get_defaults_for_markup([this.pattern_markup.descriptors.track[idx[1]]]);
         if (row_value) {  
             const param_at_position = getParameterTypeAtPosition(this.pattern_markup.lexical_track, this.#caret.col);
-            post(param_at_position.start, param_at_position.end);
+            if (param_at_position){  // avoids mouse placing a caret inbetween columns.
+                post(param_at_position.start, param_at_position.end);
+                const shifted_row = getShiftedRow(this, this.#caret.row);
+                
+                let pattern = this.faux_pattern;
+                pattern[shifted_row] = replaceAt(pattern[shifted_row], param_at_position.start, row_value, row_value.length);
+                this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: true});
+            }
 
         }
         post(row_value);
