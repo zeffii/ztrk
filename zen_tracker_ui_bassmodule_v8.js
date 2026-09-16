@@ -711,6 +711,7 @@ class Tracker  {
                 if (this.pattern_row_shift !== 0){
                     shifted_row = getRotatedIndex(this, idx);
                 }
+                // let shifted_row = getShiftedRow(this, idx); // less confusing
 
                 pattern[shifted_row] = replaceAt(pattern[shifted_row], selection_start, replacement_part, selection_length);
                 idx++;
