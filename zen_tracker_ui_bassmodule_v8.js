@@ -19,6 +19,17 @@ without these folks, this tracker would have taken much longer to make.
 
 include("ztrk_pattern_utils.js");
 
+var g_ui_state = new Dict("ztrk_ui_state");
+
+function get_active_view(){
+    return g_ui_state.get("active_view");
+}
+
+function set_active_view(view_name){
+    g_ui_state.set("active_view", view_name);
+}
+
+
 class Tracker  {
 
     /*
@@ -46,9 +57,9 @@ class Tracker  {
     #g_pattern_octave = 4;           // [ todo, implement current octave for input ]
     #g_tracker_version = "ztrk v.007";
     #g_keyrepeat = 0;
-
+    
     constructor(pattern_markup, mgraphics, options = {} ){
-
+        
         this.send = options.send || function() { post("No send function provided"); };
         this.write_buffers = options.write_buffers || function() { post("No buffer function provided"); };
 
@@ -189,6 +200,12 @@ class Tracker  {
             this.mgraphics.redraw();
             return
         }
+        if ('active_view' in payload){
+            post('set me to active!!');
+            this.#g_in_edit_mode = true;
+            this.mgraphics.redraw();
+            return;
+        }
         
         post("You sent a dictionary that the tracker doesn't understand, so i'm going to just error a bit. thanks.")
         // here some default behaviour
@@ -242,6 +259,8 @@ class Tracker  {
         this.update_v8_boxsize(this.cols, null);
 
         this.#received_first_pattern = true;
+        set_active_view('tracker');
+        this.#g_in_edit_mode = true;
         this.gfx_refresh_and_write_buffers_and_dispatch({send_back: false, origin: "handle_received_pattern function"})
     }
 
@@ -672,6 +691,7 @@ class Tracker  {
             if (this.pattern_row_shift !== 0){
                shifted_row = getRotatedIndex(this, row);
             }
+            // let shifted_row = getShiftedRow(this, row); // less confusing
             
             var this_row_data = pattern[shifted_row].substr(sel_rect.start_index, sel_rect.selection_length);
             this.#ztrk_clipboard.selection_data.push(this_row_data);
@@ -702,7 +722,6 @@ class Tracker  {
             var selection_start = this.#ztrk_clipboard.selection_info.start_index; // in X axis, column
             var selection_length = this.#ztrk_clipboard.selection_info.selection_length;
             var idx = this.#caret.row;
-
 
             for (const paste_row_idx in this.#ztrk_clipboard.selection_data){
                 var replacement_part = this.#ztrk_clipboard.selection_data[paste_row_idx];
@@ -762,7 +781,7 @@ class Tracker  {
     /* ---------- Keyboard Input Handler ------------*/
 
 
-    handle_2hex_input(key, caret, desciptor, pattern){
+    handle_2hex_input(key, caret, descriptor, pattern){
         // 4hex version of this was written after 2hex, use 4hex as inspiration if you plan to rewrite this function.
         var mutates = false;
         var hex_deletes = [46, 127];
@@ -781,8 +800,8 @@ class Tracker  {
             var listed = HEXALPHNUM.split('');
 
             // this makes it possible to enter data when the pattern is row-shifted.
-            const caret_row = getRotatedIndex(this, caret.row);
-
+            const caret_row = getShiftedRow(this, caret.row);
+            
             if (found_in(listed, charfound)){
                 var replacement_hex = '';
 
@@ -818,7 +837,7 @@ class Tracker  {
     }
 
 
-    handle_trigger_input(key, caret, desciptor, pattern){
+    handle_trigger_input(key, caret, descriptor, pattern){
 
         var mutates = false;
         const trigger_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bb{1}\b/g);  // b
@@ -828,7 +847,8 @@ class Tracker  {
                 const key_infoB = keybangs[key];
 
                 // this makes it possible to enter data when the pattern is row-shifted.
-                const shifted_row = getRotatedIndex(this, caret.row);
+                // const shifted_row = getRotatedIndex(this, caret.row);
+                const shifted_row = getShiftedRow(this, caret.row); // less confusing
                 const current_rowB = pattern[shifted_row];
 
                 pattern[shifted_row] = replaceAt(current_rowB, caret.col, key_infoB, 1);
@@ -840,7 +860,7 @@ class Tracker  {
     }
 
 
-    handle_ffxxyy_input(key, caret, desciptor, pattern, param_at_position){
+    handle_ffxxyy_input(key, caret, descriptor, pattern, param_at_position){
 
         var mutates = false;
         var hex_deletes = [46, 127];
@@ -903,7 +923,7 @@ class Tracker  {
     }
 
 
-    handle_4hex_input(key, caret, desciptor, pattern, param_at_position){
+    handle_4hex_input(key, caret, descriptor, pattern, param_at_position){
 
         var mutates = false;
         var hex_deletes = [46, 127];
@@ -945,7 +965,7 @@ class Tracker  {
     };
 
 
-    handle_note_input(key, caret, desciptor, pattern){
+    handle_note_input(key, caret, descriptor, pattern){
         /*  Note: 
                 Todo: if there is no note, 
                             then idx1 and idx2 can not be edited
@@ -1138,7 +1158,8 @@ class Tracker  {
         var SPACE = 32
 
         // Spacebar, but not Spacebar + Ctrl
-        if (a1 === SPACE && this.#g_mouse_on_rect && a3 !== CTRL){   
+        //if (a1 === SPACE && this.#g_mouse_on_rect && a3 !== CTRL){   
+        if (a1 === SPACE && get_active_view() === "tracker" && a3 !== CTRL){
             this.#g_in_edit_mode = !this.#g_in_edit_mode;
             this.mgraphics.redraw();
         }
@@ -1152,10 +1173,11 @@ class Tracker  {
             return;
         }
 
-        if (this.#g_mouse_on_rect !== true){
-            // you don't want any data interaction if the mouse is not on the rectangle
-            return;  
-        };
+        // if (this.#g_mouse_on_rect !== true){
+        //     // you don't want any data interaction if the mouse is not on the rectangle
+        //     return;  
+        // };
+        if (get_active_view() !== "tracker") return;
 
         if (this.#g_in_edit_mode){
 
@@ -1165,7 +1187,7 @@ class Tracker  {
             var ALT = 2048;
             var CTRL = 4352;
             var CTRL_SHIFT = 4864;
-
+            var ESCAPE = 27;
             var DELETE = 127;
             var PAGE_UP = 11;
             var PAGE_DOWN = 12;
@@ -1202,6 +1224,12 @@ class Tracker  {
             Not ideal but it does tempt me to implement some input hardware for interaction.
 
             */
+            if (USER_KEY === ESCAPE){
+                // this should send control back to sequence editor.
+                set_active_view("sequencer");
+                this.#g_in_edit_mode = false;
+                this.mgraphics.redraw();
+            }
 
             if (isAltDown){
                 if (found_in([UP_KEY, DOWN_KEY], USER_KEY)){

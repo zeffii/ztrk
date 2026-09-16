@@ -374,8 +374,9 @@ function rotate(arr, n) {
     return [...arr.slice(n), ...arr.slice(0, n)];
 }
 
+// just use this one. nee need for shiftedRow.
 function getRotatedIndex(that, old_idx){
-
+    // if (that.pattern_row_shift === 0) { return old_idx; }
     var tempval = (old_idx + that.pattern_row_shift) % that.pattern_markup.length;
     if (tempval < 0){
         tempval = tempval + that.pattern_markup.length;

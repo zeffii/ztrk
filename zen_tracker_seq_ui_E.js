@@ -30,6 +30,20 @@ var trk_width = 0;
 var side_width = 0;
 var global_tick = 0;
 
+// === shared UI state — near the top of the file, with your other globals ===
+var g_ui_state = new Dict("ztrk_ui_state");
+if (!g_ui_state.contains("active_view")){
+    g_ui_state.set("active_view", "sequencer"); // whichever view loads first sets the default
+}
+
+function get_active_view(){
+    return g_ui_state.get("active_view");
+}
+
+function set_active_view(view_name){
+    g_ui_state.set("active_view", view_name);
+}
+
 var g_env = get_environment(); post(g_env);
 var g_song_name = generateSongName();
 var g_song_folder = null;
@@ -677,7 +691,8 @@ function keys(a1, a2, a3, a4){
 
 function key_handler(){
 
-    if (!g_mouse_on_rect) return;
+    // if (!g_mouse_on_rect) return;
+    if (get_active_view() !== "sequencer") return;
 
     var SHIFT = 512;
     var ALT = 2048;
@@ -787,7 +802,8 @@ function key_handler(){
             return;
         } 
         else { 
-            send_pattern_to_tracker(); 
+            send_pattern_to_tracker();
+            set_active_view("tracker");
         }
         // else { insert_patterns_in_selection(); }
         return;
@@ -1323,7 +1339,7 @@ function draw_patternprops_menu(gfx, w, h){
     var py_location = (h/2) - (prop_h/2);
 
     // add background
-    gfx.set_source_rgba(0, 0, 0, 1.0);
+    gfx.set_source_rgba(0.2, 0.2, 0.2, 1.0);
     gfx.rectangle(px_location, py_location, prop_w, prop_h);
     gfx.fill();
 
