@@ -717,7 +717,7 @@ class Tracker  {
             if (this.pattern_row_shift !== 0){
                shifted_row = getRotatedIndex(this, row);
             }
-
+            
             var this_row_data = pattern[shifted_row].substr(sel_rect.start_index, sel_rect.selection_length);
             this.#ztrk_clipboard.selection_data.push(this_row_data);
         }
@@ -768,6 +768,27 @@ class Tracker  {
             this.push_to_live();
             // this.push_to_buffers();
             // this.refresh();
+            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: true});
+        }
+    }
+
+    handle_paste_row(options){
+        if ('kind' in options){
+
+            let row_values = utils_get_defaults_for_markup(this.pattern_markup.descriptors);
+            if (row_values === null) {
+                post('invalud defaults', row_values);
+                return;
+            }
+
+            let idx = this.#caret.row;
+            let shifted_row = idx;
+            if (this.pattern_row_shift !== 0){
+                shifted_row = getRotatedIndex(this, idx);
+            }
+
+            let pattern = this.faux_pattern;
+            pattern[shifted_row] = replaceAt(pattern[shifted_row], 0, row_values, row_values.length);
             this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: true});
         }
     }
@@ -1147,7 +1168,11 @@ class Tracker  {
     }
 
     keys(a1, a2, a3, a4) {
-        if (a1 === 32 && this.#g_mouse_on_rect){   // Spacebar
+        var CTRL = 4352;
+        var SPACE = 32
+
+        // Spacebar, but not Spacebar + Ctrl
+        if (a1 === SPACE && this.#g_mouse_on_rect && a3 !== CTRL){   
             this.#g_in_edit_mode = !this.#g_in_edit_mode;
             this.mgraphics.redraw();
         }
@@ -1168,7 +1193,7 @@ class Tracker  {
 
         if (this.#g_in_edit_mode){
 
-            post(' inside keyhandler:  ', this.#g_keyrepeat, ", ", this.#g_key_codes);
+            // post(' inside keyhandler:  ', this.#g_keyrepeat, ", ", this.#g_key_codes);
 
             var SHIFT = 512;
             var ALT = 2048;
@@ -1246,7 +1271,7 @@ class Tracker  {
                     case CTRL_AND_T: this.handle_paste_current_cell_value(); return;
                     case PAGE_UP: this.scroll_pattern(-16); return;
                     case PAGE_DOWN: this.scroll_pattern(+16); return;
-                    // case SPACE: post('WTF?!'); return;   Keys function needs to resolve this CTRL
+                    case SPACE: this.handle_paste_row({kind: 'defaults'}); return;   // should allow named presets too
                     default: break;
                 }
             }

@@ -427,3 +427,24 @@ function splitAtFirstPipe(str) {
     // Split at the first occurrence
     return [str.slice(0, index), str.slice(index + 1)];
 }
+
+function utils_get_defaults_for_markup(descriptors){
+
+    let return_string = [];
+    for (const [idx, param] of descriptors.track.entries()){
+
+        var current_descriptor = param[1];
+        var [descriptor_head, descriptor_tail] = splitAtFirstPipe(current_descriptor);
+        if (descriptor_tail){
+
+            const getDval = (str) => { const m = str.match(/dval:\s*([0-9A-F]{4}|[0-9A-F]{2})/); return m ? m[1] : null; };
+
+            let dval = getDval(descriptor_tail);
+            if (dval) { 
+                return_string.push(dval); }
+            else { 
+                post(`No default found, in ${current_descriptor}`); }
+        }
+    }
+    return return_string.join(" ");
+}
