@@ -5,7 +5,7 @@ basic basic for now.
 I decided to get a max/msp license because of gen~ and jsui/v8ui/rnbo. The goal is to make a tracker interface that will turn max/msp into a playground where i can make and trigger synths exactly the way i want, and hook them up in a modular way to effects. Rather than moaning about the things that i perceive as limitations in other tools/trackers. My main issue is that i want to be able to control the creative part entirely via a keyboard, or via a scripting interface, if i want to. 
 
 See https://github.com/zeffii/ztrk/issues/8 for the current active TODO list.
-
+Current MaxPat to load: https://github.com/zeffii/ztrk/blob/master/Max_Experiments/sequencer_dev2.maxpat
 
 Some milestones i will need to tackle, in no particular order
 
