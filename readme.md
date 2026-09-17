@@ -1,8 +1,11 @@
-![Image](https://github.com/user-attachments/assets/4d2c6438-ea2e-43d8-bc20-0f1901bc7b85)
+![Image](https://github.com/user-attachments/assets/7426e531-ffa7-455e-bd63-35bd7af2dd2b)
 
 basic basic for now.
 
 I decided to get a max/msp license because of gen~ and jsui/v8ui/rnbo. The goal is to make a tracker interface that will turn max/msp into a playground where i can make and trigger synths exactly the way i want, and hook them up in a modular way to effects. Rather than moaning about the things that i perceive as limitations in other tools/trackers. My main issue is that i want to be able to control the creative part entirely via a keyboard, or via a scripting interface, if i want to. 
+
+See https://github.com/zeffii/ztrk/issues/8 for the current active TODO list.
+
 
 Some milestones i will need to tackle, in no particular order
 
@@ -46,8 +49,8 @@ Step 3:
 
 - [x] add pattern from list 
       - [ ] (using 2hex keys)
-- [ ] set pattern length (has sideeffects)
-- [ ] add user defined machines
+- [x] set pattern length (has sideeffects)
+- [x] add user define-able machines (prelim!)
 - [ ] add tracks (select machine to add)
 - [ ] add basic set of sampler/effects/synth (call these machines)
      - [ ] drummachine
@@ -69,7 +72,6 @@ Step 3:
      - [ ] delay
      - [ ] chorus
 - [ ] keyrepeats, need a tidier solution (has been through several iteration, not satisfying yet)
-
 
 
 -----------------
