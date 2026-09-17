@@ -499,6 +499,17 @@ class Tracker  {
             if (xx_first_param !== null){ selection_start = xx_first_param.start; }
             if (xx_last_param !== null){ selection_length = (xx_last_param.end - xx_first_param.start) + 1; }
 
+            /* 
+            1. how to handle CCXXYY columns?
+                the current bug presents itself when the start row of the section some some thing like 
+
+                AA.... 
+
+                and the last row 
+                BB3000
+                and maybe the ..isOnlyDots() just isn't good enough when the left-extent of the selection contains CC....
+            */
+
             // this takes shifted pattern row view into account.
             var selection_top = getRotatedIndex(this, selection.top);
             var selection_bottom = getRotatedIndex(this, selection.bottom);
@@ -508,6 +519,8 @@ class Tracker  {
             var substr_end = pattern[selection_bottom].substr(selection_start, selection_length);
             var start_list = substr_start.split(' ');
             var end_list = substr_end.split(' ');
+
+            post(`woop   [${start_list}]`);
 
             var interpolation_dict = {};
             // we will only interpolate a parameter if it is in the first and last row of the selection
@@ -1315,7 +1328,7 @@ class Tracker  {
                     }
 
                 } else {
-
+                    // --------------- just simple arrow driven navigation here -----------------------
                     switch(USER_KEY) {
                         case LEFT_KEY: 
                             this.moveCaret(0, -1);
@@ -1327,8 +1340,15 @@ class Tracker  {
                             var over_a_space = (this.pattern_markup.lexical_track.charAt(this.#caret.col) === ' ');
                             if (over_a_space){ this.moveCaret(0, 1); }
                             break;
-                        case UP_KEY: this.moveCaret(-1, 0); break;
-                        case DOWN_KEY: this.moveCaret(1, 0); break;
+                        case UP_KEY: {
+                            // how to shift the pattern 16 if the caret is beyond visisble range? ?
+                            this.moveCaret(-1, 0); 
+                            break;
+                        }
+                        case DOWN_KEY: {
+                            this.moveCaret(1, 0); 
+                            break;
+                        }
                         default: return;
                     }
                 }
