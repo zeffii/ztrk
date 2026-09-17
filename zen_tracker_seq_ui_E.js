@@ -23,11 +23,18 @@ var theme_colors = {
     header_text: [0.4, 0.9, 1.0, 1]
 }
 
-var settings_font_size = 12;
+const g_font_dict = new Dict("ztrk_font_settings");
+if (!g_font_dict.contains("fontFamily")) g_font_dict.set("fontFamily", ["Consolas", "normal", "normal"]);
+if (!g_font_dict.contains("fontSize"))   g_font_dict.set("fontSize", 12);
+const ztrk_get_font_family = () => g_font_dict.get("fontFamily");
+const ztrk_get_font_size   = () => g_font_dict.get("fontSize");
+
+var settings_font_size = ztrk_get_font_size();  // 12;
 var charwidth = 0;
 var charheight = 0;
 var trk_width = 0;
 var side_width = 0;
+
 var global_tick = 0;
 
 // === shared UI state — near the top of the file, with your other globals ===
@@ -35,14 +42,8 @@ var g_ui_state = new Dict("ztrk_ui_state");
 if (!g_ui_state.contains("active_view")){
     g_ui_state.set("active_view", "sequencer"); // whichever view loads first sets the default
 }
-
-function get_active_view(){
-    return g_ui_state.get("active_view");
-}
-
-function set_active_view(view_name){
-    g_ui_state.set("active_view", view_name);
-}
+const get_active_view = () => g_ui_state.get("active_view");
+const set_active_view = (view_name) => { g_ui_state.set("active_view", view_name) };
 
 var g_editing_prop_field = null;  // null = navigating, "length" or "name" = editing that field
 var selected_prop_field = 0;    // should always reset to this.
@@ -135,6 +136,43 @@ var default_config = {
     encoded_pattern_cache: {}
 };
 
+var sequencer_config = { ...default_config};
+
+// - simulate adding data at runtime.
+add_pattern(0, 0,   uid_01);
+add_pattern(0, 128, uid_04);
+add_pattern(4, 16,  uid_07);
+add_pattern(1, 16,  uid_02);
+add_pattern(1, 192, uid_05);
+add_pattern(3, 64,  uid_03);
+add_pattern(3, 256, uid_06);
+
+function sequencer_init(){
+    var num_tracks = sequencer_config.tracks.length;
+    var patcher = this.patcher;
+
+    cols = num_tracks;
+    init_track_buffers(patcher, num_tracks);
+    debug_empty_buffers();
+    outlet(0, "refresh", "buffer_viz");
+    return ;
+}
+
+// - one liner utils.
+
+const ASCII = (key) => String.fromCharCode(key).toUpperCase();
+const fmt4 = (n) => ('0000' + Math.floor(Math.abs(n))).slice(-4) + ' '; 
+const fmt3 = (n) => ('000' + Math.floor(Math.abs(n))).slice(-3) + ' '; 
+
+const asRGBobj = (col) => ({r: col[0], g: col[1], b: col[2]});
+const set_rgb = (c, d /*color, dimming*/) => { mgraphics.set_source_rgba(c.r / d, c.g / d, c.b / d, 1); }
+
+const kind_from_column = (col) => sequencer_config.tracks[col].kind;
+const tick_from_row = (row) => row * 16;
+
+
+// - multi line utils
+
 function get_cached_puid_or_compute_and_cache_it(puid){
     /*
     the idea here was to cache the float computed version of the pattern based on the puid
@@ -152,43 +190,6 @@ function get_cached_puid_or_compute_and_cache_it(puid){
     sequencer_config.encoded_pattern_cache[pattern_ref.puid] = array2d_float;
     return array2d_float;
 }
-
-var sequencer_config = { ...default_config};
-
-function sequencer_init(){
-    var num_tracks = sequencer_config.tracks.length;
-    var patcher = this.patcher;
-
-    cols = num_tracks;
-    init_track_buffers(patcher, num_tracks);
-    debug_empty_buffers();
-    outlet(0, "refresh", "buffer_viz");
-    return ;
-}
-
-// - simulate adding data at runtime.
-add_pattern(0, 0,   uid_01);
-add_pattern(0, 128, uid_04);
-add_pattern(4, 16,  uid_07);
-add_pattern(1, 16,  uid_02);
-add_pattern(1, 192, uid_05);
-add_pattern(3, 64,  uid_03);
-add_pattern(3, 256, uid_06);
-
-// - one liner utils.
-
-const ASCII = (key) => String.fromCharCode(key).toUpperCase();
-const fmt4 = (n) => ('0000' + Math.floor(Math.abs(n))).slice(-4) + ' '; 
-const fmt3 = (n) => ('000' + Math.floor(Math.abs(n))).slice(-3) + ' '; 
-
-const asRGBobj = (col) => ({r: col[0], g: col[1], b: col[2]});
-const set_rgb = (c, d /*color, dimming*/) => { mgraphics.set_source_rgba(c.r / d, c.g / d, c.b / d, 1); }
-
-const kind_from_column = (col) => sequencer_config.tracks[col].kind;
-const tick_from_row = (row) => row * 16;
-
-
-// - multi line utils
 
 function set_2hex_menu_input(new_char){
     switch (g_2hex_input.length) {
@@ -1155,40 +1156,6 @@ function remove_pattern_at_cursor(){
 }
 
 function insert_patterns_in_selection(){
-    // var rect = get_selection_rect();
-    // if (rect === null) return;
-
-    // // the anchor's row is the start tick no matter which way the caret grew
-    // // the region; length is just the row span in ticks.
-    // var span_rows = Math.abs(g_tcaret.row - g_sel_anchor.row) + 1;
-    // var start = tick_from_row(g_sel_anchor.row);
-    // var length = span_rows * 16;
-
-    // var created = 0;
-    // var skipped = 0;
-    // for (var col = rect.col_lo; col <= rect.col_hi; col++){
-
-    //     // dont add patterns ontop of existing
-    //     if (pattern_overlaps(col, start, length)){
-    //         skipped += 1;
-    //         continue;
-    //     }
-    //     var fresh = {
-    //         pname: next_pname(),
-    //         trk: col,
-    //         start: start,
-    //         length: length,
-    //         color: [0.2, 0.4, 0.5],
-    //         kind: "gen"
-    //     };
-    //     sequence_data.push(fresh);
-    //     created += 1;
-    // }
-
-    // post('inserted ' + created + ' pattern(s), skipped ' + skipped + ' occupied lane(s)\n');
-    // cancel_selection();
-    // mgraphics.redraw();
-    // finalize()
 }
 
 // - DRAWING.
@@ -1226,17 +1193,6 @@ function draw_looping_indicators(){
 }
 
 function draw_selection_rect(){
-    // if (!g_selection_active) return;
-
-    // var rect = get_selection_rect();
-    // var cx = side_width + (rect.col_lo * trk_width);
-    // var cy = (rect.row_lo * charheight);
-    // var w = ((rect.col_hi - rect.col_lo + 1) * trk_width) - 3;
-    // var h = ((rect.row_hi - rect.row_lo + 1) * charheight) * -1; // rows grow downward, same sign convention as draw_track_cursor
-
-    // set_rgb({r:1.0, g:1.0, b:1.0}, 1.0);
-    // mgraphics.rectangle(cx - 2, cy + 3, w, h * 0.9);
-    // mgraphics.stroke();
 }
 
 function draw_track_cursor(){
@@ -1484,8 +1440,9 @@ function paint(){
     const gfx = mgraphics;
     var [w, h] = gfx.size;
     
-    mgraphics.set_font_size(settings_font_size);
-    mgraphics.select_font_face("Consolas", "normal", "normal");
+    mgraphics.set_font_size(ztrk_get_font_size());
+    mgraphics.select_font_face(...ztrk_get_font_family());  //("Consolas", "normal", "normal");
+
     [charwidth, charheight] = mgraphics.text_measure('/');
     trk_width = mgraphics.text_measure('|    Λ    ')[0];
     side_width = mgraphics.text_measure('tick  ')[0];

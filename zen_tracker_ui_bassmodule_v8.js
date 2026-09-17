@@ -20,14 +20,14 @@ without these folks, this tracker would have taken much longer to make.
 include("ztrk_pattern_utils.js");
 
 var g_ui_state = new Dict("ztrk_ui_state");
+const get_active_view = () => g_ui_state.get("active_view");
+const set_active_view = (view_name) => { g_ui_state.set("active_view", view_name) };
 
-function get_active_view(){
-    return g_ui_state.get("active_view");
-}
-
-function set_active_view(view_name){
-    g_ui_state.set("active_view", view_name);
-}
+const g_font_dict = new Dict("ztrk_font_settings");
+if (!g_font_dict.contains("fontFamily")) g_font_dict.set("fontFamily", ["Consolas", "normal", "normal"]);
+if (!g_font_dict.contains("fontSize"))   g_font_dict.set("fontSize", 12);
+const ztrk_get_font_family = () => g_font_dict.get("fontFamily");
+const ztrk_get_font_size   = () => g_font_dict.get("fontSize");
 
 
 class Tracker  {
@@ -38,7 +38,7 @@ class Tracker  {
     */
 
     #AbletonMode = true;
-    #MatrixMode = false;
+    // #MatrixMode = false;
     #ztrk_clipboard = {};
     #received_first_pattern = false;
     
@@ -46,7 +46,7 @@ class Tracker  {
     #g_in_edit_mode = false;
     #g_key_codes = [];
     #g_mouse_on_rect = false;
-    #g_caret = [0, 0];
+    // #g_caret = [0, 0];
     
     #started_selection_mode = false;
     #g_updating_selection = true;
@@ -76,7 +76,7 @@ class Tracker  {
 
         this.rows = this.pattern_markup.length;
         this.cols = this.pattern_markup.lexical_track.length;
-        this.settings_font_size = 12; //
+        this.settings_font_size = ztrk_get_font_size(); // 12;
         this.charwidth = 6.60;   // this gets updated at runtime. see this.get_text_width_and_height();
         this.charheight = this.settings_font_size; 
         this.text_w = 1;         // this gets updated at runtime. see this.get_text_width_and_height();
@@ -1383,8 +1383,8 @@ class Tracker  {
         var w = gfx.size[0];
         var h = gfx.size[1];
 
-        gfx.set_font_size(this.settings_font_size);
-        gfx.select_font_face("Consolas", "normal", "normal");
+        gfx.set_font_size(ztrk_get_font_size());   //this.settings_font_size);
+        gfx.select_font_face(...ztrk_get_font_family());  //"Consolas", "normal", "normal");
         this.charwidth = gfx.text_measure('_')[0];
         
         var tx_wh = gfx.text_measure('000 ' + this.pattern_markup.lexical_track);  // returns width and height
