@@ -45,6 +45,7 @@ function set_active_view(view_name){
 }
 
 var g_editing_prop_field = null;  // null = navigating, "length" or "name" = editing that field
+var selected_prop_field = 0;    // should always reset to this.
 var g_text_input_buffer = "";
 var g_text_input_max_len = 24;   // sane cap for pattern names etc
 
@@ -222,13 +223,15 @@ function set_text_field_input(new_char){
             return {done: false, cancelled: false, value: g_text_input_buffer};
         }
         case "SPACE": {
-            if (g_text_input_buffer.length < g_text_input_max_len){
+            if ((g_editing_prop_field === "name" || g_editing_prop_field === "color") &&
+                g_text_input_buffer.length < g_text_input_max_len){
                 g_text_input_buffer += " ";
             }
             return {done: false, cancelled: false, value: g_text_input_buffer};
         }
         default: {
-            if (/^[0-9A-Z_]$/.test(new_char) && g_text_input_buffer.length < g_text_input_max_len){
+            // 0-9, A-Z, underscore, period (period needed for RGB floats)
+            if (/^[0-9A-Z_.]$/.test(new_char) && g_text_input_buffer.length < g_text_input_max_len){
                 g_text_input_buffer += new_char;
             }
             return {done: false, cancelled: false, value: g_text_input_buffer};
@@ -461,6 +464,13 @@ function toggle_pattern_menu_visibility(){
 
 function toggle_pattern_properties_visibility(){
     g_display_pattern_props = !g_display_pattern_props; 
+
+    if (g_display_pattern_props){
+        g_editing_prop_field = "length";
+    } else {
+        g_editing_prop_field = null;
+    }
+
     mgraphics.redraw();
 }
 
@@ -645,54 +655,6 @@ function handle_pattern_from_tracker(payload){
     return;
 };
 
-function handle_patternprops_key(USER_KEY, ASCII_KEY){
-
-    let [ENTER, ESCAPE, DELETE, SPACE, UP_KEY, DOWN_KEY] = [13, 27, 127, 32, 30, 31];
-    var trk = g_tcaret.col;
-    var cursor = tick_from_row(g_tcaret.row);
-    var found_idx = find_any_pattern_under_cursor(trk, cursor, true);
-    if (found_idx === -1) { return; }
-    var pref = sequencer_config.tracks[trk].patterns[found_idx];
-
-    if (g_editing_prop_field !== null){
-        // currently inside a field's own text-capture mode
-        var result;
-        if (USER_KEY === ENTER){ result = set_text_field_input("ENTER"); }
-        else if (USER_KEY === ESCAPE){ result = set_text_field_input("ESC"); }
-        else if (USER_KEY === DELETE){ result = set_text_field_input("BACKSPACE"); }
-        else if (USER_KEY === SPACE && g_editing_prop_field === "name"){ result = set_text_field_input("SPACE"); }
-        else { result = set_text_field_input(ASCII_KEY); }
-
-        if (result.done){
-            if (!result.cancelled){
-                if (g_editing_prop_field === "name"){ pref.pname = result.value; }
-                if (g_editing_prop_field === "length"){
-                    var newLen = parseInt(result.value, 10);
-                    if (!isNaN(newLen) && newLen > 0 && newLen <= 512){ pref.length = newLen; }
-                }
-            }
-            g_editing_prop_field = null;
-        }
-        mgraphics.redraw();
-        return;
-    }
-
-    // navigating between fields (not yet editing)
-    switch(USER_KEY){
-        case UP_KEY: selected_prop_field = (selected_prop_field + 1) % 2; break;
-        case DOWN_KEY: selected_prop_field = (selected_prop_field + 1) % 2; break; // 2 fields for now: Length, Name
-        case ENTER:
-            g_editing_prop_field = (selected_prop_field === 0) ? "length" : "name";
-            var initial = (selected_prop_field === 0) ? String(pref.length) : pref.pname;
-            start_text_field_input(initial);
-            break;
-        case ESCAPE:
-            g_display_pattern_props = 0;
-            break;
-    }
-    mgraphics.redraw();
-}
-
 function find_pattern_occurrences_for_buffer_write(track, puid){
     var placements = sequencer_config.tracks[track].patterns;
 
@@ -731,6 +693,83 @@ function msg_int(tick){
 
 // - KEY handling.
 
+function handle_patternprops_key(USER_KEY, ASCII_KEY){
+
+    let [ENTER, ESCAPE, DELETE, BACK_SPACE, SPACE, UP_KEY, DOWN_KEY] = [13, 27, 127, 8, 32, 30, 31];
+    var trk = g_tcaret.col;
+    var cursor = tick_from_row(g_tcaret.row);
+    var found_idx = find_any_pattern_under_cursor(trk, cursor, true);
+
+
+    // in the event of the pattern being shrunk, and no longer under the cursor, this menu must close
+    if (found_idx === -1) { 
+        g_display_pattern_props = 0;
+        g_editing_prop_field = null;
+        g_display_pattern_props = 0;
+        mgraphics.redraw();
+        return;
+    }
+
+    let NUM_PROP_FIELDS = 3; // 0: Length, 1: Name, 2: Color
+    var pref = sequencer_config.tracks[trk].patterns[found_idx];
+    if (g_editing_prop_field !== null){
+        // currently inside a field's own text-capture mode
+        var result;
+        if (USER_KEY === ENTER){ result = set_text_field_input("ENTER"); }
+        else if (USER_KEY === ESCAPE){ result = set_text_field_input("ESC"); }
+        else if (USER_KEY === BACK_SPACE){ result = set_text_field_input("BACKSPACE"); }
+        else if (USER_KEY === SPACE){ result = set_text_field_input("SPACE"); }
+        else { result = set_text_field_input(ASCII_KEY); }
+
+        if (result.done){
+            if (!result.cancelled){
+                if (g_editing_prop_field === "name"){
+                    pref.pname = result.value;
+                }
+                if (g_editing_prop_field === "length"){
+                    var newLen = parseInt(result.value, 10);
+                    if (!isNaN(newLen) && newLen > 0 && newLen <= 512){ pref.length = newLen; }
+                }
+                if (g_editing_prop_field === "color"){
+                    var parts = result.value.trim().split(/\s+/).map(parseFloat);
+                    if (parts.length === 3 && parts.every(v => !isNaN(v))){
+                        pref.color = parts.map(v => Math.max(0, Math.min(1, v)));
+                    }
+                }
+            }
+            g_editing_prop_field = null;
+        }
+        mgraphics.redraw();
+        return;
+    }
+
+    // navigating between fields
+    switch(USER_KEY){
+
+        case UP_KEY:
+            selected_prop_field = (selected_prop_field - 1 + NUM_PROP_FIELDS) % NUM_PROP_FIELDS;
+            break;
+
+        case DOWN_KEY:
+            selected_prop_field = (selected_prop_field + 1) % NUM_PROP_FIELDS;
+            break;
+
+        case ENTER:
+            g_editing_prop_field = ["length", "name", "color"][selected_prop_field];
+            let initial;
+            if (g_editing_prop_field === "length"){ initial = String(pref.length); }
+            else if (g_editing_prop_field === "name"){ initial = pref.pname; }
+            else { initial = pref.color.join(" "); }
+            start_text_field_input(initial);
+            break;
+
+        case ESCAPE:
+            g_display_pattern_props = 0;
+            break;
+    }
+    mgraphics.redraw();
+}
+
 function keys(a1, a2, a3, a4){
     if (inlet !== 1) return; // keypresses arrive on the cold 2nd inlet, not the hot one
     g_key_codes = [a1, a2, a3, a4];
@@ -762,9 +801,11 @@ function key_handler(){
     var USER_KEY = g_key_codes[0];
     const UKEY = ASCII(USER_KEY);
 
+    // capture all kb input while displaying pattern properties.
     if (g_display_pattern_props){
         handle_patternprops_key(USER_KEY, ASCII(USER_KEY));
         post(g_text_input_buffer);
+        return;
     }
 
     /*
@@ -1356,7 +1397,11 @@ function draw_songname(gfx, h){
     gfx.show_text(`${g_song_name} @ ${abbreviated_folder_structure}`);
 }
 
+
 function draw_patternprops_menu(gfx, w, h){
+    /*
+    some fine-tuning is required.
+    */
     
     const trk = g_tcaret.col;
     const cursor = tick_from_row(g_tcaret.row);
@@ -1369,61 +1414,69 @@ function draw_patternprops_menu(gfx, w, h){
             " ",
             "          Esc to close           "
         ];
+        var field_line_map = {};
     }
     else {
         var pref = sequencer_config.tracks[trk].patterns[found_idx];
+
+        var lengthDisplay = (g_editing_prop_field === "length") ? (g_text_input_buffer + "█") : String(pref.length);
+        var nameDisplay = (g_editing_prop_field === "name") ? (g_text_input_buffer + "█") : pref.pname;
+
+        var colorDisplay = (g_editing_prop_field === "color") ? (g_text_input_buffer + "█") : pref.color.join(" ");
+
         var parameters = [
             "Pattern Properties              ",
             " ",
-            `Length: ${pref.length}█ (512 max)`,
-            `Name:   ${pref.pname}`,
-            `Color:  ${pref.color}`,
+            `Length: ${lengthDisplay} (512 max)`,
+            `Name:   ${nameDisplay}`,
+            `Color:  ${colorDisplay}`,
             `uid:    ${pref.puid} (immutable)`,
             " ",
             "          Esc to close          "
         ];
+
+        var field_line_map = { 2: 0, 3: 1, 4: 2 }; // Length, Name, Color
     }
 
-    var num_chars = Math.max(...parameters.map(s => s.length)) + 2;  // find longest string, and pad with 2.
+    var num_chars = Math.max(...parameters.map(s => s.length)) + 2;
 
     var prop_w = num_chars * charwidth;
     var prop_h = ((parameters.length + .5) * charheight);
     var px_location = (w/2) - (prop_w/2);
     var py_location = (h/2) - (prop_h/2);
 
-    // add background
     gfx.set_source_rgba(0.2, 0.2, 0.2, 1.0);
     gfx.rectangle(px_location, py_location, prop_w, prop_h);
     gfx.fill();
 
-    // add items.  slightly verbose but helps debug.
     let menu_text_color = [0.96, 0.96, 0.96, 1.0];
+    let highlight_color = [1.0, 0.85, 0.3, 1.0];
+
     for (const [idx, item] of parameters.entries()) {
-        gfx.set_source_rgba(1, 1, 1, 1.0);
+
+        var is_selected_line = (field_line_map[idx] === selected_prop_field);
+        var draw_color = is_selected_line ? highlight_color : menu_text_color;
+
         if (item.startsWith("uid:")){
             gfx.set_source_rgba(0.6, 0.6, 0.6, 1.0);
             gfx.move_to(px_location + charwidth, py_location + charheight + (idx * charheight));
             gfx.show_text(item);
         } else if (item.startsWith("Color:")){
-
-            // add the color..
             var color_rect_y = py_location + (idx * charheight) + (0.25 * charheight);
             gfx.set_source_rgba(...pref.color, 1.0);
             gfx.rectangle(px_location + prop_w - 40, color_rect_y , 30, charheight);
             gfx.fill();
-            
-            gfx.set_source_rgba(...menu_text_color);
+
+            gfx.set_source_rgba(...draw_color);
             gfx.move_to(px_location + charwidth, py_location + charheight + (idx * charheight));
             gfx.show_text(item);
-
         } else {
-            gfx.set_source_rgba(...menu_text_color);
+            gfx.set_source_rgba(...draw_color);
             gfx.move_to(px_location + charwidth, py_location + charheight + (idx * charheight));
             gfx.show_text(item);
         }
     }
 }
-
 
 function paint(){
 
