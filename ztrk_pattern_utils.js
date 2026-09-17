@@ -376,7 +376,9 @@ function rotate(arr, n) {
 
 // just use this one. nee need for shiftedRow.
 function getRotatedIndex(that, old_idx){
-    // if (that.pattern_row_shift === 0) { return old_idx; }
+
+    if (that.pattern_row_shift === 0) { return old_idx; } // return the original value if unrotated.
+
     var tempval = (old_idx + that.pattern_row_shift) % that.pattern_markup.length;
     if (tempval < 0){
         tempval = tempval + that.pattern_markup.length;
@@ -384,13 +386,13 @@ function getRotatedIndex(that, old_idx){
     return tempval;
 }
 
-function getShiftedRow(that, idx){
-    let shifted_row = idx;
-    if (that.pattern_row_shift !== 0){
-        shifted_row = getRotatedIndex(that, idx);
-    }
-    return shifted_row;
-}
+// function getShiftedRow(that, idx){
+//     let shifted_row = idx;
+//     if (that.pattern_row_shift !== 0){
+//         shifted_row = getRotatedIndex(that, idx);
+//     }
+//     return shifted_row;
+// }
 
 
 function clearBuffer(buf){

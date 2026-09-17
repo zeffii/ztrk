@@ -457,13 +457,7 @@ class Tracker  {
             }
 
             for (var row = selection.top; row <= selection.bottom; row++){
-                
-                // this takes shifted pattern row view into account.
-                var row_idx = row;
-                if (this.pattern_row_shift !== 0){
-                    row_idx = getRotatedIndex(this, row_idx);
-                }
-
+                var row_idx = getRotatedIndex(this, row);
                 var row_substr = pattern[row_idx].substr(selection_start, selection_length);
                 row_substr = row_substr.replace(/[^ ]/g, '.');
                 pattern[row_idx] = replaceAt(pattern[row_idx], selection_start, row_substr, selection_length);
@@ -505,14 +499,9 @@ class Tracker  {
             if (xx_first_param !== null){ selection_start = xx_first_param.start; }
             if (xx_last_param !== null){ selection_length = (xx_last_param.end - xx_first_param.start) + 1; }
 
-
             // this takes shifted pattern row view into account.
-            var selection_top = selection.top;
-            var selection_bottom = selection.bottom;
-            if (this.pattern_row_shift !== 0){
-                selection_top = getRotatedIndex(this, selection_top);
-                selection_bottom = getRotatedIndex(this, selection_bottom);
-            }
+            var selection_top = getRotatedIndex(this, selection.top);
+            var selection_bottom = getRotatedIndex(this, selection.bottom);
 
             // get content of the first and last selected row, to prepare interpolation attempt
             var substr_start = pattern[selection_top].substr(selection_start, selection_length);
@@ -587,11 +576,7 @@ class Tracker  {
             for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
                 
                 // handle shifted scenario (ie, the pattern is displayed not from 0 to end, but 0-n to end-n)
-                var shifted_row = row;
-                if (this.pattern_row_shift !== 0){
-                    shifted_row = getRotatedIndex(this, row);
-                }
-
+                var shifted_row = getRotatedIndex(this, row);
                 var this_row_data = pattern[shifted_row].substr(sel_rect.start_index, sel_rect.selection_length);
                 this.#ztrk_clipboard.selection_data.push(this_row_data);
             }
@@ -605,10 +590,7 @@ class Tracker  {
                 this.#ztrk_clipboard.selection_data.unshift(last_element);
             }
 
-            var idx = sel_rect.top;
-            if (this.pattern_row_shift !== 0){
-                idx = getRotatedIndex(this, idx);  // start idx if shifting during shifted view.
-            }
+            var idx = getRotatedIndex(this, sel_rect.top);
 
             for (const paste_row_idx in this.#ztrk_clipboard.selection_data){
 
@@ -641,11 +623,7 @@ class Tracker  {
             }
             for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
 
-                var shifted_row = row;
-                if (this.pattern_row_shift !== 0){
-                    shifted_row = getRotatedIndex(this, row);
-                }
-
+                var shifted_row = getRotatedIndex(this, row);
                 var this_row_data = pattern[shifted_row].substr(sel_rect.start_index, sel_rect.selection_length);
                 var row_data = this_row_data.split(' ');
                 var new_row_data = [];
@@ -679,13 +657,7 @@ class Tracker  {
             'selection_data': []
         }
         for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
-
-            var shifted_row = row;
-            if (this.pattern_row_shift !== 0){
-               shifted_row = getRotatedIndex(this, row);
-            }
-            // let shifted_row = getShiftedRow(this, row); // less confusing
-            
+            var shifted_row = getRotatedIndex(this, row);
             var this_row_data = pattern[shifted_row].substr(sel_rect.start_index, sel_rect.selection_length);
             this.#ztrk_clipboard.selection_data.push(this_row_data);
         }
@@ -717,14 +689,9 @@ class Tracker  {
             var idx = this.#caret.row;
 
             for (const paste_row_idx in this.#ztrk_clipboard.selection_data){
+
                 var replacement_part = this.#ztrk_clipboard.selection_data[paste_row_idx];
-
-                var shifted_row = idx;
-                if (this.pattern_row_shift !== 0){
-                    shifted_row = getRotatedIndex(this, idx);
-                }
-                // let shifted_row = getShiftedRow(this, idx); // less confusing
-
+                var shifted_row = getRotatedIndex(this, idx);
                 pattern[shifted_row] = replaceAt(pattern[shifted_row], selection_start, replacement_part, selection_length);
                 idx++;
 
@@ -747,7 +714,7 @@ class Tracker  {
                 return;
             }
 
-            let shifted_row = getShiftedRow(this, this.#caret.row); // less confusing
+            let shifted_row = getRotatedIndex(this, this.#caret.row);
             let pattern = this.faux_pattern;
 
             pattern[shifted_row] = replaceAt(pattern[shifted_row], 0, row_values, row_values.length);
@@ -763,7 +730,7 @@ class Tracker  {
             const param_at_position = getParameterTypeAtPosition(this.pattern_markup.lexical_track, this.#caret.col);
             if (param_at_position){  // avoids mouse placing a caret inbetween columns.
                 post(param_at_position.start, param_at_position.end);
-                const shifted_row = getShiftedRow(this, this.#caret.row);
+                const shifted_row = getRotatedIndex(this, this.#caret.row);
                 
                 let pattern = this.faux_pattern;
                 pattern[shifted_row] = replaceAt(pattern[shifted_row], param_at_position.start, row_value, row_value.length);
@@ -800,7 +767,7 @@ class Tracker  {
             var listed = HEXALPHNUM.split('');
 
             // this makes it possible to enter data when the pattern is row-shifted.
-            const caret_row = getShiftedRow(this, caret.row);
+            const caret_row = getRotatedIndex(this, caret.row);
             
             if (found_in(listed, charfound)){
                 var replacement_hex = '';
@@ -847,8 +814,7 @@ class Tracker  {
                 const key_infoB = keybangs[key];
 
                 // this makes it possible to enter data when the pattern is row-shifted.
-                // const shifted_row = getRotatedIndex(this, caret.row);
-                const shifted_row = getShiftedRow(this, caret.row); // less confusing
+                const shifted_row = getRotatedIndex(this, caret.row);
                 const current_rowB = pattern[shifted_row];
 
                 pattern[shifted_row] = replaceAt(current_rowB, caret.col, key_infoB, 1);
