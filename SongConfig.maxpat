@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 59.0, 107.0, 1632.0, 780.0 ],
+        "rect": [ 152.0, 347.0, 1632.0, 780.0 ],
         "openinpresentation": 1,
         "boxes": [
             {
@@ -20,7 +20,7 @@
                     "numoutlets": 0,
                     "patching_rect": [ 642.0, 14.0, 150.0, 20.0 ],
                     "presentation": 1,
-                    "presentation_rect": [ 221.0, 8.0, 65.0, 20.0 ],
+                    "presentation_rect": [ 12.77778023481369, 59.0, 65.0, 20.0 ],
                     "text": "load song"
                 }
             },
@@ -32,7 +32,7 @@
                     "numoutlets": 0,
                     "patching_rect": [ 452.0, 55.0, 150.0, 20.0 ],
                     "presentation": 1,
-                    "presentation_rect": [ 14.0, 39.0, 81.0, 20.0 ],
+                    "presentation_rect": [ 7.189542710781097, 33.0, 70.58823752403259, 20.0 ],
                     "text": "song name"
                 }
             },
@@ -44,8 +44,8 @@
                     "numoutlets": 0,
                     "patching_rect": [ 226.0, 64.0, 150.0, 20.0 ],
                     "presentation": 1,
-                    "presentation_rect": [ 7.0, 8.0, 109.0, 20.0 ],
-                    "text": "select song folder"
+                    "presentation_rect": [ 7.189542710781097, 8.0, 70.58823752403259, 20.0 ],
+                    "text": "song folder"
                 }
             },
             {
@@ -61,7 +61,7 @@
                     "parameter_enable": 0,
                     "patching_rect": [ 982.0, 82.0, 120.0, 16.0 ],
                     "presentation": 1,
-                    "presentation_rect": [ 348.0, 10.0, 120.0, 16.0 ],
+                    "presentation_rect": [ 290.84968239068985, 11.0, 120.0, 16.0 ],
                     "textfile": {
                         "filename": "ztrk_restore_loadmess.js",
                         "flags": 0,
@@ -91,7 +91,7 @@
                     "outlettype": [ "" ],
                     "patching_rect": [ 982.0, 101.0, 97.0, 22.0 ],
                     "presentation": 1,
-                    "presentation_rect": [ 347.0, 58.0, 97.0, 22.0 ],
+                    "presentation_rect": [ 290.19608759880066, 59.36601459980011, 97.0, 22.0 ],
                     "text": "clear_sequencer"
                 }
             },
@@ -104,7 +104,7 @@
                     "outlettype": [ "" ],
                     "patching_rect": [ 864.0, 79.0, 90.0, 22.0 ],
                     "presentation": 1,
-                    "presentation_rect": [ 227.0, 38.0, 90.0, 22.0 ],
+                    "presentation_rect": [ 118.9542521238327, 8.0, 90.0, 22.0 ],
                     "text": "command save"
                 }
             },
@@ -129,7 +129,7 @@
                     "parameter_enable": 0,
                     "patching_rect": [ 665.0, 45.0, 24.0, 24.0 ],
                     "presentation": 1,
-                    "presentation_rect": [ 297.0, 6.0, 24.0, 24.0 ]
+                    "presentation_rect": [ 86.27451252937317, 54.90196251869202, 25.098037481307983, 25.098037481307983 ]
                 }
             },
             {
@@ -152,7 +152,7 @@
                     "outlettype": [ "" ],
                     "patching_rect": [ 982.0, 129.0, 124.0, 22.0 ],
                     "presentation": 1,
-                    "presentation_rect": [ 347.0, 32.0, 124.0, 22.0 ],
+                    "presentation_rect": [ 290.19608759880066, 33.22222292423248, 124.0, 22.0 ],
                     "text": "debug_empty_buffers"
                 }
             },
@@ -165,7 +165,7 @@
                     "outlettype": [ "" ],
                     "patching_rect": [ 55.0, 140.0, 87.0, 22.0 ],
                     "presentation": 1,
-                    "presentation_rect": [ 454.0, 58.0, 87.0, 22.0 ],
+                    "presentation_rect": [ 397.38563346862793, 59.36601459980011, 87.0, 22.0 ],
                     "text": "sequencer_init"
                 }
             },
@@ -201,7 +201,7 @@
                     "parameter_enable": 0,
                     "patching_rect": [ 257.0, 86.0, 24.0, 24.0 ],
                     "presentation": 1,
-                    "presentation_rect": [ 126.0, 6.0, 24.0, 24.0 ]
+                    "presentation_rect": [ 86.27451252937317, 5.882353127002716, 24.0, 24.0 ]
                 }
             },
             {
@@ -227,8 +227,8 @@
                     "parameter_enable": 0,
                     "patching_rect": [ 444.0, 86.0, 100.0, 28.0 ],
                     "presentation": 1,
-                    "presentation_rect": [ 88.0, 35.0, 119.0, 28.0 ],
-                    "text": "progress"
+                    "presentation_rect": [ 81.69934898614883, 33.62500022351742, 120.41666379570961, 18.749999552965164 ],
+                    "text": "housemusic"
                 }
             },
             {
@@ -379,7 +379,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 330.0, 325.0, 56.0, 25.0 ],
-                                    "text": "99",
+                                    "text": "30",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -457,7 +457,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 187.0, 154.0, 22.0 ],
-                                    "text": "8",
+                                    "text": "126",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -491,7 +491,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 373.0, 154.0, 22.0 ],
-                                    "text": "keys 99 8 0 99",
+                                    "text": "keys 30 126 0 -9",
                                     "varname": "input_keys[1]"
                                 }
                             },
