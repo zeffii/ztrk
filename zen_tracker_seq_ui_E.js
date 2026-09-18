@@ -35,6 +35,11 @@ const __logging = (obj, kind, msg) => {
     obj.message("set_msg", msg_real); 
 }
 
+const postMessage = (kind, message) => {
+    var zconsole = this.patcher.getnamed("zconsole");
+    if (zconsole){ __logging(zconsole, kind, message); }
+}
+
 var settings_font_size = ztrk_get_font_size();  // 12;
 var charwidth = 0;
 var charheight = 0;
@@ -1550,6 +1555,7 @@ function save(filepath, content) {
             pos += chunk_size;
         }
         f.close();
+        postMessage('info', `wrote file to ${shortenPath(filepath, keepLast = 3)}`);
     }
 }
 
@@ -1675,4 +1681,5 @@ function loadbang(){
     _ztrk_initialized = true;
     // post(`ztrk loadbang: patcher =${this.patcher.getattr("varname")}, boxes =${this.patcher.count}\m `);
     sequencer_init();
+    postMessage('info', "ztrk initialized. Ready to Rok?")
 }

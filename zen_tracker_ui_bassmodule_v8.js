@@ -1282,8 +1282,8 @@ class Tracker  {
                     case PAGE_UP: this.moveCaret(-16, 0); break;
                     case PAGE_DOWN: this.moveCaret(16, 0); break;
                 }
-            } else if (userkey_in([T_KEY])){
-                this.handle_paste_default_cell_value(); return;
+            //} else if (userkey_in([T_KEY])){                             // cant this is a keyjaz key.
+            //    this.handle_paste_default_cell_value(); return;
             } else {
                 this.#started_selection_mode = false;
                 this.#anchor = null;
@@ -1736,7 +1736,7 @@ class Tracker  {
         // .. a better calculation may be needed.
         let drawable_Y = h - (this.charheight + this.start_y + this.charheight);
         this.num_visible_rows = Math.floor(drawable_Y / this.charheight) + 2;
-        post(this.num_visible_rows);
+        // post(this.num_visible_rows);
     }
 
     paint(){
