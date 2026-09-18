@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 330.0, 88.0, 1833.0, 1047.0 ],
+        "rect": [ 233.0, 88.0, 2210.0, 1175.0 ],
         "boxes": [
             {
                 "box": {
@@ -7411,7 +7411,7 @@
                     "numoutlets": 1,
                     "outlettype": [ "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 610.0, 127.0, 251.515625, 16.0 ],
+                    "patching_rect": [ 610.0, 127.0, 172.34375, 16.0 ],
                     "textfile": {
                         "filename": "ztrk_parameter_at_cursor.js",
                         "flags": 0,

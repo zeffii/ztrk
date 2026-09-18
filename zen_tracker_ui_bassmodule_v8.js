@@ -1346,10 +1346,8 @@ class Tracker  {
                         case UP_KEY: {
 
                             // note to self, if scrolling by 1, then the row highlighter needs to adjust too, but here we just 4 for simplicity.
-
                             // if the caret is at the top, it is at row_window 0, and i wwant this to scroll the pattern by 4. this moves the cursor too.
                             const row_window = this.#caret.row
-                            const row_pattern = getRotatedIndex(this, row_window);
                             if (row_window === 0){
                                 this.scroll_pattern(-4);
                                 this.moveCaret(4, 0);
@@ -1363,16 +1361,10 @@ class Tracker  {
 
                             // if the caret is beyond visible range now, also shift the pattern and deshift the caret. 
                             const row_window = this.#caret.row
-                            const row_pattern = getRotatedIndex(this, row_window);
-
                             if (row_window > (this.num_visible_rows - 4)){
                                 this.scroll_pattern(4);
                                 this.moveCaret(-4, 0); 
                             }
-
-                            var zconsole = this.current_patcher.getnamed("zconsole");
-                            if (zconsole){ _logging(zconsole, `warning I move here: WINDOW ${row_window} PATTERN ${row_pattern}`); }
-
                             break;
                         }
                         default: return;

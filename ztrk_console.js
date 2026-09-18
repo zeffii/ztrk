@@ -65,3 +65,12 @@ function set_msg(...args){
         output_list.shift();
     }
 }
+
+/*
+
+    USAGE:
+
+    var zconsole = this.current_patcher.getnamed("zconsole");
+    if (zconsole){ _logging(zconsole, `warning I move here: WINDOW ${row_window} PATTERN ${row_pattern}`); }
+
+*/
