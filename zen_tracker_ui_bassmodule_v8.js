@@ -83,7 +83,9 @@ class Tracker  {
         this.text_h = this.settings_font_size;
         this.start_x = 30;
         this.start_y = 30;
+        this.scroll_window_start = 0;
         this.pattern_row_shift = 0;
+        this.num_visible_rows = 0;
 
         this.jitblock_name = "";
         this.current_patcher = null;
@@ -286,14 +288,12 @@ class Tracker  {
         var caret_x = this.start_x + ((4 + this.#caret.col) * this.charwidth);
         var caret_y = this.start_y + (this.#caret.row * this.charheight);
         return [caret_x, caret_y];
-
     }
 
     corner_to_location(x, y){
         var _x = this.start_x + ((4 + x) * this.charwidth);
         var _y = this.start_y + (y * this.charheight);
         return [_x, _y];   
-
     }
 
     get_adjusted_selection_rect(){
@@ -1341,11 +1341,13 @@ class Tracker  {
                             if (over_a_space){ this.moveCaret(0, 1); }
                             break;
                         case UP_KEY: {
-                            // how to shift the pattern 16 if the caret is beyond visisble range? ?
+                            // how to shift the pattern 16 if the caret is beyond visible range? ?
                             this.moveCaret(-1, 0); 
                             break;
                         }
                         case DOWN_KEY: {
+                            // how to shift the pattern 16 if the caret is beyond visible range? ?
+                            // test
                             this.moveCaret(1, 0); 
                             break;
                         }
@@ -1712,6 +1714,16 @@ class Tracker  {
         gfx.show_text(pattern_properties);
     }
 
+    calculate_num_visible_ticks(){
+        let gfx = this.mgraphics;
+        let [w, h] = gfx.size;
+
+        // .. a better calculation may be needed.
+        let drawable_Y = h - (this.charheight + this.start_y + this.charheight);
+        this.num_visible_rows = Math.floor(drawable_Y / this.charheight) + 2;
+        post(this.num_visible_rows);
+    }
+
     paint(){
         /*
         when not in edit mode, this could do some pop/push, rather than performing all draw commands..
@@ -1736,6 +1748,8 @@ class Tracker  {
         this.draw_track_descriptor();
         this.draw_scrollbars();
         this.draw_toprow();
+
+        this.calculate_num_visible_ticks();  // for cursor driven scrol limits.
 
     }
 
