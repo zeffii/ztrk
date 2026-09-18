@@ -37,7 +37,10 @@ function set_rgb(c, d){ mgraphics.set_source_rgba(c.r / d, c.g / d, c.b / d, 1);
 function get_text_width_and_height(gfx){
     gfx.set_font_size(ztrk_get_font_size());   //this.settings_font_size);
     gfx.select_font_face(...ztrk_get_font_family());  //"Consolas", "normal", "normal");
-    [charwidth, charheight] = gfx.text_measure('_');
+    var [cw, ch] = gfx.text_measure('_');
+    charheight = ch;
+    charwidth = cw;
+
 }
 
 function dark_background(gfx){
