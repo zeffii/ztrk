@@ -17,7 +17,7 @@ var line_idx = 0;
 var output_list = []
 var settings_font_size = ztrk_get_font_size(); // 12;
 var charwidth = 6.60;   // this gets updated at runtime. see this.get_text_width_and_height();
-var charheight = null;
+var charheight = settings_font_size;
 
 var log_color = {
     'warning': [0.9, 0.2, 0.2, 1.0],
@@ -37,7 +37,7 @@ function set_rgb(c, d){ mgraphics.set_source_rgba(c.r / d, c.g / d, c.b / d, 1);
 function get_text_width_and_height(gfx){
     gfx.set_font_size(ztrk_get_font_size());   //this.settings_font_size);
     gfx.select_font_face(...ztrk_get_font_family());  //"Consolas", "normal", "normal");
-    [charwidth, charheight] = gfx.text_measure('/');
+    [charwidth, charheight] = gfx.text_measure('_');
 }
 
 function dark_background(gfx){

@@ -51,7 +51,6 @@ class Tracker  {
     #g_in_edit_mode = false;
     #g_key_codes = [];
     #g_mouse_on_rect = false;
-    // #g_caret = [0, 0];
     
     #started_selection_mode = false;
     #g_updating_selection = true;
@@ -1539,10 +1538,8 @@ class Tracker  {
 
         var idx = this.wheres_the_caret();
         if (idx[0] >= 0) {
-            const vidx = idx + 4;
-            // this.set_rgb({r: 0.9, g: 0.9, b: 0.7}, 1.3); // this.status_text_color
+
             this.set_rgb(this.asRGB(...this.theme_colors.status_text_color), 1.3);
-            // mgraphics.move_to(start_x + ((idx[0] + 4) * charwidth), start_y - (0.9 * charheight));
             var locator_width = this.mgraphics.text_measure(caret_string + '  ')[0];
             var current_descriptor = this.pattern_markup.descriptors.track[idx[1]][1];
             gfx.move_to(locator_width, h - (0.25 * this.charheight));
