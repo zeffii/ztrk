@@ -1358,8 +1358,13 @@ class Tracker  {
                             const row_window = this.#caret.row
                             const row_pattern = getRotatedIndex(this, row_window);
 
+                            if (row_window > (this.num_visible_rows - 4)){
+                                this.scroll_pattern(4);
+                                this.moveCaret(-4, 0); 
+                            }
+
                             var zconsole = this.current_patcher.getnamed("zconsole");
-                            if (zconsole){ _logging(zconsole, `warning I move here: ${row_window}`); }
+                            if (zconsole){ _logging(zconsole, `warning I move here: WINDOW ${row_window} PATTERN ${row_pattern}`); }
 
                             break;
                         }
