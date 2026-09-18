@@ -1355,8 +1355,11 @@ class Tracker  {
                             // if the caret is beyond visible range now, also shift the pattern and deshift the caret. 
                             // this.num_visible_rows
                             // this.scroll_pattern(1);
+                            const row_window = this.#caret.row
+                            const row_pattern = getRotatedIndex(this, row_window);
+
                             var zconsole = this.current_patcher.getnamed("zconsole");
-                            if (zconsole){ _logging(zconsole, "warning I move here"); }
+                            if (zconsole){ _logging(zconsole, `warning I move here: ${row_window}`); }
 
                             break;
                         }
