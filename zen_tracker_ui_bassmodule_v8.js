@@ -1345,7 +1345,7 @@ class Tracker  {
                             break;
                         case UP_KEY: {
 
-                            // note to self, if scrolling by 1, then the row highlighter needs to adjust too.
+                            // note to self, if scrolling by 1, then the row highlighter needs to adjust too, but here we just 4 for simplicity.
 
                             // if the caret is at the top, it is at row_window 0, and i wwant this to scroll the pattern by 4. this moves the cursor too.
                             const row_window = this.#caret.row
