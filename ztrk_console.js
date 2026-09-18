@@ -78,9 +78,10 @@ function paint(){
 }
 
 function set_msg(...args){
+    var kind = args[0];
+    args.shift();
     var received_string = args.join(" ");
-    post("triggered!", received_string);
-    output_list.push([args[0], received_string, line_idx]);
+    output_list.push([kind, received_string, line_idx]);
     line_idx += 1;
     
     if (output_list.length >= 15){
@@ -91,9 +92,17 @@ function set_msg(...args){
 
 /*
 
-    USAGE:
+    FUNCTION
 
-    var zconsole = this.current_patcher.getnamed("zconsole");
-    if (zconsole){ _logging(zconsole, `warning I move here: WINDOW ${row_window} PATTERN ${row_pattern}`); }
+    const __logging = (obj, kind, msg) => {
+        var msg_real = msg.split(' ');
+        msg_real.unshift(kind);
+        obj.message("set_msg", msg_real); 
+    }
+
+    USAGE:
+    
+    var zconsole = this.patcher.getnamed("zconsole");
+    if (zconsole){ __logging(zconsole, "warning", "Gather all start positions."); }
 
 */

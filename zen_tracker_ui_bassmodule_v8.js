@@ -29,8 +29,10 @@ if (!g_font_dict.contains("fontSize"))   g_font_dict.set("fontSize", 12);
 const ztrk_get_font_family = () => g_font_dict.get("fontFamily");
 const ztrk_get_font_size   = () => g_font_dict.get("fontSize");
 
-const _logging = (obj, msg) => {
-    obj.message("set_msg", msg.split(' ')); 
+const __logging = (obj, kind, msg) => {   // see ztrk console.js for usage.
+    var msg_real = msg.split(' ');
+    msg_real.unshift(kind);
+    obj.message("set_msg", msg_real); 
 }
 
 class Tracker  {

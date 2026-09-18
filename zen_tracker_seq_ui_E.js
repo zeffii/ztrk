@@ -29,6 +29,12 @@ if (!g_font_dict.contains("fontSize"))   g_font_dict.set("fontSize", 12);
 const ztrk_get_font_family = () => g_font_dict.get("fontFamily");
 const ztrk_get_font_size   = () => g_font_dict.get("fontSize");
 
+const __logging = (obj, kind, msg) => {
+    var msg_real = msg.split(' ');
+    msg_real.unshift(kind);
+    obj.message("set_msg", msg_real); 
+}
+
 var settings_font_size = ztrk_get_font_size();  // 12;
 var charwidth = 0;
 var charheight = 0;
@@ -571,6 +577,10 @@ function send_pattern_to_tracker(){
     var outputDict = new Dict('pattern_markup_dict');
     outputDict.parse(JSON.stringify(pattern_exchange_markup));
     outlet(1, "dictionary", outputDict.name);
+
+    var zconsole = this.patcher.getnamed("zconsole");
+    if (zconsole){ __logging(zconsole, "warning", "Gather all start positions."); }
+
 }
 
 
