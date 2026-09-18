@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 330.0, 88.0, 2080.0, 1129.0 ],
+        "rect": [ 330.0, 88.0, 2080.0, 803.0 ],
         "boxes": [
             {
                 "box": {
@@ -7392,7 +7392,7 @@
                     "numoutlets": 1,
                     "outlettype": [ "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 610.0, 127.0, 251.515625, 16.0 ],
+                    "patching_rect": [ 610.0, 127.0, 172.34375, 16.0 ],
                     "textfile": {
                         "filename": "ztrk_parameter_at_cursor.js",
                         "flags": 0,
@@ -15200,7 +15200,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "28",
+                                    "text": "120",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -15278,7 +15278,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "123",
+                                    "text": "7",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -15312,7 +15312,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 28 123 0 -11",
+                                    "text": "keys 120 7 0 120",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -15896,7 +15896,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 330.0, 325.0, 56.0, 25.0 ],
-                                    "text": "28",
+                                    "text": "120",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -15974,7 +15974,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 187.0, 154.0, 22.0 ],
-                                    "text": "123",
+                                    "text": "7",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -16008,7 +16008,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 138.0, 373.0, 154.0, 22.0 ],
-                                    "text": "keys 28 123 0 -11",
+                                    "text": "keys 120 7 0 120",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -16354,7 +16354,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 1.0, 141.0, 545.7831526994705, 583.1325516700745 ],
+                    "patching_rect": [ 1.0, 140.0, 545.7831526994705, 583.1325516700745 ],
                     "textfile": {
                         "filename": "zen_tracker_seq_ui_E.js",
                         "flags": 0,

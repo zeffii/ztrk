@@ -29,6 +29,9 @@ if (!g_font_dict.contains("fontSize"))   g_font_dict.set("fontSize", 12);
 const ztrk_get_font_family = () => g_font_dict.get("fontFamily");
 const ztrk_get_font_size   = () => g_font_dict.get("fontSize");
 
+const _logging = (obj, msg) => {
+    obj.message("set_msg", msg.split(' ')); 
+}
 
 class Tracker  {
 
@@ -88,7 +91,7 @@ class Tracker  {
         this.num_visible_rows = 0;
 
         this.jitblock_name = "";
-        this.current_patcher = null;
+        this.current_patcher = options.current_patcher;
         this.BufferMode = 0;
         
         this.default_theme_colors = {
@@ -1341,14 +1344,20 @@ class Tracker  {
                             if (over_a_space){ this.moveCaret(0, 1); }
                             break;
                         case UP_KEY: {
-                            // how to shift the pattern 16 if the caret is beyond visible range? ?
                             this.moveCaret(-1, 0); 
+                            // how to shift the pattern -1 if the caret is beyond visible range? ?
+                            // this.scroll_pattern(-1);
                             break;
                         }
                         case DOWN_KEY: {
-                            // how to shift the pattern 16 if the caret is beyond visible range? ?
-                            // test
                             this.moveCaret(1, 0); 
+                            // how to shift the pattern 1 if the caret is beyond visible range? ie it went down.
+                            // if the caret is beyond visible range now, also shift the pattern and deshift the caret. 
+                            // this.num_visible_rows
+                            // this.scroll_pattern(1);
+                            var zconsole = this.current_patcher.getnamed("zconsole");
+                            if (zconsole){ _logging(zconsole, "warning I move here"); }
+
                             break;
                         }
                         default: return;

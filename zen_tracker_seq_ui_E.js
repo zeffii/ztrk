@@ -779,8 +779,9 @@ function keys(a1, a2, a3, a4){
 
 function key_handler(){
 
-    // if (!g_mouse_on_rect) return;
     if (get_active_view() !== "sequencer") return;
+    
+    if (!g_mouse_on_rect) return;
 
     var SHIFT = 512;
     var ALT = 2048;
