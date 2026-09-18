@@ -1478,6 +1478,8 @@ function onidleout(x, y, button, mod1, shift, caps, opt, mod2){
 }
 
 function onclick(x, y, button, cmd, shift, capslock, option, ctrl){
+    set_active_view('sequencer');
+    mgraphics.redraw();
     // var hit = hit_test(x, y);
 
     // if (hit === null){
@@ -1525,16 +1527,6 @@ function makeFilenameSafe(str, maxLength = 255) {
     return safeStr;
 }
 
-// function save(filepath, content) {
-//     var f = new File(filepath, "write", "TEXT");
-//     if (f.isopen) {
-//         // there's a 32kb limit.
-//         f.open();
-//         f.writestring(content);
-//         f.close();
-//     }
-// }
-
 function save(filepath, content) {
     var f = new File(filepath, "write", "TEXT");
     if (f.isopen) {
@@ -1549,28 +1541,6 @@ function save(filepath, content) {
         f.close();
     }
 }
-
-// function load_song(filepath){
-    
-//     let f = new File(filepath, "read");
-//     if (!f.isopen) { post("Could not open: " + path + "\n"); return; }
-    
-//     let text = f.readstring(f.eof);
-//     post("Read " + text.length + " characters\n");
-//     f.close();
-    
-//     try {
-//         let data = JSON.parse(text);
-//         if (!data.hasOwnProperty("patterns")) { throw new Error("Missing required key: patterns"); }
-//         if (!data.hasOwnProperty("tracks")) { throw new Error("Missing required key: tracks"); }
-//         if (!data.hasOwnProperty("machines")) { throw new Error("Missing required key: machines"); }
-//         sequencer_config = { ...data };
-//         finalize({refresh: true, update_buffer: true, operation: "write_all"});
-        
-//     } catch (e) {
-//         post("Invalid JSON: " + e + "\n");
-//     }
-// }
 
 function load_song(filepath){
     let f = new File(filepath, "read");
