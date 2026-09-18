@@ -52,6 +52,7 @@ function paint(){
         gfx.show_text(`${line[2]}: ${line[1]}`);
     }
     mgraphics.redraw();
+    // ....
 }
 
 function set_msg(...args){
