@@ -78,7 +78,8 @@ function write_buffers(tracker){
 
 var my_tracker = new Tracker(pattern_markup, mgraphics, {
 	send: sendOutlet,
-	write_buffers: write_buffers
+	write_buffers: write_buffers,
+    current_patcher: this.patcher
 });
 
 key_handler = my_tracker.key_handler.bind(my_tracker);
