@@ -39,7 +39,6 @@ def analyze_file(filepath):
                 args = field.children_by_field_name('arguments')
                 arg_count = sum(1 for c in args if c.is_named)
                 line_num = node.start_point[0] + 1
-                print(f"Line {line_num}: {func_name}() called with {arg_count} argument(s)")
 
                 if func_name in RULES:
                     rule = RULES[func_name]
