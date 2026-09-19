@@ -3,6 +3,15 @@ const { exec } = require("child_process");
 
 function postMessage(...args){ maxApi.post(args[1]); };
 
+function message_to_dict(Dict, msg){
+    maxApi.post('num newlines;', (msg.match(/\n/g) || []).length); 
+    var items = msg.split('\n');
+    for (const [idx, line] of items.entries()){
+        Dict[idx] = line;
+    }
+    return Dict; 
+}
+
 var filePath = "";
 
 maxApi.addHandler("filepath_to_parse", (file_path) => {
@@ -23,17 +32,31 @@ maxApi.addHandler("lint", () => {
     // Use exec to run the script. It buffers the output for you.
     exec(`"${pythonExe}" "${scriptPath}" "${filePath}"`, (error, stdout, stderr) => {
 
+        var ErrorDict = {};
         if (error) { 
-            maxApi.post(`ERROR: ${error.message}`); return;
-        }
-        if (stderr) {
-            // success!
-            maxApi.post(`STDERR: ${stderr}`); return;
+            maxApi.post(`ERROR: ${error.message}`);
+            message_to_dict(ErrorDict, error);
+            maxApi.outlet(ErrorDict);
+            // return;
         }
 
-        // no index specified.
-        var woop = {0: "Alice in wonder land", 1: "saucages all the way down", 2: "1", 3: 500};
-        maxApi.outlet(woop);
-        maxApi.post("here!");
+        var StdErrDict = {};
+        if (stderr) {
+            maxApi.post(`STDERR: ${stderr}`); 
+            message_to_dict(StdErrDict, stderr);
+            maxApi.outlet(StdErrDict);
+            // return;
+        }
+
+        var StdOutDict = {};
+        if (stdout) {
+            maxApi.post(`STDOUT: ${stdout}`);
+            message_to_dict(StdOutDict, stdout);
+            maxApi.outlet(StdOutDict);
+            // return;
+        }
+
+        maxApi.outlet({0: "Linter Ran, but something happened?"});  // no index specified.
+        maxApi.post("End of Lint Handler.");
     });
 });
