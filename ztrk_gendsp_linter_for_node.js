@@ -56,7 +56,7 @@ maxApi.addHandler("lint", () => {
             // return;
         }
 
-        maxApi.outlet({0: "Linter Ran, but something happened?"});  // no index specified.
-        maxApi.post("End of Lint Handler.");
+        // maxApi.outlet({0: "Linter Ran, but something happened?"});  // no index specified.
+        // maxApi.post("End of Lint Handler.");
     });
 });

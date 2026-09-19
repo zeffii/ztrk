@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 178.0, 732.0, 1697.0, 531.0 ],
+        "rect": [ 62.0, 128.0, 2187.0, 1051.0 ],
         "boxes": [
             {
                 "box": {
@@ -28,11 +28,10 @@
                         },
                         "classnamespace": "box",
                         "rect": [ 813.0, 333.0, 924.0, 880.0 ],
-                        "visible": 1,
                         "boxes": [
                             {
                                 "box": {
-                                    "code": "function toStr(val) {\r\n    if (typeof val === \"string\") return val;\r\n    if (typeof val === \"object\" && val !== null) return JSON.stringify(val);\r\n    return String(val);\r\n}\r\n\r\nconst __logging = (obj, kind, msg) => {\r\n    var msg_real = toStr(msg).split(' ');\r\n    msg_real.unshift(kind);\r\n    obj.message(\"set_msg\", msg_real); \r\n}\r\n\r\nconst postMessage = (kind, message) => {\r\n    var zconsole = this.patcher.parentpatcher.getnamed(\"zconsole\");\r\n    if (zconsole){ __logging(zconsole, kind, message); }\r\n    post('executed');\r\n}\r\n\r\nfunction dictionary(dictName) {\r\n    var d = new Dict(dictName);\r\n    var jsObj = JSON.parse(d.stringify());\r\n    for (const [key, value] of Object.entries(jsObj)){\r\n        postMessage('info', value);\r\n    }\r\n    postMessage('info', \"parsed\");\r\n}",
+                                    "code": "function toStr(val) {\r\n    if (typeof val === \"string\") return val;\r\n    if (typeof val === \"object\" && val !== null) return JSON.stringify(val);\r\n    return String(val);\r\n}\r\n\r\nconst __logging = (obj, kind, msg) => {\r\n    var msg_real = toStr(msg).split(' ');\r\n    msg_real.unshift(kind);\r\n    obj.message(\"set_msg\", msg_real); \r\n}\r\n\r\nconst postMessage = (kind, message) => {\r\n    var zconsole = this.patcher.parentpatcher.getnamed(\"zconsole\");\r\n    if (zconsole){ __logging(zconsole, kind, message); }\r\n    // post('executed');\r\n}\r\n\r\nfunction dictionary(dictName) {\r\n    postMessage('debug', `Returned lint message below:`);\r\n    var d = new Dict(dictName);\r\n    var jsObj = JSON.parse(d.stringify());\r\n    for (const [key, value] of Object.entries(jsObj)){\r\n        postMessage('info', value);\r\n    }\r\n    const objSize = Object.entries(jsObj).length; \r\n    postMessage('warning', `num_lines in output: ${objSize}`);\r\n}",
                                     "filename": "none",
                                     "fontface": 0,
                                     "fontname": "<Monospaced>",
@@ -211,7 +210,7 @@
                             }
                         ]
                     },
-                    "patching_rect": [ 1886.554509, 435.294092, 165.0, 22.0 ],
+                    "patching_rect": [ 1591.0, 444.0, 181.0, 22.0 ],
                     "text": "p GenDSP_Debugging_Suite"
                 }
             },
@@ -244,7 +243,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 1195.0, 159.0, 846.0, 229.0 ],
+                    "patching_rect": [ 1396.0, 30.0, 376.0, 390.0 ],
                     "textfile": {
                         "filename": "ztrk_console.js",
                         "flags": 0,
@@ -7615,7 +7614,7 @@
                     "numoutlets": 1,
                     "outlettype": [ "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 610.0, 127.0, 172.34375, 16.0 ],
+                    "patching_rect": [ 610.0, 127.0, 264.7109375, 16.0 ],
                     "textfile": {
                         "filename": "ztrk_parameter_at_cursor.js",
                         "flags": 0,
@@ -15314,7 +15313,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "13",
+                                    "text": "16",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -15392,7 +15391,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "36",
+                                    "text": "97",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -15426,7 +15425,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 13 36 0 -4",
+                                    "text": "keys 16 97 0 -22",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -15794,7 +15793,7 @@
                     "numoutlets": 3,
                     "outlettype": [ "", "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 591.176459312439, 155.88234996795654, 525.0, 428.0 ],
+                    "patching_rect": [ 591.176459312439, 155.88234996795654, 181.74609375, 428.0 ],
                     "textfile": {
                         "filename": "hex_tracker.js",
                         "flags": 0,
@@ -16009,7 +16008,7 @@
                 "patchline": {
                     "color": [ 0.6352941176470588, 0.2784313725490196, 0.2784313725490196, 1.0 ],
                     "destination": [ "obj-1", 0 ],
-                    "midpoints": [ 853.676459312439, 980.0, 576.0, 980.0, 576.0, 123.0, 15.0, 123.0, 15.0, 150.0, 10.5, 150.0 ],
+                    "midpoints": [ 682.049506187439, 980.0, 576.0, 980.0, 576.0, 123.0, 15.0, 123.0, 15.0, 150.0, 10.5, 150.0 ],
                     "order": 1,
                     "source": [ "obj-2", 1 ]
                 }
@@ -16024,7 +16023,7 @@
             {
                 "patchline": {
                     "destination": [ "obj-49", 0 ],
-                    "midpoints": [ 1106.676459312439, 969.313255906105, 560.0, 969.313255906105, 560.0, 124.0, 619.5, 124.0 ],
+                    "midpoints": [ 763.422553062439, 969.313255906105, 560.0, 969.313255906105, 560.0, 124.0, 619.5, 124.0 ],
                     "source": [ "obj-2", 2 ]
                 }
             },
@@ -16344,7 +16343,7 @@
                 "patchline": {
                     "color": [ 0.6235294117647059, 1.0, 0.15294117647058825, 1.0 ],
                     "destination": [ "obj-2", 1 ],
-                    "midpoints": [ 944.5, 150.0, 894.0, 150.0, 894.0, 150.0, 769.3431259791056, 150.0 ],
+                    "midpoints": [ 944.5, 150.0, 894.0, 150.0, 894.0, 150.0, 654.9251572291056, 150.0 ],
                     "source": [ "obj-69", 0 ]
                 }
             },

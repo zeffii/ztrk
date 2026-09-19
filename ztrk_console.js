@@ -87,7 +87,7 @@ function set_msg(...args){
     output_list.push([kind, received_string, line_idx]);
     line_idx += 1;
     
-    if (output_list.length >= 15){
+    if (output_list.length >= 25){
         output_list.shift();
     }
     mgraphics.redraw();

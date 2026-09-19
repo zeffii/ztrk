@@ -94,6 +94,13 @@ const MachineDatabase = {
             ["hh", "Env Mode |(t:bool, d:1, s:[0,1], dval: FF)", 5],
             ["hhhh", "Lfo Rate |(t:hz, d:5.0, s:[0.05,20], dval: C4C4)", 6],
             ["hh", "Lfo Delay |(t:s, d:0.0, s:[0,4], dval: 00)", 6]
+        ],
+        "SmpDemo": [
+            ['nnn', 'Note |(t:note, dval: C-5)', 0],
+            ["hh", "Sample Index |(t:index, d:0., s:[0,10], dval: 00)", 0],
+            ["hh", "Volume |(t:coeff, d:0.8, s:[0,1], dval: CC)", 0],
+            ["hh", "Pan |(t:coeff, d:0.0, s:[-1,1], dval: 80)", 0],
+            ["hhhh", "Duration |(t:ms, d:0.01, s:[0.01, 6000], dval: 2000)", 0]
         ]
     }
 }
