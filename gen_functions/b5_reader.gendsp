@@ -13,6 +13,16 @@
         "boxes": [
             {
                 "box": {
+                    "id": "obj-3",
+                    "maxclass": "newobj",
+                    "numinlets": 1,
+                    "numoutlets": 0,
+                    "patching_rect": [ 630.0, 591.0, 35.0, 22.0 ],
+                    "text": "out 2"
+                }
+            },
+            {
+                "box": {
                     "code": "// general buffer to action converter\r\nBuffer buf;\r\nParam kind(0, min=0, max=5);\r\nParam chIndex(0, min=0, max=128);   // really? you need more?  0-based\r\npindex = in1;\r\n\r\n//0=pass, 1=trigger, 2=2hex, 3=note, 4=4hex, 5=pass, 6=2hex+4hex (this is two channels combined)\r\n\r\nout1 = 0.0;\r\nout2 = 0.0;\r\n\r\nif (kind == 1){\r\n\r\n\ttrigger = peek(buf, pindex, chIndex, 0, channels=1);\r\n\tif (trigger == 1.0){\r\n\t    out1 = 1.0;\r\n\t} else { \r\n\t    out1 = -1.0;\r\n\t}\r\n} \r\nelse if (kind == 3)\t{\r\n\r\n\tnote = peek(buf, pindex, chIndex, 0, channels=1);\r\n\tif (note >= 0.0){\r\n\t    out1 = round(note * 127.0);\r\n\t} else { // some if statements might go here, note-off, note=cut\r\n\t    out1 = note;\r\n\t}\r\n} \r\nelse if (kind == 2) {\r\n\r\n\ttwo_hex = peek(buf, pindex, chIndex, 0, channels=1);\r\n\tif (two_hex == -1.0){\r\n\t    out1 = -1.0;\r\n\t} else { \r\n\t    out1 = round(two_hex * 255);\r\n\t}\t\r\n}\r\nelse if (kind == 4) {\r\n\r\n\tfour_hex = peek(buf, pindex, chIndex, 0, channels=1);\r\n\tif (four_hex == -1.0){\r\n\t    out1 = -1.0;\r\n\t} else { \r\n\t    out1 = round(four_hex * 65535);\r\n\t};\t\r\n} \r\nelse if (kind == 6) {\r\n\r\n\ttwo_hex = peek(buf, pindex, chIndex, 0, channels=1);\r\n\tfour_hex = peek(buf, pindex, chIndex+1, 0, channels=1);\r\n\t// two_hex, four_hex = peek(buf, pindex, chIndex, 0, channels=2);  ???\r\n\r\n\tif (two_hex == -1.0){\r\n\t    out1 = -1.0;\r\n\t} else { \r\n\t    out1 = round(two_hex * 255);\r\n\t};\r\n\r\n\tif (four_hex == -1.0){\r\n\t    out2 = -1.0;\r\n\t} else { \r\n\t    out2 = round(four_hex * 65535);\r\n\t}\t\r\n}",
                     "fontface": 0,
                     "fontname": "<Monospaced>",
@@ -63,6 +73,12 @@
                 "patchline": {
                     "destination": [ "obj-5", 0 ],
                     "source": [ "obj-1", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-3", 0 ],
+                    "source": [ "obj-5", 1 ]
                 }
             },
             {
