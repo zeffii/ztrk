@@ -13,39 +13,44 @@ function message_to_dict(Dict, msg){
 }
 
 var filePath = "";
+var samplerate = null;
+var [_start, _end] = [0, null];
 
 maxApi.addHandler("filepath_to_parse", (file_path) => {
     filePath = file_path;
     postMessage("info", filePath);
 })
 
+maxApi.addHandler("sr", (sample_rate) => {
+    samplerate = sample_rate;
+    postMessage("info", samplerate);
+})
+
+maxApi.addHandler("range", (start, end) => {
+    [_start, _end] = [start, end];
+    // postMessage("info", `${_start} .. ${_end}`);
+})
+
 maxApi.addHandler("sendwave", () => {
     // Replace with the full path to your python.exe and the linter script
-
-    // if (filePath.length === 0){
-    //     postMessage('warning', "filepath not passed correctly yet"); return;
-    // }
-
     const pythonExe = "C:\\Users\\zeffi\\GITWORX\\AbletonMaxLive\\ztrk\\gendsp-linter\\.venv\\Scripts\\python.exe";
     const scriptPath = "C:\\Users\\zeffi\\GITWORX\\AbletonMaxLive\\ztrk\\WaveSlicer\\waveslicer.py";
 
     var myjson = {
-        "start": 1400, 
-        "duration": 30000, 
-        //"quant": "hey!"
-        "output_folder": "C:\\Users\\zeffi\\GITWORX\\AbletonMaxLive\\ztrk\\Samples"
+        "start": _start, 
+        "duration": _end, 
+        "sample_rate": samplerate,
+        "filepath": filePath,
+        "output_dir": null
     };
+
+    maxApi.post("SAMPLE RATE:", samplerate)
+    maxApi.post(myjson["sample_rate"]);
     
     const encoded = Buffer.from(JSON.stringify(myjson), 'utf8').toString('base64');
-    // maxApi.post(encoded);
-
-    //var json_OUT = {};
-    //message_to_dict(json_OUT, encoded);
-    //maxApi.outlet(json_OUT);
     maxApi.post('about to execute waveslicer');
 
     // Use exec to run the script. It buffers the output for you.
-    
     exec(`"${pythonExe}" "${scriptPath}" "@${encoded}"`, (error, stdout, stderr) => {
 
         var ErrorDict = {};
@@ -53,7 +58,6 @@ maxApi.addHandler("sendwave", () => {
             maxApi.post(`ERROR: ${error.message}`);
             message_to_dict(ErrorDict, error);
             maxApi.outlet(ErrorDict);
-            // return;
         }
 
         var StdErrDict = {};
@@ -61,7 +65,6 @@ maxApi.addHandler("sendwave", () => {
             maxApi.post(`STDERR: ${stderr}`); 
             message_to_dict(StdErrDict, stderr);
             maxApi.outlet(StdErrDict);
-            // return;
         }
 
         var StdOutDict = {};
@@ -69,11 +72,9 @@ maxApi.addHandler("sendwave", () => {
             maxApi.post(`STDOUT: ${stdout}`);
             message_to_dict(StdOutDict, stdout);
             maxApi.outlet(StdOutDict);
-            // return;
         }
 
-        // maxApi.outlet({0: "Linter Ran, but something happened?"});  // no index specified.
-        maxApi.post("End of Lint Handler.");
+        maxApi.post("End of WaveSlicer Handler.");
     });
     
 });

@@ -65,6 +65,7 @@ function set(name) {
             viewEnd   = buf.framecount();
         }
         dirty = true;
+        mgraphics.redraw();
     }
     outputDict();
     mgraphics.redraw();

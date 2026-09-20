@@ -2,30 +2,14 @@
 
 import argparse
 from pathlib import Path
-
 import librosa
 import soundfile as sf
 import numpy as np
-
 import base64
 import sys
 import json
 
-'''
-    /*
-
-    encoded_code = sys.argv[1]
-    decoded_bytes = base64.b64decode(encoded_code)
-    code_string = decoded_bytes.decode('utf-8')
-
-    */
-'''
-
-
 def make_one_shots(specifications):
-    # input_dir = Path(input_dir)
-    # output_dir = Path(output_dir)
-    # output_dir.mkdir(parents=True, exist_ok=True)
 
     decoded_bytes = base64.b64decode(specifications)
     json_string = decoded_bytes.decode('utf-8')
@@ -35,88 +19,95 @@ def make_one_shots(specifications):
         print('No Specifications Dict Sent')
         return
 
-    print('NodeJS->Python success: Python received json:', spec_dict)
-    print("start:" , spec_dict['start'])
-    print("duration:", spec_dict['duration'])
-    print("output folder:", spec_dict['output_folder'])
-    return
+    print("NodeJS->Python success: Python received json:")
+    for key, value in spec_dict.items():
+        print(key, value)
 
-    for wav_path in input_dir.glob("*.wav"):
-        print(f"Processing: {wav_path.name}")
+    _start = int(spec_dict['start'])
+    _duration = int(spec_dict['duration'])
+    _known_sr = int(spec_dict['sample_rate'])
+    _wav_path = Path(spec_dict['filepath'])
+    directory_path = _wav_path.parent
 
-        # this is in seconds, so must calculate from sample to seconds.
-        # y, sr = librosa.load('audio.wav', offset=15.0, duration=5.0)
-        # y, sr = librosa.load('audio.wav',
-        #             offset=start_sample / known_sr,
-        #             duration=(end_sample - start_sample) / known_sr)
-        y, sr = librosa.load(wav_path, sr=None, mono=False)
+    def make_slices_folder_alongside(directory_path):
+        # Create the 'Slices' folder in that directory
+        proposed_slices_path = (directory_path / 'Slices')
+        proposed_slices_path.mkdir(parents=True, exist_ok=True)
+        return proposed_slices_path
 
-        # Use mono signal for onset detection
-        mono = np.mean(y, axis=0) if y.ndim > 1 else y
+    # _output_dir = spec_dict.get("output_dir", make_slices_folder_alongside(directory_path))
+    _output_dir = make_slices_folder_alongside(directory_path)
+    
+    
+    # this is in seconds, so must calculate from sample to seconds.
+    y, sr = librosa.load(
+        _wav_path, 
+        offset=_start / _known_sr, 
+        duration=_duration / _known_sr)
 
-        # Percussive component tends to give cleaner drum/transient onsets
-        percussive = librosa.effects.percussive(mono)
+    mono = np.mean(y, axis=0) if y.ndim > 1 else y   # for onset detection detection in mono form.
+    percussive = librosa.effects.percussive(mono)   # specific qualites of percussive
 
-        # Detect transients using onset strength
-        onset_env = librosa.onset.onset_strength(y=percussive, sr=sr, aggregate=np.median)
-        onset_frames = librosa.onset.onset_detect(
-            onset_envelope=onset_env,  sr=sr,         units="frames",
-            backtrack=True,            pre_max=3,     post_max=3,
-            pre_avg=3,                 post_avg=5,    delta=0.2,
-            wait=3
-        )
+    # Detect transients using onset strength
+    onset_env = librosa.onset.onset_strength(y=percussive, sr=sr, aggregate=np.median)
+    onset_frames = librosa.onset.onset_detect(
+        onset_envelope=onset_env,  sr=sr,         units="frames",
+        backtrack=True,            pre_max=3,     post_max=3,
+        pre_avg=3,                 post_avg=5,    delta=0.2,
+        wait=3
+    )
 
-        starts = librosa.frames_to_samples(onset_frames)
+    starts = librosa.frames_to_samples(onset_frames)
 
-        if len(starts) == 0:
-            print("  No onsets found.")
+    if len(starts) == 0:
+        print("  No onsets found.")
+        return
+
+    # Add end of file as final boundary
+    boundaries = np.append(starts, y.shape[-1])
+
+    for i in range(len(boundaries) - 1):
+        start = boundaries[i]
+        end = boundaries[i + 1]
+
+        if end <= start:
             continue
 
-        # Add end of file as final boundary
-        boundaries = np.append(starts, y.shape[-1])
+        shot = y[..., start:end]
 
-        for i in range(len(boundaries) - 1):
-            start = boundaries[i]
-            end = boundaries[i + 1]
+        # Remove very quiet material at beginning/end
+        if shot.ndim > 1:
+            trim_signal = np.max(np.abs(shot), axis=0)
+        else:
+            trim_signal = np.abs(shot)
 
-            if end <= start:
-                continue
+        trimmed, trim_idx = librosa.effects.trim(trim_signal, top_db=35)
 
-            shot = y[..., start:end]
+        trim_start, trim_end = trim_idx
+        shot = shot[..., trim_start:trim_end]
 
-            # Remove very quiet material at beginning/end
+        # Ignore extremely short slices
+        if shot.shape[-1] < int(sr * 0.02):
+            continue
+
+        # 1 ms fade in/out to prevent clicks
+        fade_len = min(int(sr * 0.001), shot.shape[-1] // 2)
+
+        if fade_len > 0:
+            fade_in = np.linspace(0, 1, fade_len)
+            fade_out = np.linspace(1, 0, fade_len)
+
             if shot.ndim > 1:
-                trim_signal = np.max(np.abs(shot), axis=0)
+                shot[..., :fade_len] *= fade_in
+                shot[..., -fade_len:] *= fade_out
             else:
-                trim_signal = np.abs(shot)
+                shot[:fade_len] *= fade_in
+                shot[-fade_len:] *= fade_out
 
-            trimmed, trim_idx = librosa.effects.trim(trim_signal, top_db=35)
+        out_name = f"{_wav_path.stem}_{i + 1:03d}.wav"
+        sf.write(_output_dir / out_name, shot.T if shot.ndim > 1 else shot, sr)
 
-            trim_start, trim_end = trim_idx
-            shot = shot[..., trim_start:trim_end]
-
-            # Ignore extremely short slices
-            if shot.shape[-1] < int(sr * 0.02):
-                continue
-
-            # 1 ms fade in/out to prevent clicks
-            fade_len = min(int(sr * 0.001), shot.shape[-1] // 2)
-
-            if fade_len > 0:
-                fade_in = np.linspace(0, 1, fade_len)
-                fade_out = np.linspace(1, 0, fade_len)
-
-                if shot.ndim > 1:
-                    shot[..., :fade_len] *= fade_in
-                    shot[..., -fade_len:] *= fade_out
-                else:
-                    shot[:fade_len] *= fade_in
-                    shot[-fade_len:] *= fade_out
-
-            out_name = f"{wav_path.stem}_{i + 1:03d}.wav"
-            sf.write(output_dir / out_name, shot.T if shot.ndim > 1 else shot, sr)
-
-        print(f"  Found {len(starts)} onsets.")
+    print(f"  Found {len(starts)} onsets.")
 
 
 if __name__ == "__main__":
