@@ -587,11 +587,12 @@
                             "modernui": 1
                         },
                         "classnamespace": "box",
-                        "rect": [ 813.0, 333.0, 585.0, 880.0 ],
+                        "rect": [ 813.0, 333.0, 1157.0, 880.0 ],
+                        "visible": 1,
                         "boxes": [
                             {
                                 "box": {
-                                    "code": "function toStr(val) {\r\n    if (typeof val === \"string\") return val;\r\n    if (typeof val === \"object\" && val !== null) return JSON.stringify(val);\r\n    return String(val);\r\n}\r\n\r\nconst __logging = (obj, kind, msg) => {\r\n    var msg_real = toStr(msg).split(' ');\r\n    msg_real.unshift(kind);\r\n    obj.message(\"set_msg\", msg_real); \r\n}\r\n\r\nconst postMessage = (kind, message) => {\r\n    var zconsole = this.patcher.parentpatcher.getnamed(\"zconsole\");\r\n    if (zconsole){ __logging(zconsole, kind, message); }\r\n    // post('executed');\r\n}\r\n\r\nfunction dictionary(dictName) {\r\n    postMessage('debug', `Returned lint message below:`);\r\n    var d = new Dict(dictName);\r\n    var jsObj = JSON.parse(d.stringify());\r\n    for (const [key, value] of Object.entries(jsObj)){\r\n        postMessage('info', value);\r\n    }\r\n    const objSize = Object.entries(jsObj).length; \r\n    postMessage('warning', `num_lines in output: ${objSize}`);\r\n}",
+                                    "code": "function toStr(val) {\r\n    if (typeof val === \"string\") return val;\r\n    if (typeof val === \"object\" && val !== null) return JSON.stringify(val);\r\n    return String(val);\r\n}\r\n\r\nconst __logging = (obj, kind, msg) => {\r\n    var msg_real = toStr(msg).split(' ');\r\n    msg_real.unshift(kind);\r\n    obj.message(\"set_msg\", msg_real); \r\n}\r\n\r\nconst postMessage = (kind, message) => {\r\n    var zconsole = this.patcher.parentpatcher.getnamed(\"zconsole\");\r\n    if (zconsole){ __logging(zconsole, kind, message); }\r\n    // post('executed');\r\n}\r\n\r\nfunction dictionary(dictName) {\r\n    postMessage('debug', `Returned lint message below:`);\r\n    var d = new Dict(dictName);\r\n    var jsObj = JSON.parse(d.stringify());\r\n    var kind = 'info';\r\n    for (const [key, value] of Object.entries(jsObj)){\r\n        if (value.startsWith('ERROR: ')){   // but it can also bt STDERR: or STDOUT: \r\n            kind = 'error';\r\n            value = value.slice(7);\r\n        }\r\n        postMessage(kind, value);\r\n    }\r\n    const objSize = Object.entries(jsObj).length; \r\n    postMessage('warning', `num_lines in output: ${objSize}`);\r\n}",
                                     "filename": "none",
                                     "fontface": 0,
                                     "fontname": "<Monospaced>",
@@ -803,7 +804,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 1.2048193216323853, 1083.1325701475143, 877.1084661483765, 233.73494839668274 ],
+                    "patching_rect": [ 1.2048193216323853, 1083.1325701475143, 684.3373746871948, 232.53012907505035 ],
                     "textfile": {
                         "filename": "ztrk_console.js",
                         "flags": 0,
@@ -15490,7 +15491,7 @@
                     "numoutlets": 3,
                     "outlettype": [ "", "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 714.4578577280045, 138.5542219877243, 231.32530975341797, 814.4578614234924 ],
+                    "patching_rect": [ 714.4578577280045, 138.5542219877243, 525.0, 428.0 ],
                     "textfile": {
                         "filename": "hex_tracker.js",
                         "flags": 0,
@@ -15696,7 +15697,7 @@
                     "color": [ 0.6352941176470588, 0.2784313725490196, 0.2784313725490196, 1.0 ],
                     "destination": [ "obj-1", 0 ],
                     "hidden": 1,
-                    "midpoints": [ 830.1205126047134, 514.0, 576.0, 514.0, 576.0, 123.0, 15.0, 123.0, 15.0, 150.0, 10.704819321632385, 150.0 ],
+                    "midpoints": [ 976.9578577280045, 514.0, 576.0, 514.0, 576.0, 123.0, 15.0, 123.0, 15.0, 150.0, 10.704819321632385, 150.0 ],
                     "order": 1,
                     "source": [ "obj-2", 1 ]
                 }
@@ -15713,7 +15714,7 @@
                 "patchline": {
                     "destination": [ "obj-49", 0 ],
                     "hidden": 1,
-                    "midpoints": [ 936.2831674814224, 439.31325590610504, 686.5060287714005, 439.31325590610504, 686.5060287714005, 124.0, 723.9578577280045, 124.0 ],
+                    "midpoints": [ 1229.9578577280045, 439.31325590610504, 686.5060287714005, 439.31325590610504, 686.5060287714005, 124.0, 723.9578577280045, 124.0 ],
                     "source": [ "obj-2", 2 ]
                 }
             },
