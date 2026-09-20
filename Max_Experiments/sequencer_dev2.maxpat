@@ -59,7 +59,7 @@
                     "numoutlets": 5,
                     "outlettype": [ "signal", "signal", "", "float", "list" ],
                     "parameter_enable": 1,
-                    "patching_rect": [ 1842.7927916944027, 668.9189185202122, 48.0, 136.0 ],
+                    "patching_rect": [ 2081.9277877807617, 643.3735177516937, 48.0, 136.0 ],
                     "saved_attribute_attributes": {
                         "valueof": {
                             "parameter_longname": "live.gain~[6]",
@@ -80,7 +80,7 @@
                     "maxclass": "ezdac~",
                     "numinlets": 2,
                     "numoutlets": 0,
-                    "patching_rect": [ 1854.5045033991337, 848.1981976926327, 36.0, 36.0 ]
+                    "patching_rect": [ 2092.771161675453, 822.8915966749191, 36.0, 36.0 ]
                 }
             },
             {
@@ -567,7 +567,7 @@
                             }
                         ]
                     },
-                    "patching_rect": [ 1831.5315304398537, 620.2702699005604, 70.0, 22.0 ],
+                    "patching_rect": [ 2069.879594564438, 595.1807448863983, 70.0, 22.0 ],
                     "text": "p Sampler1"
                 }
             },
@@ -770,7 +770,7 @@
                             }
                         ]
                     },
-                    "patching_rect": [ 1591.0, 444.0, 181.0, 22.0 ],
+                    "patching_rect": [ 497.5903798341751, 1022.8916040658951, 181.0, 22.0 ],
                     "text": "p GenDSP_Debugging_Suite"
                 }
             },
@@ -803,7 +803,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 1396.0, 30.0, 529.0, 354.0 ],
+                    "patching_rect": [ 1.2048193216323853, 1083.1325701475143, 877.1084661483765, 233.73494839668274 ],
                     "textfile": {
                         "filename": "ztrk_console.js",
                         "flags": 0,
@@ -822,7 +822,7 @@
                     "numoutlets": 5,
                     "outlettype": [ "signal", "signal", "", "float", "list" ],
                     "parameter_enable": 1,
-                    "patching_rect": [ 1439.1891883313656, 829.7297292351723, 48.0, 136.0 ],
+                    "patching_rect": [ 1837.3494654893875, 703.614483833313, 48.0, 136.0 ],
                     "saved_attribute_attributes": {
                         "valueof": {
                             "parameter_longname": "live.gain~[5]",
@@ -846,7 +846,7 @@
                     "numoutlets": 5,
                     "outlettype": [ "signal", "signal", "", "float", "list" ],
                     "parameter_enable": 1,
-                    "patching_rect": [ 1747.3404130339622, 890.4255255460739, 48.0, 136.0 ],
+                    "patching_rect": [ 2031.3253762722015, 960.240999341011, 48.0, 136.0 ],
                     "saved_attribute_attributes": {
                         "valueof": {
                             "parameter_longname": "live.gain~[4]",
@@ -867,7 +867,7 @@
                     "maxclass": "ezdac~",
                     "numinlets": 2,
                     "numoutlets": 0,
-                    "patching_rect": [ 1678.8288278281689, 981.0, 36.0, 36.0 ]
+                    "patching_rect": [ 1962.6506749391556, 1050.60244846344, 36.0, 36.0 ]
                 }
             },
             {
@@ -877,7 +877,7 @@
                     "numinlets": 1,
                     "numoutlets": 1,
                     "outlettype": [ "signal" ],
-                    "patching_rect": [ 1481.9819810986519, 649.5495491623878, 79.0, 22.0 ],
+                    "patching_rect": [ 1816.867537021637, 403.61447274684906, 79.0, 22.0 ],
                     "text": "r~ tick_signal"
                 }
             },
@@ -890,7 +890,7 @@
                     "numoutlets": 5,
                     "outlettype": [ "signal", "signal", "", "float", "list" ],
                     "parameter_enable": 1,
-                    "patching_rect": [ 1528.8288279175758, 758.5585581064224, 48.0, 136.0 ],
+                    "patching_rect": [ 1926.506095290184, 632.5301438570023, 48.0, 136.0 ],
                     "saved_attribute_attributes": {
                         "valueof": {
                             "parameter_longname": "live.gain~[2]",
@@ -911,7 +911,7 @@
                     "maxclass": "ezdac~",
                     "numinlets": 2,
                     "numoutlets": 0,
-                    "patching_rect": [ 1535.1351342201233, 929.7297291755676, 36.0, 36.0 ]
+                    "patching_rect": [ 1932.530191898346, 803.614487528801, 36.0, 36.0 ]
                 }
             },
             {
@@ -6208,7 +6208,7 @@
                             }
                         ]
                     },
-                    "patching_rect": [ 1522.9729720652103, 725.6756752431393, 61.0, 22.0 ],
+                    "patching_rect": [ 1920.481998682022, 598.7952028512955, 61.0, 22.0 ],
                     "text": "p JunoXP",
                     "varname": "junoXP"
                 }
@@ -7960,7 +7960,7 @@
                             }
                         ]
                     },
-                    "patching_rect": [ 1371.1711703538895, 725.6756752431393, 53.0, 22.0 ],
+                    "patching_rect": [ 1768.6747641563416, 598.7952028512955, 53.0, 22.0 ],
                     "text": "p HatXP",
                     "varname": "hihatXP"
                 }
@@ -7974,7 +7974,7 @@
                     "numoutlets": 5,
                     "outlettype": [ "signal", "signal", "", "float", "list" ],
                     "parameter_enable": 1,
-                    "patching_rect": [ 1376.126125305891, 754.5045040547848, 48.0, 136.0 ],
+                    "patching_rect": [ 1773.494041442871, 627.7108665704727, 48.0, 136.0 ],
                     "saved_attribute_attributes": {
                         "valueof": {
                             "parameter_longname": "live.gain~[3]",
@@ -7995,7 +7995,7 @@
                     "maxclass": "ezdac~",
                     "numinlets": 2,
                     "numoutlets": 0,
-                    "patching_rect": [ 1376.126125305891, 929.7297291755676, 36.0, 36.0 ]
+                    "patching_rect": [ 1773.494041442871, 803.614487528801, 36.0, 36.0 ]
                 }
             },
             {
@@ -8008,7 +8008,7 @@
                     "numoutlets": 1,
                     "outlettype": [ "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 587.951828956604, 120.48193216323853, 508.82421875, 16.0 ],
+                    "patching_rect": [ 714.4578577280045, 120.48193216323853, 264.7109375, 16.0 ],
                     "textfile": {
                         "filename": "ztrk_parameter_at_cursor.js",
                         "flags": 0,
@@ -9765,7 +9765,7 @@
                             }
                         ]
                     },
-                    "patching_rect": [ 1330.180179387331, 994.59459400177, 59.0, 22.0 ],
+                    "patching_rect": [ 1727.7109072208405, 868.6747308969498, 59.0, 22.0 ],
                     "text": "p ClapXP",
                     "varname": "clapXP"
                 }
@@ -9949,7 +9949,7 @@
                             }
                         ]
                     },
-                    "patching_rect": [ 1722.522521495819, 847.2972967922688, 80.0, 22.0 ],
+                    "patching_rect": [ 2007.2289898395538, 916.8675037622452, 80.0, 22.0 ],
                     "presentation": 1,
                     "presentation_rect": [ 1357.0, 924.0, 100.0, 22.0 ],
                     "text": "p TorqReverb"
@@ -9964,7 +9964,7 @@
                     "numoutlets": 5,
                     "outlettype": [ "signal", "signal", "", "float", "list" ],
                     "parameter_enable": 1,
-                    "patching_rect": [ 1231.9819812476635, 758.5585581064224, 48.0, 136.0 ],
+                    "patching_rect": [ 1630.1205421686172, 632.5301438570023, 48.0, 136.0 ],
                     "saved_attribute_attributes": {
                         "valueof": {
                             "parameter_longname": "live.gain~[1]",
@@ -9985,7 +9985,7 @@
                     "maxclass": "ezdac~",
                     "numinlets": 2,
                     "numoutlets": 0,
-                    "patching_rect": [ 1231.9819812476635, 926.5765760242939, 36.0, 36.0 ]
+                    "patching_rect": [ 1630.1205421686172, 800.0000295639038, 36.0, 36.0 ]
                 }
             },
             {
@@ -12523,7 +12523,7 @@
                             }
                         ]
                     },
-                    "patching_rect": [ 1214.864864140749, 725.6756752431393, 80.0, 22.0 ],
+                    "patching_rect": [ 1612.0482523441315, 598.7952028512955, 80.0, 22.0 ],
                     "text": "p SnareXP__",
                     "varname": "snareXP"
                 }
@@ -14824,7 +14824,7 @@
                             }
                         ]
                     },
-                    "patching_rect": [ 1294.1441433727741, 725.6756752431393, 71.0, 22.0 ],
+                    "patching_rect": [ 1691.566327571869, 598.7952028512955, 71.0, 22.0 ],
                     "text": "p KickXP__",
                     "varname": "kickxp"
                 }
@@ -14838,7 +14838,7 @@
                     "numoutlets": 5,
                     "outlettype": [ "signal", "signal", "", "float", "list" ],
                     "parameter_enable": 1,
-                    "patching_rect": [ 1305.855855077505, 758.5585581064224, 48.0, 136.0 ],
+                    "patching_rect": [ 1703.6145207881927, 632.5301438570023, 48.0, 136.0 ],
                     "saved_attribute_attributes": {
                         "valueof": {
                             "parameter_longname": "live.gain~",
@@ -14859,7 +14859,7 @@
                     "maxclass": "ezdac~",
                     "numinlets": 2,
                     "numoutlets": 0,
-                    "patching_rect": [ 1305.855855077505, 926.5765760242939, 36.0, 36.0 ]
+                    "patching_rect": [ 1703.6145207881927, 800.0000295639038, 36.0, 36.0 ]
                 }
             },
             {
@@ -15010,7 +15010,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "109",
+                                    "text": "13",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -15088,7 +15088,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "46",
+                                    "text": "36",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -15122,7 +15122,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 109 46 0 109",
+                                    "text": "keys 13 36 0 -4",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -15490,7 +15490,7 @@
                     "numoutlets": 3,
                     "outlettype": [ "", "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 587.951828956604, 138.0, 181.74609375, 250.0 ],
+                    "patching_rect": [ 714.4578577280045, 138.5542219877243, 231.32530975341797, 814.4578614234924 ],
                     "textfile": {
                         "filename": "hex_tracker.js",
                         "flags": 0,
@@ -15509,7 +15509,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 1.0, 138.0, 545.7831526994705, 583.1325516700745 ],
+                    "patching_rect": [ 1.2048193216323853, 138.5542219877243, 614.4578540325165, 583.1325516700745 ],
                     "textfile": {
                         "filename": "zen_tracker_seq_ui_E.js",
                         "flags": 0,
@@ -15626,7 +15626,7 @@
                         ],
                         "lines": []
                     },
-                    "patching_rect": [ -108.51063752174377, 11.0, 100.0, 22.0 ],
+                    "patching_rect": [ 9.638554573059082, 1013.253049492836, 100.0, 22.0 ],
                     "text": "p buffer_storage",
                     "varname": "buffer_storage"
                 }
@@ -15638,7 +15638,7 @@
                     "color": [ 0.03137254901960784, 0.6078431372549019, 0.9411764705882353, 1.0 ],
                     "destination": [ "obj-2", 0 ],
                     "hidden": 1,
-                    "midpoints": [ 537.2831526994705, 752.0, 568.0, 752.0, 568.0, 149.0, 597.451828956604, 149.0 ],
+                    "midpoints": [ 606.1626733541489, 752.0, 568.0, 752.0, 568.0, 149.0, 723.9578577280045, 149.0 ],
                     "source": [ "obj-1", 1 ]
                 }
             },
@@ -15696,7 +15696,7 @@
                     "color": [ 0.6352941176470588, 0.2784313725490196, 0.2784313725490196, 1.0 ],
                     "destination": [ "obj-1", 0 ],
                     "hidden": 1,
-                    "midpoints": [ 678.824875831604, 514.0, 576.0, 514.0, 576.0, 123.0, 15.0, 123.0, 15.0, 150.0, 10.5, 150.0 ],
+                    "midpoints": [ 830.1205126047134, 514.0, 576.0, 514.0, 576.0, 123.0, 15.0, 123.0, 15.0, 150.0, 10.704819321632385, 150.0 ],
                     "order": 1,
                     "source": [ "obj-2", 1 ]
                 }
@@ -15713,7 +15713,7 @@
                 "patchline": {
                     "destination": [ "obj-49", 0 ],
                     "hidden": 1,
-                    "midpoints": [ 760.197922706604, 439.31325590610504, 560.0, 439.31325590610504, 560.0, 124.0, 597.451828956604, 124.0 ],
+                    "midpoints": [ 936.2831674814224, 439.31325590610504, 686.5060287714005, 439.31325590610504, 686.5060287714005, 124.0, 723.9578577280045, 124.0 ],
                     "source": [ "obj-2", 2 ]
                 }
             },
