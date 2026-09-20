@@ -36,10 +36,19 @@ var selCol   = [0.25, 0.45, 0.85, 0.35];
 var loopCol  = [0.15, 0.65, 0.35, 0.25];
 var xfadeCol = [0.9,  0.55, 0.15, 0.40];
 var playCol  = [1.0,  0.25, 0.25, 1.0];
+var markerCol = [1.0,  0.75, 0.75, 1.0];
 var linewidth = 1.0;
+
+// marker bookkeeping.
+var markers = [];
+const wipe_markers = () => {markers.length = 0; };
+const add_marker = (marker) => {markers.push(marker);};
+const sort_markers = () => {marker.sort((a, b) => b.idx - a.idx);}
 
 // dictionary
 var d = new Dict();
+
+
 
 function getType(obj) {
     return Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();

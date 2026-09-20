@@ -13,6 +13,51 @@
         "boxes": [
             {
                 "box": {
+                    "id": "obj-9",
+                    "maxclass": "newobj",
+                    "numinlets": 0,
+                    "numoutlets": 0,
+                    "patcher": {
+                        "fileversion": 1,
+                        "appversion": {
+                            "major": 9,
+                            "minor": 1,
+                            "revision": 5,
+                            "architecture": "x64",
+                            "modernui": 1
+                        },
+                        "classnamespace": "box",
+                        "rect": [ 1196.0, 422.0, 1000.0, 780.0 ],
+                        "visible": 1,
+                        "boxes": [
+                            {
+                                "box": {
+                                    "filename": "ztrk_wave_editor_display.js",
+                                    "id": "obj-1",
+                                    "maxclass": "v8ui",
+                                    "numinlets": 1,
+                                    "numoutlets": 1,
+                                    "outlettype": [ "" ],
+                                    "parameter_enable": 0,
+                                    "patching_rect": [ 127.0, 232.0, 642.0, 159.0 ],
+                                    "textfile": {
+                                        "filename": "ztrk_wave_editor_display.js",
+                                        "flags": 0,
+                                        "embed": 0,
+                                        "autowatch": 1
+                                    },
+                                    "varname": "v8ui_AA"
+                                }
+                            }
+                        ],
+                        "lines": []
+                    },
+                    "patching_rect": [ 304.81928837299347, 1022.8916040658951, 133.0, 22.0 ],
+                    "text": "p SampleEditorWindow"
+                }
+            },
+            {
+                "box": {
                     "bgmode": 0,
                     "border": 0,
                     "clickthrough": 0,
@@ -27,7 +72,7 @@
                     "numoutlets": 1,
                     "offset": [ 0.0, 0.0 ],
                     "outlettype": [ "" ],
-                    "patching_rect": [ 23.89156711101532, 90.0, 500.0000184774399, 42.168676257133484 ],
+                    "patching_rect": [ 9.638554573059082, 90.0, 500.0000184774399, 42.168676257133484 ],
                     "viewvisibility": 1
                 }
             },
@@ -588,7 +633,6 @@
                         },
                         "classnamespace": "box",
                         "rect": [ 813.0, 333.0, 1157.0, 880.0 ],
-                        "visible": 1,
                         "boxes": [
                             {
                                 "box": {
@@ -791,7 +835,7 @@
                     "numoutlets": 2,
                     "offset": [ 0.0, 0.0 ],
                     "outlettype": [ "", "" ],
-                    "patching_rect": [ 0.78315269947052, 11.0, 546.0, 66.0 ],
+                    "patching_rect": [ 1.2048193216323853, 30.12048304080963, 546.0, 66.0 ],
                     "viewvisibility": 1
                 }
             },
@@ -15011,7 +15055,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "13",
+                                    "text": "29",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -15089,7 +15133,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "36",
+                                    "text": "124",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -15123,7 +15167,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 13 36 0 -4",
+                                    "text": "keys 29 124 0 -12",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -15524,6 +15568,7 @@
                 "box": {
                     "bgcolor": [ 0.28627450980392155, 0.3411764705882353, 0.7411764705882353, 1.0 ],
                     "color": [ 0.17254901960784313, 0.3176470588235294, 0.5019607843137255, 1.0 ],
+                    "hidden": 1,
                     "id": "obj-3",
                     "maxclass": "newobj",
                     "numinlets": 0,
