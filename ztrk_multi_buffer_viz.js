@@ -60,7 +60,7 @@ function toggle_channel_info(){
 
 function toggle(command){
 	switch (command){
-		case 'info': toggle_channel_info();
+		case 'info': {toggle_channel_info(); mgraphics.redraw(); };
 	}
 }
 
@@ -278,8 +278,9 @@ function drawRow(bufObj, name, y, w, rowH, s, e) {
 }
 
 function paint() {
-	var w = box.rect[2] - box.rect[0];
-	var h = box.rect[3] - box.rect[1];
+	var [w, h] = mgraphics.size;
+	//var w = box.rect[2] - box.rect[0];
+	//var h = box.rect[3] - box.rect[1];
 
 	mgraphics.set_source_rgba(COLOR_BG);
 	mgraphics.rectangle(0, 0, w, h);
@@ -324,7 +325,9 @@ function paint() {
 		mgraphics.fill();
 	}
 
-	// window readout, top-right-ish
+	if (!display_channel_info) return;
+
+	// window readout,
 	mgraphics.set_source_rgba([0.7, 0.7, 0.7, 1.0]);
 	mgraphics.select_font_face("Arial");
 	mgraphics.set_font_size(10);

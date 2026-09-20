@@ -1,0 +1,149 @@
+{
+    "patcher": {
+        "fileversion": 1,
+        "appversion": {
+            "major": 9,
+            "minor": 1,
+            "revision": 5,
+            "architecture": "x64",
+            "modernui": 1
+        },
+        "classnamespace": "dsp.gen",
+        "rect": [ 1211.0, 166.0, 869.0, 1177.0 ],
+        "boxes": [
+            {
+                "box": {
+                    "id": "obj-9",
+                    "maxclass": "newobj",
+                    "numinlets": 0,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 969.8795539140701, 1.2048193216323853, 28.0, 22.0 ],
+                    "text": "in 5"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-8",
+                    "maxclass": "newobj",
+                    "numinlets": 0,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 780.7229204177856, 1.2048193216323853, 28.0, 22.0 ],
+                    "text": "in 4"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-7",
+                    "maxclass": "newobj",
+                    "numinlets": 0,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 600.7439832389355, 1.2048193216323853, 28.0, 22.0 ],
+                    "text": "in 3"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-6",
+                    "maxclass": "newobj",
+                    "numinlets": 1,
+                    "numoutlets": 0,
+                    "patching_rect": [ 983.4156692624092, 1242.1687206029892, 35.0, 22.0 ],
+                    "text": "out 2"
+                }
+            },
+            {
+                "box": {
+                    "code": "// ztrk_sampler_prototype.gendsp\r\n// Single-voice one-shot sample player (prototype for note-cutout testing)\r\n//\r\n// Inputs (signal ins, NOT parameters):\r\n//   in1 = Note        (MIDI 0-127; 60 = unity pitch; 0 = note-off/rest)\r\n//   in2 = SampleIndex (0-10, selects one of 11 sample buffers)\r\n//   in3 = SampleVol   (0-1)\r\n//   in4 = Pan         (-1..1; only applied when the selected sample is mono)\r\n//   in5 = Duration    (ms; playback is cut off at this point, with an\r\n//                       implicit 50ms linear fadeout leading into the cutoff)\r\n// Outputs: stereo (out1 = L, out2 = R)\r\n//\r\n// Assumptions (easy to change, flagging for review):\r\n//   - buffers are named sample0..sample10 and match the patch's samplerate\r\n//   - retriggers (restarts playback from sample start) on ANY change in Note\r\n//     while Note > 0 - so two identical consecutive notes with no rest\r\n//     between them will NOT retrigger. Say the word if you want that instead.\r\n//   - stereo samples are left un-panned (pan only affects mono sources),\r\n//     matching how most hardware samplers behave\r\n//   - readBuf() below returns three values via comma syntax - if your gen\r\n//     version chokes on multi-return, the fallback is inlining the two\r\n//     peek() calls + a separate isMono flag per buffer instead\r\n\r\nreadBuf(buf, ph) {\r\n    nch = channels(buf);\r\n    isMono = (nch == 1);\r\n    l = peek(buf, ph, 0);\r\n    r = isMono ? l : peek(buf, ph, 1);\r\n    return l, r, isMono;\r\n}\r\n\r\nBuffer buf0(\"sample0\");\r\nBuffer buf1(\"sample1\");\r\nBuffer buf2(\"sample2\");\r\nBuffer buf3(\"sample3\");\r\nBuffer buf4(\"sample4\");\r\nBuffer buf5(\"sample5\");\r\nBuffer buf6(\"sample6\");\r\nBuffer buf7(\"sample7\");\r\nBuffer buf8(\"sample8\");\r\nBuffer buf9(\"sample9\");\r\nBuffer buf10(\"sample10\");\r\n\r\nHistory prevNoteH(0.);\r\nHistory phaseH(0.);\r\nHistory elapsedH(0.);\r\nHistory noteLatchH(60.);\r\n\r\nNote = in1;\r\nSampleIndex = clamp(round(in2), 0, 10);\r\nSampleVol = in3;\r\nPan = clamp(in4, -1., 1.);\r\nDuration = in5;\r\n\r\n// --- trigger detection: any change in Note while Note > 0 restarts phase ---\r\nprevNote = prevNoteH;\r\nnoteChanged = (Note != prevNote);\r\ndoTrigger = noteChanged * (Note > 0.);\r\nprevNoteH = Note;\r\n\r\n// --- latch pitch at trigger time; live Note is only used to detect the\r\n// trigger edge, not to drive ongoing playback - reading it continuously\r\n// was the earlier bug: pitch snapped to whatever Note held (often -1/rest)\r\n// the instant the tracker moved past this row, cutting sound off long\r\n// before Duration or the sample itself was done\r\nnoteLatch = doTrigger ? Note : noteLatchH;\r\nnoteLatchH = noteLatch;\r\nrate = pow(2., (noteLatch - 60.) / 12.);\r\n\r\nphase = doTrigger ? 0. : (phaseH + rate);\r\nphaseH = phase;\r\n// no explicit end-of-sample stop needed: peek() returns 0 past buffer end\r\n\r\n// elapsed real-time samples since trigger, independent of pitch/rate -\r\n// used for Duration cutoff + fadeout, so pitch doesn't affect timing\r\nelapsed = doTrigger ? 0. : (elapsedH + 1.);\r\nelapsedH = elapsed;\r\n\r\ndurSamps = Duration * 0.001 * samplerate;\r\nfadeSamps = 0.05 * samplerate;\r\nfadeStart = durSamps - fadeSamps;\r\nfadeGain = clamp(1. - (elapsed - fadeStart) / fadeSamps, 0., 1.);\r\n\r\n// --- read all 11 candidate buffers, then mux the selected one ---\r\nl0, r0, m0 = readBuf(buf0, phase);\r\nl1, r1, m1 = readBuf(buf1, phase);\r\nl2, r2, m2 = readBuf(buf2, phase);\r\nl3, r3, m3 = readBuf(buf3, phase);\r\nl4, r4, m4 = readBuf(buf4, phase);\r\nl5, r5, m5 = readBuf(buf5, phase);\r\nl6, r6, m6 = readBuf(buf6, phase);\r\nl7, r7, m7 = readBuf(buf7, phase);\r\nl8, r8, m8 = readBuf(buf8, phase);\r\nl9, r9, m9 = readBuf(buf9, phase);\r\nl10, r10, m10 = readBuf(buf10, phase);\r\n\r\nL = 0.;\r\nR = 0.;\r\nisMono = 0;\r\n\r\nif (SampleIndex == 0)  { L, R, isMono = l0, r0, m0; }\r\nif (SampleIndex == 1)  { L, R, isMono = l1, r1, m1; }\r\nif (SampleIndex == 2)  { L, R, isMono = l2, r2, m2; }\r\nif (SampleIndex == 3)  { L, R, isMono = l3, r3, m3; }\r\nif (SampleIndex == 4)  { L, R, isMono = l4, r4, m4; }\r\nif (SampleIndex == 5)  { L, R, isMono = l5, r5, m5; }\r\nif (SampleIndex == 6)  { L, R, isMono = l6, r6, m6; }\r\nif (SampleIndex == 7)  { L, R, isMono = l7, r7, m7; }\r\nif (SampleIndex == 8)  { L, R, isMono = l8, r8, m8; }\r\nif (SampleIndex == 9)  { L, R, isMono = l9, r9, m9; }\r\nif (SampleIndex == 10) { L, R, isMono = l10, r10, m10; }\r\n\r\n// --- equal-power pan (mono sources only) ---\r\nHALFPI = acos(0.);\r\nangle = (Pan + 1.) * 0.5 * HALFPI;\r\npanL = cos(angle);\r\npanR = sin(angle);\r\n\r\noutL = isMono ? (L * panL) : L;\r\noutR = isMono ? (R * panR) : R;\r\n\r\nout1 = outL * SampleVol * fadeGain;\r\nout2 = outR * SampleVol * fadeGain;\r\n",
+                    "fontface": 0,
+                    "fontname": "<Monospaced>",
+                    "fontsize": 12.0,
+                    "id": "obj-5",
+                    "maxclass": "codebox",
+                    "numinlets": 5,
+                    "numoutlets": 2,
+                    "outlettype": [ "", "" ],
+                    "patching_rect": [ 218.07229721546173, 44.578314900398254, 784.3433720469475, 1155.4217294454575 ]
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-1",
+                    "maxclass": "newobj",
+                    "numinlets": 0,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 226.50603246688843, 1.2048193216323853, 28.0, 22.0 ],
+                    "text": "in 1"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-2",
+                    "maxclass": "newobj",
+                    "numinlets": 0,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 411.5, 1.2048193216323853, 28.0, 22.0 ],
+                    "text": "in 2"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-4",
+                    "maxclass": "newobj",
+                    "numinlets": 1,
+                    "numoutlets": 0,
+                    "patching_rect": [ 218.07229721546173, 1232.5301660299301, 35.0, 22.0 ],
+                    "text": "out 1"
+                }
+            }
+        ],
+        "lines": [
+            {
+                "patchline": {
+                    "destination": [ "obj-5", 0 ],
+                    "source": [ "obj-1", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-5", 1 ],
+                    "source": [ "obj-2", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-4", 0 ],
+                    "source": [ "obj-5", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-6", 0 ],
+                    "source": [ "obj-5", 1 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-5", 2 ],
+                    "source": [ "obj-7", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-5", 3 ],
+                    "source": [ "obj-8", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-5", 4 ],
+                    "source": [ "obj-9", 0 ]
+                }
+            }
+        ]
+    }
+}

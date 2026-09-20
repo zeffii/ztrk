@@ -1682,5 +1682,17 @@ function loadbang(){
     _ztrk_initialized = true;
     // post(`ztrk loadbang: patcher =${this.patcher.getattr("varname")}, boxes =${this.patcher.count}\m `);
     sequencer_init();
-    postMessage('info', "ztrk initialized. Ready to Rok?")
+    
+    var line1 = "           dP                              dP                        "; 
+    var line2 = "           88                              88                        "; 
+    var line3 = "d888888b d8888P 88d888b. .d8888b. .d8888b. 88  .dP  .d8888b. 88d888b."; 
+    var line4 = "   .d8P'   88   88'  `88 88'  `88 88'  `\"\" 88888\"   88ooood8 88'  `88";
+    var line5 = " .Y8P      88   88       88.  .88 88.  ... 88  `8b. 88.  ... 88      ";
+    var line6 = "d888888P   dP   dP       `88888P8 `88888P' dP   `YP `88888P' dP      ";
+    var lines = [line1, line2, line3, line4, line5, line6];
+
+    for (const line in lines){
+        postMessage('low', lines[line]);
+    }
+    postMessage('info', "initialized. Ready to Rok?");
 }

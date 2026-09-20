@@ -1,0 +1,31 @@
+// general buffer to action converter
+Buffer buf;
+Param chIndex(0, min=0, max=36);  // start index for the track. limit is arbitrary
+pindex = in1;  // this is the tick, continuous.
+
+/*
+structure of sampler one is  
+|Note | Sample IDX |  Volume  | Pan | Duration |
+| NNN |     HH     |    HH    |  HH |   HHHH   |
+*/
+
+// NOTE
+note = peek(buf, pindex, chIndex);
+out1 = (note >= 0.0) ? round(note * 127.0) : note;
+
+// SAMPLE IDX
+two_hex = peek(buf, pindex, chIndex+1);		
+// out2 = (two_hex == -1.0) ? -1.0 : round(two_hex * 255);
+out2 = (two_hex == -1.0) ? -1.0 : clamp(round(two_hex * 10.0), 0.0, 10.0);  // clamp 00 to 0A
+
+// VOLUME
+two_hex = peek(buf, pindex, chIndex+2);
+out3 = (two_hex == -1.0) ? -1.0 : round(two_hex * 255);
+
+// PAN 
+two_hex = peek(buf, pindex, chIndex+3);
+out4 = (two_hex == -1.0) ? -1.0 : round(two_hex * 255);
+
+// DURATION
+four_hex = peek(buf, pindex, chIndex+4);
+out5 = (four_hex == -1.0) ? -1.0 : round(four_hex * 65535);

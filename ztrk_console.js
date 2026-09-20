@@ -22,7 +22,8 @@ var charheight = settings_font_size;
 var log_color = {
     'warning': [0.9, 0.2, 0.2, 1.0],
     'info': [0.5, 0.7, 0.95, 1.0],
-    'debug': [0.2, 0.9, 0.2, 1.0]
+    'debug': [0.2, 0.9, 0.2, 1.0],
+    'low': [1.0, 0.502, 0.0, 1.0]
 };
 
 var default_theme_colors = {
