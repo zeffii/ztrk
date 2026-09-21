@@ -38,7 +38,7 @@ maxApi.addHandler("sendwave", () => {
 
     var myjson = {
         "start": _start, 
-        "duration": _end, 
+        "duration": (_end - _start), 
         "sample_rate": samplerate,
         "filepath": filePath,
         "output_dir": null
