@@ -54,8 +54,31 @@ function getType(obj) {
     return Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
 }
 
-
 // -------------------- public messages --------------------
+
+// I O 
+function dictionary(dictName) {
+
+    var d = new Dict(dictName);
+    var data = JSON.parse(d.stringify());
+    d.freepeer();  // free now that we own our own copy of thet passed dict
+
+    // remember to remove this object key before storing it.
+    if ("onsets" in data) {
+        wipe_markers();
+        
+        // for (const [idx, elem] of data.onsets){
+        data.onsets.forEach((element, idx) => {
+            add_marker({idx: idx, marker: element});
+            post(idx, element);
+        })
+        mgraphics.redraw();
+        return;
+    }
+
+}
+
+
 function set(name) {
     if (name !== bufname) {
         bufname = name;
@@ -284,6 +307,22 @@ function rebuildCache(w, h) {
     dirty = false;
 }
 
+function draw_onsets(){
+
+    var w = mgraphics.size[0];
+    var h = mgraphics.size[1];
+
+    mgraphics.set_source_rgba(markerCol);
+    mgraphics.set_line_width(1.5);
+    
+    markers.forEach((element, idx) => {
+        var px = sampleToX(element.marker, w);
+        mgraphics.move_to(px + 0.5, 0);
+        mgraphics.line_to(px + 0.5, h);
+        mgraphics.stroke();
+    });
+}
+
 // -------------------- paint --------------------
 function paint() {
     var w = mgraphics.size[0];
@@ -350,6 +389,8 @@ function paint() {
         mgraphics.line_to(px + 0.5, h);
         mgraphics.stroke();
     }
+
+    draw_onsets();
 }
 
 // -------------------- mouse --------------------

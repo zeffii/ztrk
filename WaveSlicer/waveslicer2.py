@@ -125,10 +125,10 @@ def make_one_shots(specifications):
     #         ### sf.write(_output_dir / out_name, shot.T if shot.ndim > 1 else shot, sr)
     #     print(f"Saved {saved} hits → {output_dir}/")
 
-    payload = {"onsets": onset_samples}
-    json_string = json.dumps(payload, default=lambda x: x.tolist())  # straight to list
+    payload = {"onsets": onset_samples.tolist()}
+    json_string = json.dumps(payload)
     encoded = base64.b64encode(json_string.encode("utf-8"))
-
+    print(payload)
     # this can be read by js.
     print("JSON: " + encoded.decode("ascii"))
 
