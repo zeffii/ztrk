@@ -19,11 +19,37 @@ var settings_font_size = ztrk_get_font_size(); // 12;
 var charwidth = 6.60;   // this gets updated at runtime. see this.get_text_width_and_height();
 var charheight = settings_font_size;
 
+var num_items_to_display = 25;
 var max_line_buffer_length = 200;
-// const set_buffer_length = (new_length) => { 
-//     max_line_buffer_length = new_length;
-//     mgraphics.refresh();
-// };
+const set_buffer_length = (new_length) => { 
+    max_line_buffer_length = new_length;
+    mgraphics.refresh();
+};
+
+var scrollbar_width = 6;
+var scroll_offset = 0;        // 0 = latest; grows as you scroll back
+var scrollbar_thumb_h = 20;   // recalculated each draw, used by ondrag
+var drag_start_y = null;
+var drag_start_offset = 0;
+var scrollbar_side = 1;
+var padding = 10;
+
+function max_scroll(){
+    return Math.max(0, output_list.length - num_items_to_display);
+}
+function clamp_scroll(){
+    scroll_offset = Math.max(0, Math.min(scroll_offset, max_scroll()));
+}
+
+function set_scrollbar_side(num){
+    switch(num){
+        case 0: scrollbar_side = 0; break;
+        case 1: scrollbar_side = 1; break;
+        default: scrollbar_side = 1;
+    }
+    mgraphics.redraw();
+}
+
 
 var log_color = {
     'warning': [0.9, 0.2, 0.2, 1.0],
@@ -74,36 +100,96 @@ function draw_status_bar(gfx){
 
 function draw_lines(gfx){
     var [w, h] = gfx.size;
-    var num_items_to_display = 25;
 
-    var recent_list = output_list.slice(-num_items_to_display); 
+    var end = output_list.length - scroll_offset;
+    var start = Math.max(0, end - num_items_to_display);
+    var recent_list = output_list.slice(start, end);    
 
     for (const [idx, line] of recent_list.reverse().entries()){
         var color = log_color[line[0]] || log_color.info;
         gfx.set_source_rgba(...color);
-        gfx.move_to(10, h - ((idx+1) * charheight) - 10);
+        gfx.move_to(10, h - ((idx+1) * charheight) - padding);
         // gfx.show_text(`${line[2]}: ${line[1]}`);
         gfx.show_text(`${line[1]}`);
     }
 }
 
+function draw_scrollbar(gfx){
+    var [w, h] = gfx.size;
+    var track_h = h - charheight;
+    var total = output_list.length;
+    if (total <= num_items_to_display) return; // nothing to scroll
+
+    scrollbar_thumb_h = Math.max(20, track_h * (num_items_to_display / total));
+    var scroll_range = max_scroll();
+    var travel = track_h - scrollbar_thumb_h;
+    var thumb_y = scroll_range === 0 ? 0 : ((scroll_range - scroll_offset) / scroll_range) * travel;
+    var bar_x = (scrollbar_side === 1) ? w - scrollbar_width : 0;
+
+    gfx.set_source_rgba(0.15, 0.15, 0.18, 1.0);
+    gfx.rectangle(bar_x, 0, scrollbar_width, track_h);
+    gfx.fill();
+
+    gfx.set_source_rgba(0.6, 0.6, 0.65, 1.0);
+    gfx.rectangle(bar_x, thumb_y, scrollbar_width, scrollbar_thumb_h);
+    gfx.fill();
+}
+
+function set_num_lines_to_dispay(gfx){
+    var [w, h] = gfx.size;
+    num_items_to_display = Math.floor((h - padding) / charheight);
+};
+
 function paint(){
+
+    // book keeping
     get_text_width_and_height(mgraphics);
+    set_num_lines_to_dispay(mgraphics);
+
+    // drawing
     dark_background(mgraphics);
     draw_lines(mgraphics);
+    draw_scrollbar(mgraphics);
     draw_status_bar(mgraphics);
 }
 
 function set_msg(...args){
-    // var kind = args[0];
     var kind = args.shift();
     var received_string = args.join(" ");
     output_list.push([kind, received_string, line_idx]);
     line_idx += 1;
     
+    // if scrolled back and new lines arrive then this ensures offset 
+    // stays valid rather than pointing past the end.
+    clamp_scroll(); 
+    
     if (output_list.length >= max_line_buffer_length){
         output_list.shift();
     }
+    mgraphics.redraw();
+}
+
+function onclick(x, y, but, cmd, shift, capslock, option, ctrl){
+
+    var [w, h] = mgraphics.size;
+    var hit = (scrollbar_side === 1) ? (x >= w - scrollbar_width) : (x <= scrollbar_width);
+    if (hit){
+        drag_start_y = y;
+        drag_start_offset = scroll_offset;
+    }
+}
+
+function ondrag(x, y, but, cmd, shift, capslock, option, ctrl){
+    if (drag_start_y === null) return;
+    var [w, h] = mgraphics.size;
+    var track_h = h - charheight;
+    var travel = track_h - scrollbar_thumb_h;
+    var scroll_range = max_scroll();
+    if (scroll_range === 0 || travel <= 0) return;
+
+    var dy = y - drag_start_y;
+    scroll_offset = drag_start_offset - (dy / travel) * scroll_range;
+    clamp_scroll();
     mgraphics.redraw();
 }
 

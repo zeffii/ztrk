@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 134.0, 134.0, 1896.0, 1281.0 ],
+        "rect": [ 134.0, 85.0, 1896.0, 1265.0 ],
         "boxes": [
             {
                 "box": {
@@ -28,7 +28,6 @@
                         },
                         "classnamespace": "box",
                         "rect": [ 822.0, 105.0, 1468.0, 1077.0 ],
-                        "visible": 1,
                         "boxes": [
                             {
                                 "box": {
@@ -856,7 +855,6 @@
                         },
                         "classnamespace": "box",
                         "rect": [ 882.0, 176.0, 880.0, 1064.0 ],
-                        "visible": 1,
                         "boxes": [
                             {
                                 "box": {
@@ -1344,6 +1342,7 @@
                         },
                         "classnamespace": "box",
                         "rect": [ 813.0, 333.0, 1157.0, 880.0 ],
+                        "visible": 1,
                         "boxes": [
                             {
                                 "box": {
@@ -15748,7 +15747,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "109",
+                                    "text": "127",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -15826,7 +15825,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "46",
+                                    "text": "117",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -15860,7 +15859,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 109 46 0 109",
+                                    "text": "keys 127 117 0 -6",
                                     "varname": "input_keys[1]"
                                 }
                             },
