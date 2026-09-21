@@ -193,6 +193,12 @@ function ondrag(x, y, but, cmd, shift, capslock, option, ctrl){
     mgraphics.redraw();
 }
 
+function onresize(w, h){
+    set_num_lines_to_dispay(mgraphics);
+    clamp_scroll();
+    mgraphics.redraw();
+}
+
 /*
 
     FUNCTION
