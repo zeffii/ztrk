@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 34.0, 77.0, 1896.0, 1281.0 ],
+        "rect": [ 134.0, 134.0, 1896.0, 1281.0 ],
         "boxes": [
             {
                 "box": {
@@ -27,7 +27,7 @@
                             "modernui": 1
                         },
                         "classnamespace": "box",
-                        "rect": [ 594.0, 176.0, 1618.0, 1126.0 ],
+                        "rect": [ 822.0, 105.0, 1468.0, 1077.0 ],
                         "visible": 1,
                         "boxes": [
                             {
@@ -136,7 +136,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 513.0, 571.0, 406.0, 36.0 ],
-                                    "text": "\"C:/Users/zeffi/GITWORX/zero-g-ce-13/Zero-G - Creative Essentials Vol. 13 -- Jungle Frenzy Vol. 1/WAV/TRACK_23/13_23_07.WAV\""
+                                    "text": "\"C:/Users/zeffi/GITWORX/zero-g-ce-13/Zero-G - Creative Essentials Vol. 13 -- Jungle Frenzy Vol. 1/WAV/TRACK_23/13_23_04.WAV\""
                                 }
                             },
                             {
@@ -263,7 +263,7 @@
                                     "numoutlets": 1,
                                     "offset": [ 0.0, 0.0 ],
                                     "outlettype": [ "bang" ],
-                                    "patching_rect": [ 812.0, 739.0, 597.0, 346.0 ],
+                                    "patching_rect": [ 812.0, 739.0, 400.0, 220.0 ],
                                     "viewvisibility": 1
                                 }
                             },
@@ -289,8 +289,6 @@
                                     "saved_object_attributes": {
                                         "autostart": 0,
                                         "defer": 0,
-                                        "node_bin_path": "",
-                                        "npm_bin_path": "",
                                         "watch": 1
                                     },
                                     "text": "node.script ztrk_wave_dispatch_for_node.js",
@@ -857,7 +855,8 @@
                             "modernui": 1
                         },
                         "classnamespace": "box",
-                        "rect": [ 1372.0, 176.0, 1029.0, 1064.0 ],
+                        "rect": [ 882.0, 176.0, 880.0, 1064.0 ],
+                        "visible": 1,
                         "boxes": [
                             {
                                 "box": {
@@ -1463,8 +1462,6 @@
                                     "saved_object_attributes": {
                                         "autostart": 1,
                                         "defer": 0,
-                                        "node_bin_path": "",
-                                        "npm_bin_path": "",
                                         "watch": 1
                                     },
                                     "text": "node.script ztrk_gendsp_linter_for_node.js",
@@ -1564,7 +1561,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 758.0, 861.0, 1120.0, 357.0 ],
+                    "patching_rect": [ 9.638554573059082, 1004.0, 709.0, 177.0 ],
                     "textfile": {
                         "filename": "ztrk_console.js",
                         "flags": 0,
@@ -8747,7 +8744,7 @@
                     "numoutlets": 1,
                     "outlettype": [ "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 714.4578577280045, 120.48193216323853, 264.7109375, 16.0 ],
+                    "patching_rect": [ 714.4578577280045, 120.48193216323853, 172.34375, 16.0 ],
                     "textfile": {
                         "filename": "ztrk_parameter_at_cursor.js",
                         "flags": 0,

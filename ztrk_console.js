@@ -14,10 +14,16 @@ const ztrk_get_font_family = () => g_font_dict.get("fontFamily");
 const ztrk_get_font_size   = () => g_font_dict.get("fontSize");
 
 var line_idx = 0;
-var output_list = []
+var output_list = [];
 var settings_font_size = ztrk_get_font_size(); // 12;
 var charwidth = 6.60;   // this gets updated at runtime. see this.get_text_width_and_height();
 var charheight = settings_font_size;
+
+var max_line_buffer_length = 200;
+// const set_buffer_length = (new_length) => { 
+//     max_line_buffer_length = new_length;
+//     mgraphics.refresh();
+// };
 
 var log_color = {
     'warning': [0.9, 0.2, 0.2, 1.0],
@@ -67,9 +73,15 @@ function draw_status_bar(gfx){
 }
 
 function draw_lines(gfx){
-    for (const [idx, line] of output_list.entries()){
-        gfx.set_source_rgba(...log_color[line[0]]);
-        gfx.move_to(10, 20 + (idx * charheight));
+    var [w, h] = gfx.size;
+    var num_items_to_display = 25;
+
+    var recent_list = output_list.slice(-num_items_to_display); 
+
+    for (const [idx, line] of recent_list.reverse().entries()){
+        var color = log_color[line[0]] || log_color.info;
+        gfx.set_source_rgba(...color);
+        gfx.move_to(10, h - charheight - (idx * charheight));
         gfx.show_text(`${line[2]}: ${line[1]}`);
     }
 }
@@ -82,13 +94,13 @@ function paint(){
 }
 
 function set_msg(...args){
-    var kind = args[0];
-    args.shift();
+    // var kind = args[0];
+    var kind = args.shift();
     var received_string = args.join(" ");
     output_list.push([kind, received_string, line_idx]);
     line_idx += 1;
     
-    if (output_list.length >= 25){
+    if (output_list.length >= max_line_buffer_length){
         output_list.shift();
     }
     mgraphics.redraw();
@@ -105,7 +117,7 @@ function set_msg(...args){
     }
 
     USAGE:
-    
+
     var zconsole = this.patcher.getnamed("zconsole");
     if (zconsole){ __logging(zconsole, "warning", "Gather all start positions."); }
 

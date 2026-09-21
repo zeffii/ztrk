@@ -8,6 +8,27 @@ import numpy as np
 import base64
 import sys
 import json
+from scipy.signal import butter, sosfiltfilt
+
+def highpass(signal, sr, cutoff=140, order=4):
+    sos = butter(order, cutoff, btype='highpass', fs=sr, output='sos')
+    return sosfiltfilt(sos, signal)
+
+def hfc_onset_strength(y, sr, n_fft=1024, hop_length=256):
+    S = np.abs(librosa.stft(y, n_fft=n_fft, hop_length=hop_length))
+    freqs = np.arange(1, S.shape[0] + 1)  # linear weighting by bin index
+    hfc = np.sum((freqs[:, None] ** 1) * (S ** 2), axis=0)
+    hfc = hfc / (hfc.max() + 1e-9)
+    return hfc
+
+'''
+from madmom.features.onsets import CNNOnsetProcessor, OnsetPeakPickingProcessor
+
+proc = CNNOnsetProcessor()
+activations = proc(str(_wav_path))
+peak_picker = OnsetPeakPickingProcessor(threshold=0.3, fps=100)
+onset_times = peak_picker(activations
+'''
 
 def make_one_shots(specifications):
 
@@ -37,19 +58,25 @@ def make_one_shots(specifications):
 
     # _output_dir = spec_dict.get("output_dir", make_slices_folder_alongside(directory_path))
     _output_dir = make_slices_folder_alongside(directory_path)
-    
-    
-    # this is in seconds, so must calculate from sample to seconds.
+        
+    # must calculate from sample to seconds.
     y, sr = librosa.load(
         _wav_path, 
         offset=_start / _known_sr, 
         duration=_duration / _known_sr)
 
-    mono = np.mean(y, axis=0) if y.ndim > 1 else y   # for onset detection detection in mono form.
-    percussive = librosa.effects.percussive(mono)   # specific qualites of percussive
+    mono = np.mean(y, axis=0) if y.ndim > 1 else y   # onset detection detection in mono form.
+    filtered = highpass(mono, sr, cutoff=140)
+    percussive = librosa.effects.percussive(filtered)    # specific qualites of percussive
+
+    # mono = np.mean(y, axis=0) if y.ndim > 1 else y   # onset detection detection in mono form.
+    # percussive = librosa.effects.percussive(mono)    # specific qualites of percussive
+    percussive = librosa.effects.percussive(mono, margin=3.0)  # stronger HPSS separation
 
     # Detect transients using onset strength
-    onset_env = librosa.onset.onset_strength(y=percussive, sr=sr, aggregate=np.median)
+    # onset_env = librosa.onset.onset_strength(y=percussive, sr=sr, aggregate=np.median)
+    # onset_env = onset_env / (onset_env.max() + 1e-9)  # normalize so delta is level-independent
+    onset_env = hfc_onset_strength(percussive, sr)
     onset_frames = librosa.onset.onset_detect(
         onset_envelope=onset_env,  sr=sr,         units="frames",
         backtrack=True,            pre_max=3,     post_max=3,
