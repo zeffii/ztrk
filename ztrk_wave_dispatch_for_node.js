@@ -34,7 +34,7 @@ maxApi.addHandler("range", (start, end) => {
 maxApi.addHandler("sendwave", () => {
     // Replace with the full path to your python.exe and the linter script
     const pythonExe = "C:\\Users\\zeffi\\GITWORX\\AbletonMaxLive\\ztrk\\gendsp-linter\\.venv\\Scripts\\python.exe";
-    const scriptPath = "C:\\Users\\zeffi\\GITWORX\\AbletonMaxLive\\ztrk\\WaveSlicer\\waveslicer.py";
+    const scriptPath = "C:\\Users\\zeffi\\GITWORX\\AbletonMaxLive\\ztrk\\WaveSlicer\\waveslicer2.py";
 
     var myjson = {
         "start": _start, 

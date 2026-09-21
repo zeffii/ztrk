@@ -137,6 +137,102 @@ def make_one_shots(specifications):
     print(f"  Found {len(starts)} onsets.")
 
 
+'''
+import os
+import numpy as np
+import librosa
+import soundfile as sf
+from pathlib import Path
+from typing import Tuple, Optional
+
+def slice_drum_loop(
+    input_path: str,
+    output_dir: Optional[str] = "hits",
+    hop_length: int = 256,
+    pre_max: int = 3,
+    post_max: int = 3,
+    pre_avg: int = 3,
+    post_avg: int = 5,
+    delta: float = 0.07,
+    wait: int = 10,
+    backtrack: bool = True,
+    min_hit_duration: float = 0.04,
+    pre_roll_ms: float = 5,
+    fade_ms: float = 3,
+    use_hpss: bool = True,
+    save_wavs: bool = True,
+) -> Tuple[np.ndarray, int]:
+    """
+    Slice a drum loop and return the onset sample indices.
+
+    Returns
+    -------
+    onset_samples : np.ndarray
+        Absolute sample indices of every detected onset (after backtracking).
+    sr : int
+        Sample rate of the audio.
+    """
+    y, sr = librosa.load(input_path, sr=None, mono=True)
+
+    if use_hpss:
+        y_analysis = librosa.effects.percussive(y)
+    else:
+        y_analysis = y
+
+    onset_env = librosa.onset.onset_strength(
+        y=y_analysis, sr=sr, hop_length=hop_length, aggregate=np.median
+    )
+
+    onset_frames = librosa.onset.onset_detect(
+        onset_envelope=onset_env,
+        sr=sr,
+        hop_length=hop_length,
+        backtrack=backtrack,
+        delta=delta,
+        wait=wait,
+        pre_max=pre_max,
+        post_max=post_max,
+        pre_avg=pre_avg,
+        post_avg=post_avg,
+        units="frames",
+    )
+
+    onset_samples = librosa.frames_to_samples(onset_frames, hop_length=hop_length)
+
+    # Optional: save the individual hits
+    if save_wavs and output_dir is not None:
+        Path(output_dir).mkdir(parents=True, exist_ok=True)
+        boundaries = np.concatenate([onset_samples, [len(y)]])
+        pre_roll = int(pre_roll_ms * sr / 1000)
+        fade_samples = int(fade_ms * sr / 1000)
+
+        saved = 0
+        for i in range(len(boundaries) - 1):
+            start = max(0, boundaries[i] - pre_roll)
+            end = boundaries[i + 1]
+
+            if (end - start) / sr < min_hit_duration:
+                continue
+
+            hit = y[start:end].copy()
+
+            if fade_samples > 0 and len(hit) > 2 * fade_samples:
+                hit[:fade_samples] *= np.linspace(0, 1, fade_samples)
+                hit[-fade_samples:] *= np.linspace(1, 0, fade_samples)
+
+            peak = np.max(np.abs(hit))
+            if peak > 0:
+                hit *= 0.95 / peak
+
+            sf.write(os.path.join(output_dir, f"hit_{saved:03d}.wav"), hit, sr)
+            saved += 1
+
+        print(f"Saved {saved} hits → {output_dir}/")
+
+    return onset_samples, sr
+
+'''
+
 if __name__ == "__main__":
 
     if len(sys.argv) != 2:

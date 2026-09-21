@@ -20,7 +20,9 @@ var theme_colors = {
     time_markers: [0.4, 0.9, 1.0, 1.0],
     ticks_column: [0.4, 0.9, 1.0, 1.0],
     bg_color: [0.1, 0.2, 0.4, 1.0],
-    header_text: [0.4, 0.9, 1.0, 1]
+    header_text: [0.4, 0.9, 1.0, 1],
+    status_bg_color: [0.2, 0.3, 0.2, 1.0],
+    status_text_color: [0.9, 0.9, 0.7, 1.0]
 }
 
 const g_font_dict = new Dict("ztrk_font_settings");
@@ -176,6 +178,7 @@ const ASCII = (key) => String.fromCharCode(key).toUpperCase();
 const fmt4 = (n) => ('0000' + Math.floor(Math.abs(n))).slice(-4) + ' '; 
 const fmt3 = (n) => ('000' + Math.floor(Math.abs(n))).slice(-3) + ' '; 
 
+function asRGB(r, g, b, a){ return {r:r, g:g, b:b}};
 const asRGBobj = (col) => ({r: col[0], g: col[1], b: col[2]});
 const set_rgb = (c, d /*color, dimming*/) => { mgraphics.set_source_rgba(c.r / d, c.g / d, c.b / d, 1); }
 
@@ -1360,16 +1363,7 @@ function draw_pattern_menu(gfx, charheight, charwidth, trk_width, side_width){
         gfx.move_to(rect_start_x + trk_width, rect_start_y + yoffset + (idx * charheight));
         gfx.show_text(toPaddedHex(idx, 2));
     }
-
 }
-
-function draw_songname(gfx, h){
-    gfx.set_source_rgba(...theme_colors.header_text);
-    gfx.move_to(10, h-2);
-    var abbreviated_folder_structure = shortenPath(g_song_folder);
-    gfx.show_text(`${g_song_name} @ ${abbreviated_folder_structure}`);
-}
-
 
 function draw_patternprops_menu(gfx, w, h){
     /*
@@ -1451,6 +1445,29 @@ function draw_patternprops_menu(gfx, w, h){
     }
 }
 
+function draw_status_bar(){
+    var gfx = mgraphics;
+    var [w, h] = gfx.size;
+    // background.
+    set_rgb(asRGB(...theme_colors.status_bg_color), 2.3);
+    gfx.rectangle(0, h-charheight, w, charheight);
+    gfx.fill();
+    
+    // text
+    set_rgb(asRGB(...theme_colors.status_text_color), 1.3);
+    var ztrk_seqID_text = "zseq 0.01";
+    var identifier_width = gfx.text_measure(ztrk_seqID_text + ' ')[0];
+    gfx.move_to(w - identifier_width, h - (0.25 * charheight));
+    gfx.show_text(ztrk_seqID_text);
+
+    // gfx.set_source_rgba(...theme_colors.header_text);
+    set_rgb(asRGB(...theme_colors.status_text_color), 1.3);
+    gfx.move_to(10, h - (0.25 * charheight));
+    var abbreviated_folder_structure = shortenPath(g_song_folder);
+    gfx.show_text(`${g_song_name} @ ${abbreviated_folder_structure}`);
+    
+}
+
 function paint(){
 
     // --- constants ---
@@ -1466,7 +1483,6 @@ function paint(){
 
     draw_background(w, h);
     draw_edit_mode_indicator(h);
-    draw_songname(gfx, h);
 
     mgraphics.translate(30, 50);
     draw_horizontal_time_markers(charheight);
@@ -1477,9 +1493,12 @@ function paint(){
     draw_ticks_column(charheight);
     draw_current_tick();
     draw_track_cursor();
-
+    
     if (g_display_pattern_menu) draw_pattern_menu(gfx, charheight, charwidth, trk_width, side_width);
     else if (g_display_pattern_props) draw_patternprops_menu(gfx, w, h);
+    
+    mgraphics.translate(-30, -50);  // invert the translation.
+    draw_status_bar();
 };
 
 // -- MOUSE HANDLING
