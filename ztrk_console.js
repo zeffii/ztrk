@@ -81,8 +81,9 @@ function draw_lines(gfx){
     for (const [idx, line] of recent_list.reverse().entries()){
         var color = log_color[line[0]] || log_color.info;
         gfx.set_source_rgba(...color);
-        gfx.move_to(10, h - charheight - (idx * charheight));
-        gfx.show_text(`${line[2]}: ${line[1]}`);
+        gfx.move_to(10, h - ((idx+1) * charheight) - 10);
+        // gfx.show_text(`${line[2]}: ${line[1]}`);
+        gfx.show_text(`${line[1]}`);
     }
 }
 
