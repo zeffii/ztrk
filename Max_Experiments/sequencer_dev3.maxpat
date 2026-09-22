@@ -27,9 +27,43 @@
                             "modernui": 1
                         },
                         "classnamespace": "box",
-                        "rect": [ 328.0, 240.0, 1592.0, 893.0 ],
+                        "rect": [ 328.0, 240.0, 1592.0, 923.0 ],
                         "visible": 1,
                         "boxes": [
+                            {
+                                "box": {
+                                    "id": "obj-12",
+                                    "maxclass": "message",
+                                    "numinlets": 2,
+                                    "numoutlets": 1,
+                                    "outlettype": [ "" ],
+                                    "patching_rect": [ 230.0, 182.0, 95.0, 22.0 ],
+                                    "text": "run_code_finder"
+                                }
+                            },
+                            {
+                                "box": {
+                                    "id": "obj-6",
+                                    "maxclass": "message",
+                                    "numinlets": 2,
+                                    "numoutlets": 1,
+                                    "outlettype": [ "" ],
+                                    "patching_rect": [ 130.0, 182.0, 81.0, 22.0 ],
+                                    "text": "set_token YO"
+                                }
+                            },
+                            {
+                                "box": {
+                                    "id": "obj-3",
+                                    "linecount": 2,
+                                    "maxclass": "message",
+                                    "numinlets": 2,
+                                    "numoutlets": 1,
+                                    "outlettype": [ "" ],
+                                    "patching_rect": [ 100.0, 144.0, 503.0, 36.0 ],
+                                    "text": "set_filepath C:/Users/zeffi/GITWORX/AbletonMaxLive/ztrk/Max_Experiments/sequencer_dev3.maxpat"
+                                }
+                            },
                             {
                                 "box": {
                                     "id": "obj-8",
@@ -37,7 +71,7 @@
                                     "numinlets": 1,
                                     "numoutlets": 2,
                                     "outlettype": [ "", "" ],
-                                    "patching_rect": [ 224.0, 56.0, 172.0, 46.0 ]
+                                    "patching_rect": [ 84.0, 45.0, 172.0, 46.0 ]
                                 }
                             },
                             {
@@ -47,13 +81,13 @@
                                     "numinlets": 2,
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
-                                    "patching_rect": [ 84.0, 116.0, 87.0, 22.0 ],
+                                    "patching_rect": [ 84.0, 101.0, 87.0, 22.0 ],
                                     "text": "set_filepath $1"
                                 }
                             },
                             {
                                 "box": {
-                                    "code": "// extract_code.js\r\n\r\nconst fs = require(\"fs\");\r\n\r\nconsole = {};\r\nconsole.log = post;\r\n\r\nvar file = null;\r\n\r\nfunction set_filepath(filepath){ \r\n    file = filepath \r\n    console.log(file);\r\n};\r\n\r\n\r\n\r\nfunction run_code_finder(){\r\n\r\n    const file = process.argv[2];\r\n    const token = process.argv[3] || \"YO\";\r\n\r\n    const data = JSON.parse(fs.readFileSync(file, \"utf8\"));\r\n\r\n    // Walk everything, collect any string found under a \"code\" key.\r\n    const codes = [];\r\n    walk(data);\r\n    function walk(node) {\r\n        if (!node || typeof node !== \"object\") return;\r\n        if (typeof node.code === \"string\") codes.push(node.code);\r\n        for (const k in node) walk(node[k]);\r\n    }\r\n\r\n    // Keep only multiline ones whose first line has the token.\r\n    for (const code of codes) {\r\n        const lines = code.split(\"\\n\");\r\n        if (lines.length > 1 && lines[0].includes(token)) {\r\n            console.log(lines.join(\"\\n\"));\r\n            console.log(\"\");\r\n        }\r\n    } \r\n\r\n}",
+                                    "code": "\r\n\r\n// extract_code.js\r\n\r\nvar file = \"\";\r\nvar token = \"\";\r\n\r\nfunction set_filepath(mfile){ \r\n    file = mfile; \r\n    post(file);\r\n};\r\n\r\nfunction set_token(mtoken){ \r\n    token = mtoken; \r\n    post(token);\r\n\r\n};\r\n\r\nfunction run_code_finder(){\r\n    let f = new File(file, \"read\");\r\n    if (!f.isopen) { post(\"Could not open: \" + file + \"\\n\"); return; }\r\n\r\n    var chunk_size = 16000;\r\n    var text = \"\";\r\n    var remaining = f.eof;\r\n\r\n    while (remaining > 0) {\r\n        var to_read = Math.min(chunk_size, remaining);\r\n        text += f.readstring(to_read);\r\n        remaining -= to_read;\r\n    }\r\n\r\n    post(\"Completed Reading file: \" + text.length + \" characters\\n\");\r\n    f.close();\r\n\r\n    try {\r\n        const codes = [];\r\n\r\n        // Walk everything, collect any string found under a \"code\" key.\r\n        let data = JSON.parse(text);\r\n        walk(data);\r\n        \r\n        function walk(node) {\r\n            if (!node || typeof node !== \"object\") return;\r\n            if (typeof node.code === \"string\") codes.push(node.code);\r\n            for (const k in node) walk(node[k]);\r\n        }\r\n        \r\n        // Keep only multiline ones whose first line has the token.\r\n        for (const code of codes) {\r\n            const lines = code.split(\"\\n\");\r\n            if (lines.length > 1 && lines[0].includes(token)) {\r\n                // post(\"\");\r\n                var target = this.patcher.getnamed(\"EliteCode2\");\r\n                if (target) {\r\n                    // target.message([\"setcode\"].concat(lines));\r\n                    target.message(\"setcode\", code);\r\n                }\r\n                post(lines.join(\"\\n\"));\r\n                break;\r\n            }\r\n            \r\n            \r\n\r\n        } \r\n\r\n    } catch (e) {\r\n        post(\"Invalid JSON: \" + e + \"\\n\");\r\n    }\r\n}\r\n\r\n",
                                     "filename": "none",
                                     "fontface": 0,
                                     "fontname": "<Monospaced>",
@@ -63,7 +97,7 @@
                                     "numinlets": 1,
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
-                                    "patching_rect": [ 84.0, 159.0, 639.0, 630.0 ],
+                                    "patching_rect": [ 84.0, 220.0, 639.0, 630.0 ],
                                     "saved_object_attributes": {
                                         "parameter_enable": 0
                                     }
@@ -195,7 +229,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 330.0, 325.0, 56.0, 25.0 ],
-                                                    "text": "110",
+                                                    "text": "3",
                                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                                 }
                                             },
@@ -273,7 +307,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 138.0, 187.0, 154.0, 22.0 ],
-                                                    "text": "45",
+                                                    "text": "8",
                                                     "varname": "input_keys[3]"
                                                 }
                                             },
@@ -307,7 +341,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 138.0, 373.0, 154.0, 22.0 ],
-                                                    "text": "keys 110 45 0 110",
+                                                    "text": "keys 3 8 4352 99",
                                                     "varname": "input_keys[1]"
                                                 }
                                             },
@@ -660,11 +694,23 @@
                                         "embed": 0,
                                         "autowatch": 1
                                     },
-                                    "varname": "v8ui_AA"
+                                    "varname": "EliteCode2"
                                 }
                             }
                         ],
                         "lines": [
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-1", 0 ],
+                                    "source": [ "obj-12", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-1", 0 ],
+                                    "source": [ "obj-3", 0 ]
+                                }
+                            },
                             {
                                 "patchline": {
                                     "destination": [ "obj-25", 1 ],
@@ -682,6 +728,20 @@
                             {
                                 "patchline": {
                                     "destination": [ "obj-1", 0 ],
+                                    "source": [ "obj-6", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-1", 0 ],
+                                    "order": 1,
+                                    "source": [ "obj-7", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-3", 1 ],
+                                    "order": 0,
                                     "source": [ "obj-7", 0 ]
                                 }
                             },
@@ -1753,6 +1813,8 @@
                                     "saved_object_attributes": {
                                         "autostart": 0,
                                         "defer": 0,
+                                        "node_bin_path": "",
+                                        "npm_bin_path": "",
                                         "watch": 1
                                     },
                                     "text": "node.script ztrk_wave_dispatch_for_node.js",
@@ -2786,7 +2848,7 @@
                             "modernui": 1
                         },
                         "classnamespace": "box",
-                        "rect": [ 134.0, 134.0, 1157.0, 910.0 ],
+                        "rect": [ 134.0, 134.0, 1157.0, 940.0 ],
                         "visible": 1,
                         "boxes": [
                             {
@@ -2930,6 +2992,8 @@
                                     "saved_object_attributes": {
                                         "autostart": 1,
                                         "defer": 0,
+                                        "node_bin_path": "",
+                                        "npm_bin_path": "",
                                         "watch": 1
                                     },
                                     "text": "node.script ztrk_gendsp_linter_for_node.js",
@@ -17222,7 +17286,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "110",
+                                    "text": "3",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -17300,7 +17364,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "45",
+                                    "text": "8",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -17334,7 +17398,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 110 45 0 110",
+                                    "text": "keys 3 8 4352 99",
                                     "varname": "input_keys[1]"
                                 }
                             },
