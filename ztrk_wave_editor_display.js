@@ -27,6 +27,7 @@ var playhead = -1;
 var dragMode = "none";
 var dragOriginSample = 0;
 var origA = 0, origB = 0;
+var origMarker = 0;
 var HIT = 6;                    // pixel tolerance
 
 // colors
@@ -40,19 +41,38 @@ var markerCol = [1.0,  0.75, 0.75, 1.0];
 var linewidth = 1.0;
 
 // marker bookkeeping.
-var markers = [];
-const wipe_markers = () => {markers.length = 0; };
-const add_marker = (marker) => {markers.push(marker);};
-const sort_markers = () => {marker.sort((a, b) => b.idx - a.idx);}
+var markers = [];      // [{idx, marker}, ...]
+var marker_list = [];
+const wipe_markers = () => { markers.length = 0; };
+const wipe_marker_list = () => { marker_list.length = 0; };
+const add_marker = (marker) => { markers.push(marker); };
+//const sort_markers = () => {marker.sort((a, b) => b.marker - a.marker);}
 
 // dictionary
 var d = new Dict();
 
+function getType(obj) { return Object.prototype.toString.call(obj).slice(8, -1).toLowerCase(); }
 
-
-function getType(obj) {
-    return Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
+// -------------------- dictionary --------------------
+function outputDict() {
+    d.clear();
+    d.set("buffer", bufname);
+    d.set("viewStart", viewStart);
+    d.set("viewEnd", viewEnd);
+    d.set("selStart", selStart);
+    d.set("selEnd", selEnd);
+    d.set("loopStart", loopStart);
+    d.set("loopEnd", loopEnd);
+    d.set("xfade", xfade);
+    d.set("playhead", playhead);
+    d.set("onsets", marker_list);
+    if (buf) {
+        d.set("frames", buf.framecount());
+        d.set("length_ms", buf.length());
+    }
+    outlet(0, "dictionary", d.name);
 }
+
 
 // -------------------- public messages --------------------
 
@@ -66,18 +86,17 @@ function dictionary(dictName) {
     // remember to remove this object key before storing it.
     if ("onsets" in data) {
         wipe_markers();
+        wipe_marker_list();
         
-        // for (const [idx, elem] of data.onsets){
         data.onsets.forEach((element, idx) => {
             add_marker({idx: idx, marker: element});
-            post(idx, element);
+            marker_list.push(element)
         })
         mgraphics.redraw();
+        outputDict()
         return;
     }
-
 }
-
 
 function set(name) {
     if (name !== bufname) {
@@ -112,42 +131,36 @@ function setview(start, end) {
 function setselection(start, end) {
     selStart = start|0;
     selEnd   = end|0;
-    outputDict();
-    mgraphics.redraw();
+    outputDict(); mgraphics.redraw();
 }
 
 function clearselection() {
     selStart = selEnd = -1;
-    outputDict();
-    mgraphics.redraw();
+    outputDict(); mgraphics.redraw();
 }
 
 function setloop(start, end) {
     loopStart = start|0;
     loopEnd   = end|0;
     clampXfade();
-    outputDict();
-    mgraphics.redraw();
+    outputDict(); mgraphics.redraw();
 }
 
 function clearloop() {
     loopStart = loopEnd = -1;
     xfade = 0;
-    outputDict();
-    mgraphics.redraw();
+    outputDict(); mgraphics.redraw();
 }
 
 function setxfade(len) {
     xfade = Math.max(0, len|0);
     clampXfade();
-    outputDict();
-    mgraphics.redraw();
+    outputDict(); mgraphics.redraw();
 }
 
 function setplayhead(pos) {
     playhead = pos|0;
-    outputDict();
-    mgraphics.redraw();
+    outputDict(); mgraphics.redraw();
 }
 
 function onresize(w, h) {
@@ -177,24 +190,6 @@ function clampXfade() {
     }
 }
 
-// -------------------- dictionary --------------------
-function outputDict() {
-    d.clear();
-    d.set("buffer", bufname);
-    d.set("viewStart", viewStart);
-    d.set("viewEnd", viewEnd);
-    d.set("selStart", selStart);
-    d.set("selEnd", selEnd);
-    d.set("loopStart", loopStart);
-    d.set("loopEnd", loopEnd);
-    d.set("xfade", xfade);
-    d.set("playhead", playhead);
-    if (buf) {
-        d.set("frames", buf.framecount());
-        d.set("length_ms", buf.length());
-    }
-    outlet(0, "dictionary", d.name);
-}
 
 // -------------------- cache --------------------
 function rebuildCache(w, h) {
@@ -301,7 +296,6 @@ function rebuildCache(w, h) {
 
     // Create cached image
     cachedImage = new Image(off);
-
     lastW = w;
     lastH = h;
     dirty = false;
@@ -314,7 +308,6 @@ function draw_onsets(){
 
     mgraphics.set_source_rgba(markerCol);
     mgraphics.set_line_width(1.5);
-    
     markers.forEach((element, idx) => {
         var px = sampleToX(element.marker, w);
         mgraphics.move_to(px + 0.5, 0);
@@ -400,6 +393,12 @@ function hitTest(x, w) {
     if (playhead >= 0 && Math.abs(sampleToX(playhead, w) - x) <= HIT)
         return "playhead";
 
+    for (const [e_idx, element] of markers.entries()){
+        if (element.marker >= 0 && Math.abs(sampleToX(element.marker, w) - x) <= HIT) {
+            return `marker: ${element.idx}`;
+        }
+    };
+
     if (loopStart >= 0) {
         if (Math.abs(sampleToX(loopStart, w) - x) <= HIT) return "loopstart";
         if (Math.abs(sampleToX(loopEnd, w) - x) <= HIT)   return "loopend";
@@ -451,6 +450,11 @@ function onclick(x, y, button, mod1, shift, caps, opt, mod2) {
     }
     else if (mode === "xfade") {
         origA = xfade;
+    }
+    else if (mode.startsWith("marker: ")){
+        var marker_id = parseInt(mode.slice(8));
+        dragMode = `movemarker: ${marker_id}`;
+        origMarker = markers[marker_id].marker;
     }
 
     outputDict();
@@ -518,6 +522,15 @@ function ondrag(x, y, button, mod1, shift, caps, opt, mod2) {
         case "playhead":
             playhead = clamp(Math.round(s), 0, frames - 1);
             break;
+
+        }
+    
+    // handle marker movements:
+    if (dragMode.startsWith("movemarker:")) {
+        var marker_id = parseInt(dragMode.slice(11));
+        // markers[marker_id].marker = Math.round(Math.min(dragOriginSample, s));
+        // markers[marker_id].marker = clamp(Math.round(s), 0, frames - 1);
+        markers[marker_id].marker = clamp(Math.round(origMarker + delta), 0, frames - 1);
     }
 
     outputDict();
@@ -527,9 +540,10 @@ function ondrag(x, y, button, mod1, shift, caps, opt, mod2) {
 function onidle(x, y) {
     var w = mgraphics.size[0];
     var mode = hitTest(x, w);
+    // post(x , mode);
 
     if (mode === "playhead" || mode === "loopstart" || mode === "loopend" ||
-        mode === "selstart" || mode === "selend" || mode === "xfade") {
+        mode === "selstart" || mode === "selend" || mode === "xfade" || mode.startsWith("marker:")) {
         setcursor(8);               // left-right resize
     } else if (mode === "insideloop" || mode === "insidesel") {
         setcursor(7);               // dragging hand
