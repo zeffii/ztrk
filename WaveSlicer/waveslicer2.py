@@ -18,6 +18,53 @@ def output_to_max(msg):
     # print statements are not debug statements, but a way for the script to communicate back to max.
     print(msg)
 
+def slice_drum_loop(
+    input_path: str,
+    output_dir: Optional[str] = "hits",
+    hop_length: int = 256,
+    pre_max: int = 3,
+    post_max: int = 3,
+    pre_avg: int = 3,
+    post_avg: int = 5,
+    delta: float = 0.07,
+    wait: int = 10,
+    backtrack: bool = True,
+    min_hit_duration: float = 0.04,
+    pre_roll_ms: float = 5,
+    fade_ms: float = 3,
+    use_hpss: bool = True,
+    save_wavs: bool = True,
+) -> Tuple[np.ndarray, int]:
+    
+    """
+    Slice a drum loop and return the onset sample indices.
+
+    Returns
+    -------
+    onset_samples : np.ndarray
+        Absolute sample indices of every detected onset (after backtracking).
+    sr : int
+        Sample rate of the audio.
+    """
+    y, sr = librosa.load(input_path, sr=None, mono=True)
+
+    if use_hpss:
+        y_analysis = librosa.effects.percussive(y)
+    else:
+        y_analysis = y
+
+    onset_env = librosa.onset.onset_strength(
+        y=y_analysis, sr=sr, hop_length=hop_length, aggregate=np.median
+    )
+
+    onset_frames = librosa.onset.onset_detect(
+        onset_envelope=onset_env, sr=sr, hop_length=hop_length, backtrack=backtrack,
+        delta=delta, wait=wait, pre_max=pre_max, post_max=post_max, pre_avg=pre_avg,
+        post_avg=post_avg, units="frames",
+    )
+
+    onset_samples = librosa.frames_to_samples(onset_frames, hop_length=hop_length)
+
 def multi_band_onset_samples(
     y,
     sr,
@@ -105,6 +152,7 @@ def make_one_shots(specifications):
     for key, value in spec_dict.items():
         print(key, value)
 
+    spec_dict['multiband_onset'] = True
     _start = int(spec_dict['start'])
     _duration = int(spec_dict['duration'])
     _known_sr = int(spec_dict['sample_rate'])
@@ -222,7 +270,7 @@ def make_one_shots(specifications):
     json_string = json.dumps(payload)
     encoded = base64.b64encode(json_string.encode("utf-8"))
     print(payload)
-    
+
     # this can be read by js.
     output_to_max("JSON: " + encoded.decode("ascii"))
 
