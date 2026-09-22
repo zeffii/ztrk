@@ -14,6 +14,7 @@ mgraphics.relative_coords = 0;
 mgraphics.autofill = 0;
 
 // ---------- Config ----------
+var g_mouse_on_rect = false;
 var LINE_H       = 16;
 var PAD_X        = 8;
 var PAD_Y        = 8;
@@ -657,7 +658,7 @@ function key_handler() {
 
     // If you want this editor to only respond when its view is active, keep this.
     // if (get_active_view() !== "editor") return;
-    // if (!g_mouse_on_rect) return;
+    if (!g_mouse_on_rect) return;
 
     // -------- Ctrl / Ctrl+Alt combos --------
     // These arrive with SELECTOR === CTRL (or CTRL_ALT) AND with a
@@ -955,3 +956,11 @@ setcode(
     "poke(buf, y, 0, 0);\n" +
     "out1 = y * 0.8;   // trim\n"
 );
+
+function onidle(x, y, button, mod1, shift, caps, opt, mod2){
+    g_mouse_on_rect = true;
+}
+
+function onidleout(x, y, button, mod1, shift, caps, opt, mod2){
+    g_mouse_on_rect = false;
+}
