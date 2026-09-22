@@ -11,13 +11,15 @@ var outMin = 0.0;
 var outMax = 1.0;
 var width, height;
 
+outlets = 2;
+
 declareattribute("intensity",  {type:"float", default:2.0, min:-8, max:8, setter:"setIntensity"});
 declareattribute("inflection", {type:"float", default:0.5, min:0, max:1, setter:"setInflection"});
 declareattribute("outMin",     {type:"float", default:0.0, setter:"setMin"});
 declareattribute("outMax",     {type:"float", default:1.0, setter:"setMax"});
 
-function setIntensity(v)  { intensity = v; mgraphics.redraw(); }
-function setInflection(v) { inflection = Math.max(0, Math.min(1, v)); mgraphics.redraw(); }
+function setIntensity(v)  { intensity = v; mgraphics.redraw(); outlet(0, intensity)}
+function setInflection(v) { inflection = Math.max(0, Math.min(1, v)); mgraphics.redraw(); outlet(1, inflection)}
 function setMin(v)        { outMin = v; mgraphics.redraw(); }
 function setMax(v)        { outMax = v; mgraphics.redraw(); }
 
