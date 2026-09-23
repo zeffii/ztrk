@@ -731,6 +731,9 @@ function handle_machinemenu_key(USER_KEY, ASCII_KEY){
         case DOWN_KEY:
             selected_machine_idx_in_menu += 1;
             break;
+        case ESCAPE:
+            g_display_machine_menu = 0;
+            break;
     }
     mgraphics.redraw();
 }
