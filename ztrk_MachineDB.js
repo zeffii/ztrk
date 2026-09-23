@@ -132,9 +132,13 @@ function getMachinesList(){
     var out = [];
     for (var kind in db) {
         out.push(kind.toUpperCase());
-        for (var name in db[kind]) {
-            out.push("  " + name);
-        }
+        
+        const names = Object.keys(db[kind]);
+        names.forEach((name, index) => {
+            const isLast = index === names.length - 1;
+            let prefix = isLast ? " └╴" : " ├╴";
+            out.push(prefix + name);
+        });
     }
     return out;
 }

@@ -82,6 +82,7 @@ var g_tcaret = {row:0, col:0};
 
 // selection / editing state / pattern identity.
 var selected_pattern_in_menu = 0;
+var selected_machine_idx_in_menu = 1;
 var g_selected_pattern_idx = -1;
 var g_next_pname_counter = 8; // bump this whenever a clone/slice creates a new pattern
 var g_uid_tiebreak = 0;
@@ -721,6 +722,18 @@ function msg_int(tick){
 }
 
 // - KEY handling.
+function handle_machinemenu_key(USER_KEY, ASCII_KEY){
+    let [ENTER, ESCAPE, DELETE, BACK_SPACE, SPACE, UP_KEY, DOWN_KEY] = [13, 27, 127, 8, 32, 30, 31];
+    switch(USER_KEY){
+        case UP_KEY:
+            selected_machine_idx_in_menu -= 1;
+            break;
+        case DOWN_KEY:
+            selected_machine_idx_in_menu += 1;
+            break;
+    }
+    mgraphics.redraw();
+}
 
 function handle_patternprops_key(USER_KEY, ASCII_KEY){
 
@@ -835,6 +848,12 @@ function key_handler(){
     if (g_display_pattern_props){
         handle_patternprops_key(USER_KEY, ASCII(USER_KEY));
         post(g_text_input_buffer);
+        return;
+    }
+    else if (g_display_machine_menu){
+        handle_machinemenu_key(USER_KEY, ASCII(USER_KEY));
+        // post(g_text_input_buffer);
+        _postMessage(selected_machine_idx_in_menu);
         return;
     }
 
@@ -1472,17 +1491,30 @@ function draw_machine_menu(gfx, w, h){
     var py_location = (h/2) - (prop_h/2);
     var outer_rect = [px_location, py_location, prop_w, prop_h];
 
-    gfx.set_source_rgba(0.12, 0.12, 0.12, 1.0);
+    var DARK = [0.12, 0.12, 0.12, 1.0];
+    var BG_CHAR = "█";
+    gfx.set_source_rgba(...DARK);
     gfx.rectangle(...outer_rect);
     gfx.fill();
     gfx.rectangle(...outer_rect);
     gfx.set_source_rgba(0.4, 0.4, 0.4, 1.0);
     gfx.stroke();
-
-    gfx.set_source_rgba(...theme_colors.ega_text);  //ega!
+    
+    gfx.set_source_rgba(...theme_colors.ega_text);  // ega !
     for (const [idx, item] of mlist.entries()){
-        gfx.move_to(px_location + xpad, py_location + ypad + (idx * charheight));
-        gfx.show_text(item);
+        if (selected_machine_idx_in_menu === idx){
+            gfx.set_source_rgba(...theme_colors.ega_text);
+            gfx.move_to(px_location + xpad, py_location + ypad + (idx * charheight));
+            gfx.show_text(BG_CHAR.repeat(item.length + 2));
+            gfx.set_source_rgba(...DARK);
+            gfx.move_to(px_location + xpad, py_location + ypad + (idx * charheight));
+            gfx.show_text(item);
+        }
+        else {
+            gfx.set_source_rgba(...theme_colors.ega_text);
+            gfx.move_to(px_location + xpad, py_location + ypad + (idx * charheight));
+            gfx.show_text(item);
+        }
     }
 }
 
@@ -1537,7 +1569,7 @@ function paint(){
 
     mgraphics.translate(-30, -50);  // invert the translation.
     
-    if (g_display_pattern_menu) draw_pattern_menu(gfx, charheight, charwidth, trk_width, side_width);
+    if (g_display_pattern_menu) draw_pattern_menu(gfx, charheight, charwidth, trk_width, side_width);  // this re-inverts translation, and flips it back to -30 -56 at the end.
     else if (g_display_pattern_props) draw_patternprops_menu(gfx, w, h);
     else if (g_display_machine_menu) draw_machine_menu(gfx, w, h);
     

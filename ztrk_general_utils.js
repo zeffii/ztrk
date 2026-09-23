@@ -12,3 +12,7 @@ function sendTo(name, msg) {
         return false;
     }
 }
+
+function _postMessage(msg){
+    sendTo("zconsole", ["set_msg", "info", msg]);
+}
