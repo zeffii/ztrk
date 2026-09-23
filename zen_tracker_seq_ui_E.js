@@ -116,7 +116,7 @@ var default_config = {
         {trk: 2, trk_name: "Juno",  machine: "JUNO6", trk_symbol: "Λ", kind: "gen", patterns: []},
         {trk: 3, trk_name: "fx.01",  machine: "FX2+", trk_symbol: "φ", kind: "fx", patterns: []},
         {trk: 4, trk_name: "Snare",  machine: "SDR", trk_symbol: "Λ", kind: "gen", patterns: []},
-        {trk: 5, trk_name: "Kdrum",  machine: "KDR", trk_symbol: "Λ", kind: "gen", patterns: []},
+        {trk: 5, trk_name: "KSYN",  machine: "SYNDRUM", trk_symbol: "Λ", kind: "gen", patterns: []},
         {trk: 6, trk_name: "Hat",  machine: "HTX2", trk_symbol: "Λ", kind: "gen", patterns: []}
     ],
     patterns: [   /*  This is the pool of patterns to pick from for each machine / trk */
@@ -149,7 +149,8 @@ var default_config = {
         "HTX": getMachineInfo("gen", "HTX"),
         "HTX2": getMachineInfo("gen", "HTX2"),
         "JUNO6": getMachineInfo("gen", "JUNO6"),
-        "SmpDemo": getMachineInfo("gen", "SmpDemo")
+        "SmpDemo": getMachineInfo("gen", "SmpDemo"),
+        "SYNDRUM": getMachineInfo("gen", "SYNDRUM")
     },
     encoded_pattern_cache: {}
 };

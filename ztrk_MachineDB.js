@@ -103,7 +103,7 @@ const MachineDatabase = {
             ["hhhh", "Duration |(t:ms, d:0.01, s:[0.01, 6000], dval: 2000)", 0]
         ],
         "SYNDRUM": [
-            ['b', 'Trigger', 0], 
+            ['b', 'Trigger |(t:trigger, dval:.)', 0], 
             ["hh", "Drum Radius |(t:m, d:0.18, s:[0.05,0.4], dval:5F)", 1], 
             ["hh", "Drum Depth |(t:m, d:0.15, s:[0.03,0.5], dval:41)", 1], 
             ["hh", "Hit Radius |(t:m, d:0.09, s:[0,0.4], dval:39)", 1], 

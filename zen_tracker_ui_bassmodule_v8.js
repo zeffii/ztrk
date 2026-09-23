@@ -18,6 +18,7 @@ without these folks, this tracker would have taken much longer to make.
 */
 
 include("ztrk_pattern_utils.js");
+include("ztrk_general_utils.js");
 
 var g_ui_state = new Dict("ztrk_ui_state");
 const get_active_view = () => g_ui_state.get("active_view");
@@ -412,13 +413,13 @@ class Tracker  {
     }
 
     pass_column_info_to_outlet2(){
-        // post('called!!');
-        var outputDict = new Dict('pattern_col_dict');
+        // var outputDict = new Dict('pattern_col_dict');
         var idx = this.wheres_the_caret();
         var current_descriptor = this.pattern_markup.descriptors.track[idx[1]][1];
         var [descriptor_head, descriptor_tail] = splitAtFirstPipe(current_descriptor);
-        outputDict.parse(JSON.stringify({track: idx[1], head: descriptor_head, tail: descriptor_tail || "<no info, lazy?>"}));
-        this.send(2, "dictionary", outputDict.name);
+        // outputDict.parse(JSON.stringify({track: idx[1], head: descriptor_head, tail: descriptor_tail || "<no info, lazy?>"}));
+        // this.send(2, "dictionary", outputDict.name);
+        _postMessage(`PE: ${idx[1]}, ${descriptor_head}, ${descriptor_tail || "<no info, lazy?>"}`);
     }
 
     // remove this function.

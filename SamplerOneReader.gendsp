@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "dsp.gen",
-        "rect": [ 59.0, 107.0, 1326.0, 1071.0 ],
+        "rect": [ 92.0, 172.0, 1326.0, 1071.0 ],
         "boxes": [
             {
                 "box": {
@@ -64,7 +64,7 @@
             },
             {
                 "box": {
-                    "code": "// general buffer to action converter\r\nBuffer buf;\r\nParam chIndex(0, min=0, max=36);  // start index for the track. limit is arbitrary\r\nHistory _NOTE(60);\r\nHistory _IDX(0);\r\nHistory _VOL(0.2);\r\nHistory _PAN(127);\r\nHistory _DURATION(300);\r\n\r\npindex = in1;  // this is the tick, continuous.\r\nTRIGGER = in2; // yep.\r\nisTrig = (TRIGGER > 0.0);\r\n\r\n/*\r\nstructure of sampler one is  \r\n|Note | Sample IDX |  Volume  | Pan | Duration |\r\n| NNN |     HH     |    HH    |  HH |   HHHH   |\r\n*/\r\n\r\n// NOTE\r\nraw = peek(buf, pindex, chIndex);\r\n_NOTE = (isTrig && raw >= 0.0) ? round(raw * 127.0) : _NOTE;\r\nout1 = _NOTE;\r\n\r\n// SAMPLE IDX\r\nraw = peek(buf, pindex, chIndex+1);\r\n// _IDX = (isTrig && raw >= 0.0) ? clamp(round(raw * 10.0), 0.0, 10.0) : _IDX;\r\n_IDX = (isTrig && raw >= 0.0) ? clamp(round(raw * 255.0), 0.0, 10.0) : _IDX;\r\nout2 = _IDX;\r\n\r\n// VOLUME\r\nraw = peek(buf, pindex, chIndex+2);\r\n_VOL = (isTrig && raw >= 0.0) ? round(raw * 255.0) : _VOL;\r\nout3 = _VOL;\r\n\r\n// PAN\r\nraw = peek(buf, pindex, chIndex+3);\r\n_PAN = (isTrig && raw >= 0.0) ? round(raw * 255.0) : _PAN;\r\nout4 = (_PAN / 127.5) - 1.0;\r\n\r\n// DURATION\r\nraw = peek(buf, pindex, chIndex+4);\r\n_DURATION = (isTrig && raw >= 0.0) ? round(raw * 65535.0) : _DURATION;\r\nout5 = _DURATION;",
+                    "code": "// general buffer to action converter\r\nBuffer buf;\r\nParam chIndex(0, min=0, max=36);  // start index for the track. limit is arbitrary\r\nHistory _NOTE(60);\r\nHistory _IDX(0);\r\nHistory _VOL(0.2);\r\nHistory _PAN(127);\r\nHistory _DURATION(300);\r\nHistory _TRIG(0);\r\n\r\npindex = in1;  // this is the tick, continuous.\r\nTRIGGER = in2; // yep.\r\nisTrig = (TRIGGER > 0.0);\r\n\r\n/*\r\nstructure of sampler one is  \r\n|Note | Sample IDX |  Volume  | Pan | Duration |\r\n| NNN |     HH     |    HH    |  HH |   HHHH   |\r\n*/\r\n\r\n// NOTE\r\ntrig = (in2 > 0.0);\r\nedge = trig && !_TRIG;\r\n_TRIG = trig;\r\n\r\nnote = round(peek(buf, pindex, chIndex) * 127.0);\r\n_NOTE = edge ? note : _NOTE;\r\n\r\n// raw = peek(buf, pindex, chIndex);\r\n// _NOTE = (isTrig && raw >= 0.0) ? round(raw * 127.0) : _NOTE;\r\nout1 = _NOTE;\r\n\r\n// SAMPLE IDX\r\nraw = peek(buf, pindex, chIndex+1);\r\n// _IDX = (isTrig && raw >= 0.0) ? clamp(round(raw * 10.0), 0.0, 10.0) : _IDX;\r\n_IDX = (isTrig && raw >= 0.0) ? clamp(round(raw * 255.0), 0.0, 10.0) : _IDX;\r\nout2 = _IDX;\r\n\r\n// VOLUME\r\nraw = peek(buf, pindex, chIndex+2);\r\n_VOL = (isTrig && raw >= 0.0) ? round(raw * 255.0) : _VOL;\r\nout3 = _VOL;\r\n\r\n// PAN\r\nraw = peek(buf, pindex, chIndex+3);\r\n_PAN = (isTrig && raw >= 0.0) ? round(raw * 255.0) : _PAN;\r\nout4 = (_PAN / 127.5) - 1.0;\r\n\r\n// DURATION\r\nraw = peek(buf, pindex, chIndex+4);\r\n_DURATION = (isTrig && raw >= 0.0) ? round(raw * 65535.0) : _DURATION;\r\nout5 = _DURATION;",
                     "fontface": 0,
                     "fontname": "<Monospaced>",
                     "fontsize": 12.0,
