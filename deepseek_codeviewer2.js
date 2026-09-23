@@ -32,7 +32,7 @@ var COLOR_DEFAULT    = [0.85, 0.85, 0.88, 1.0];
 var COLOR_COMMENT    = [0.42, 0.55, 0.42, 1.0];
 var COLOR_NUMBER     = [0.85, 0.65, 0.35, 1.0];
 var COLOR_STRING     = [0.85, 0.55, 0.45, 1.0];
-var COLOR_KEYWORD    = [0.55, 0.70, 0.95, 1.0];
+var COLOR_KEYWORD    = [0.55, 0.90, 0.45, 1.0];
 var COLOR_TYPE       = [0.55, 0.85, 0.85, 1.0];
 var COLOR_PARAM      = [0.90, 0.75, 0.55, 1.0];
 var COLOR_OPERATOR   = [0.80, 0.60, 0.85, 1.0];
@@ -57,9 +57,9 @@ var FUNCTIONS = words(
     "floor", "ceil", "round", "trunc", "min", "max", "clamp",
     "tanh", "sinh", "cosh", "sign", "wrap", "fold",
     "peek", "poke", "sample", "lookup",
-    "pi", "e", "samplerate",
     "play", "history", "delay", "accum", "counter",
-    "noise", "phasor", "cycle", "saw", "rect", "triangle"
+    "noise", "phasor", "cycle", "saw", "rect", "triangle",
+    "pi", "e", "samplerate", "wave"
 );
 var OPERATORS = [
     ">>>=", "<<=", ">>=", "===", "!==",
@@ -489,8 +489,7 @@ function drawSelection(w, h) {
     if (a.line > b.line || (a.line === b.line && a.col > b.col)) {
         var tmp = a; a = b; b = tmp;
     }
-    mgraphics.set_source_rgba(COLOR_SELECTION[0], COLOR_SELECTION[1],
-                              COLOR_SELECTION[2], COLOR_SELECTION[3]);
+    mgraphics.set_source_rgba(...COLOR_SELECTION);
     var textLeft = GUTTER_W + PAD_X - scrollX;
     if (a.line === b.line) {
         var x1 = textLeft + colToX(a.line, a.col);
@@ -516,15 +515,13 @@ function drawSelection(w, h) {
 }
 
 function drawStatus(w, h) {
-    mgraphics.set_source_rgba(COLOR_STATUS_BG[0], COLOR_STATUS_BG[1],
-                              COLOR_STATUS_BG[2], COLOR_STATUS_BG[3]);
+    mgraphics.set_source_rgba(...COLOR_STATUS_BG);
     mgraphics.rectangle(0, h - 18, w, 18);
     mgraphics.fill();
-    mgraphics.set_source_rgba(COLOR_GUTTER_FG[0], COLOR_GUTTER_FG[1],
-                              COLOR_GUTTER_FG[2], 0.9);
+    mgraphics.set_source_rgba(COLOR_GUTTER_FG[0], COLOR_GUTTER_FG[1], COLOR_GUTTER_FG[2], 0.9);
     mgraphics.set_font_size(10);
-    var status = "ln " + (cursor.line + 1) + ", col " + (cursor.col + 1) +
-                 "  |  " + lines.length + " lines";
+    //var status = "ln " + (cursor.line + 1) + ", col " + (cursor.col + 1) + "  |  " + lines.length + " lines";
+    var status = `ln ${(cursor.line + 1)}, col ${(cursor.col + 1)}  |  ${lines.length} lines`;
     mgraphics.move_to(GUTTER_W + PAD_X, h - 5);
     mgraphics.show_text(status);
 }
@@ -624,7 +621,7 @@ function ensureCursorVisible() {
 function keys(a1, a2, a3, a4) {
     if (inlet !== 1) return;      // must arrive on the cold inlet
     g_key_codes = [a1, a2, a3, a4];
-    post("KEYS:", a1, a2, a3, a4, "\n");
+    // post("KEYS:", a1, a2, a3, a4, "\n");
     key_handler();
 }
 
@@ -944,7 +941,7 @@ function onresize(w, h) {
 
 // ---------- Demo content ----------
 setcode(
-    "// code_editor.js — click to place caret, then type.\n" +
+    "// code_editor.js — click to pl...ace caret, then type.\n" +
     "// Wire [key] into inlet 2 (cold inlet) to feed keystrokes.\n" +
     "Param freq(440, 20, 20000);\n" +
     "History prev;\n" +

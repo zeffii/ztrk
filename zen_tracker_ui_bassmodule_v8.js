@@ -59,7 +59,7 @@ class Tracker  {
     
     #anchor = null;
     #g_pattern_octave = 4;           // [ todo, implement current octave for input ]
-    #g_tracker_version = "ztrk v.008";
+    #g_tracker_version = "ztrk v.009";
     #g_keyrepeat = 0;
     
     constructor(pattern_markup, mgraphics, options = {} ){

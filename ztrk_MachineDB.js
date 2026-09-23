@@ -101,10 +101,40 @@ const MachineDatabase = {
             ["hh", "Volume |(t:coeff, d:0.8, s:[0,1], dval: CC)", 0],
             ["hh", "Pan |(t:coeff, d:0.0, s:[-1,1], dval: 80)", 0],
             ["hhhh", "Duration |(t:ms, d:0.01, s:[0.01, 6000], dval: 2000)", 0]
+        ],
+        "SYNDRUM": [
+            ['b', 'Trigger', 0], 
+            ["hh", "Drum Radius |(t:m, d:0.18, s:[0.05,0.4], dval:5F)", 1], 
+            ["hh", "Drum Depth |(t:m, d:0.15, s:[0.03,0.5], dval:41)", 1], 
+            ["hh", "Hit Radius |(t:m, d:0.09, s:[0,0.4], dval:39)", 1], 
+            ["hh", "Vellum Thickness |(t:coeff, d:1.0, s:[0.2,2], dval:71)", 2], 
+            ["hh", "Tightness |(t:coeff, d:0.6, s:[0,1], dval:99)", 2], 
+            ["hh", "Tightness Env |(t:coeff, d:0.15, s:[0,1], dval:26)", 2], 
+            ["hh", "Inflection |(t:coeff, d:0.5, s:[0,1], dval:80)", 2], 
+            ["hh", "Membrane Damp |(t:coeff, d:0.35, s:[0,1], dval:59)", 2], 
+            ["hh", "Stroke Intensity |(t:coeff, d:0.8, s:[0,1], dval:CC)", 3], 
+            ["hh", "Stroke Linger |(t:coeff, d:0.12, s:[0,1], dval:1F)", 3], 
+            ["hh", "Stroke Material |(t:coeff, d:0.5, s:[0,1], dval:80)", 3], 
+            ["hh", "Beater Size |(t:coeff, d:0.3, s:[0,1], dval:4D)", 3], 
+            ["hh", "Cavity Damp |(t:coeff, d:0.5, s:[0,1], dval:80)", 4], 
+            ["hh", "Coupling |(t:coeff, d:0.3, s:[0,1], dval:4D)", 4], 
+            ["hh", "Loudness |(t:coeff, d:0.7, s:[0,1], dval:B3)", 5]
         ]
     }
 }
 
 function getMachineInfo(kind, name){
     return MachineDatabase[kind][name];
+}
+
+function getMachinesList(){
+    var db = MachineDatabase;
+    var out = [];
+    for (var kind in db) {
+        out.push(kind.toUpperCase());
+        for (var name in db[kind]) {
+            out.push("  " + name);
+        }
+    }
+    return out;
 }

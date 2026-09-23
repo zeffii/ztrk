@@ -92,7 +92,7 @@ function draw_status_bar(gfx){
     
     // text
     set_rgb(asRGB(...default_theme_colors.status_text_color), 1.3);
-    var ztrk_console_text = "zconsole 0.001";
+    var ztrk_console_text = "zconsole v.009";
     var identifier_width = gfx.text_measure(ztrk_console_text + ' ')[0];
     gfx.move_to(w - identifier_width, h - (0.25 * charheight));
     gfx.show_text(ztrk_console_text);    
@@ -198,6 +198,23 @@ function onresize(w, h){
     clamp_scroll();
     mgraphics.redraw();
 }
+
+function print_logo(){
+    var line1 = "           dP                              dP                        "; 
+    var line2 = "           88                              88                        "; 
+    var line3 = "d888888b d8888P 88d888b. .d8888b. .d8888b. 88  .dP  .d8888b. 88d888b."; 
+    var line4 = "   .d8P'   88   88'  `88 88'  `88 88'  `\"\" 88888\"   88ooood8 88'  `88";
+    var line5 = " .Y8P      88   88       88.  .88 88.  ... 88  `8b. 88.  ... 88      ";
+    var line6 = "d888888P   dP   dP       `88888P8 `88888P' dP   `YP `88888P' dP      v.009";
+    var lines = [line1, line2, line3, line4, line5, line6];
+
+    for (const line in lines){
+        set_msg('low', lines[line]);
+    }
+    set_msg('info', "i'm alive!");
+
+}
+
 
 /*
 

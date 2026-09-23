@@ -1,5 +1,6 @@
 include("ztrk_seq_utils.js");
 include("ztrk_MachineDB.js");  // for getMachineInfo(kind, name);
+include("ztrk_general_utils.js");
 // include("ztrk_pattern_utils.js");  <-- might have to.
 
 autowatch = 1;
@@ -22,7 +23,8 @@ var theme_colors = {
     bg_color: [0.1, 0.2, 0.4, 1.0],
     header_text: [0.4, 0.9, 1.0, 1],
     status_bg_color: [0.2, 0.3, 0.2, 1.0],
-    status_text_color: [0.9, 0.9, 0.7, 1.0]
+    status_text_color: [0.9, 0.9, 0.7, 1.0],
+    ega_text: [1.0, 0.502, 0.0, 1.0]
 }
 
 const g_font_dict = new Dict("ztrk_font_settings");
@@ -69,6 +71,7 @@ var g_song_folder = null;
 var g_in_edit_mode = 0;
 var g_display_pattern_menu = 0;
 var g_display_pattern_props = 0;
+var g_display_machine_menu = 0;
 var g_looping = false;
 var g_loop_start = 0;
 var g_loop_end = 128;
@@ -481,12 +484,18 @@ function toggle_pattern_menu_visibility(){
 function toggle_pattern_properties_visibility(){
     g_display_pattern_props = !g_display_pattern_props; 
 
-    if (g_display_pattern_props){
-        g_editing_prop_field = "length";
-    } else {
-        g_editing_prop_field = null;
-    }
+    // if (g_display_pattern_props){
+    //     g_editing_prop_field = "length";
+    // } else {
+    //     g_editing_prop_field = null;
+    // }
+    g_editing_prop_field = g_display_pattern_props ? "length" : null;
 
+    mgraphics.redraw();
+}
+
+function toggle_machine_menu_visibility(){
+    g_display_machine_menu = !g_display_machine_menu;
     mgraphics.redraw();
 }
 
@@ -897,6 +906,7 @@ function key_handler(){
         case "X": remove_pattern_at_cursor(); return;
         case "I": toggle_pattern_menu_visibility(); return;
         case "P": toggle_pattern_properties_visibility(); return;
+        case "M": toggle_machine_menu_visibility(); return;
         case "B": loop_start(g_tcaret.row*16); return;
         case "E": loop_end(g_tcaret.row*16); return;
         case "L": toggle_looping(); return;
@@ -1332,6 +1342,8 @@ function draw_patterns(){
 function draw_pattern_menu(gfx, charheight, charwidth, trk_width, side_width){
     var trk = g_tcaret.col;
     var start = tick_from_row(g_tcaret.row);
+    
+    mgraphics.translate(30, 50);  // invert the translation. pattern menu should display right beside the pattern.
 
     var num_patterns = sequencer_config.patterns[trk].patterns.length;
     if (num_patterns <= 0){ return; }
@@ -1363,6 +1375,7 @@ function draw_pattern_menu(gfx, charheight, charwidth, trk_width, side_width){
         gfx.move_to(rect_start_x + trk_width, rect_start_y + yoffset + (idx * charheight));
         gfx.show_text(toPaddedHex(idx, 2));
     }
+    mgraphics.translate(-30, -50);  // invert the translation.
 }
 
 function draw_patternprops_menu(gfx, w, h){
@@ -1373,6 +1386,8 @@ function draw_patternprops_menu(gfx, w, h){
     const trk = g_tcaret.col;
     const cursor = tick_from_row(g_tcaret.row);
     const found_idx = find_any_pattern_under_cursor(trk, cursor, inclusive = true);
+    const endCaret = "█";
+    const pfield = g_editing_prop_field;  // alias
 
     if (found_idx === -1){ 
         var parameters = [
@@ -1386,10 +1401,9 @@ function draw_patternprops_menu(gfx, w, h){
     else {
         var pref = sequencer_config.tracks[trk].patterns[found_idx];
 
-        var lengthDisplay = (g_editing_prop_field === "length") ? (g_text_input_buffer + "█") : String(pref.length);
-        var nameDisplay = (g_editing_prop_field === "name") ? (g_text_input_buffer + "█") : pref.pname;
-
-        var colorDisplay = (g_editing_prop_field === "color") ? (g_text_input_buffer + "█") : pref.color.join(" ");
+        var lengthDisplay = (pfield === "length") ? (g_text_input_buffer + endCaret) : String(pref.length);
+        var nameDisplay = (pfield === "name") ? (g_text_input_buffer + endCaret) : pref.pname;
+        var colorDisplay = (pfield === "color") ? (g_text_input_buffer + endCaret) : pref.color.join(" ");
 
         var parameters = [
             "Pattern Properties              ",
@@ -1401,7 +1415,6 @@ function draw_patternprops_menu(gfx, w, h){
             " ",
             "          Esc to close          "
         ];
-
         var field_line_map = { 2: 0, 3: 1, 4: 2 }; // Length, Name, Color
     }
 
@@ -1445,6 +1458,34 @@ function draw_patternprops_menu(gfx, w, h){
     }
 }
 
+function draw_machine_menu(gfx, w, h){
+
+    const mlist = getMachinesList();
+
+    var num_chars_x = 30;
+    var num_chars_y = mlist.length + 3;
+    var xpad = 2 * charwidth;
+    var ypad = 2 * charheight;
+    var prop_w = num_chars_x * charwidth;
+    var prop_h = num_chars_y * charheight;
+    var px_location = (w/2) - (prop_w/2);
+    var py_location = (h/2) - (prop_h/2);
+    var outer_rect = [px_location, py_location, prop_w, prop_h];
+
+    gfx.set_source_rgba(0.12, 0.12, 0.12, 1.0);
+    gfx.rectangle(...outer_rect);
+    gfx.fill();
+    gfx.rectangle(...outer_rect);
+    gfx.set_source_rgba(0.4, 0.4, 0.4, 1.0);
+    gfx.stroke();
+
+    gfx.set_source_rgba(...theme_colors.ega_text);  //ega!
+    for (const [idx, item] of mlist.entries()){
+        gfx.move_to(px_location + xpad, py_location + ypad + (idx * charheight));
+        gfx.show_text(item);
+    }
+}
+
 function draw_status_bar(){
     var gfx = mgraphics;
     var [w, h] = gfx.size;
@@ -1455,7 +1496,7 @@ function draw_status_bar(){
     
     // text
     set_rgb(asRGB(...theme_colors.status_text_color), 1.3);
-    var ztrk_seqID_text = "zseq 0.01";
+    var ztrk_seqID_text = "zseq v.009";
     var identifier_width = gfx.text_measure(ztrk_seqID_text + ' ')[0];
     gfx.move_to(w - identifier_width, h - (0.25 * charheight));
     gfx.show_text(ztrk_seqID_text);
@@ -1493,11 +1534,13 @@ function paint(){
     draw_ticks_column(charheight);
     draw_current_tick();
     draw_track_cursor();
+
+    mgraphics.translate(-30, -50);  // invert the translation.
     
     if (g_display_pattern_menu) draw_pattern_menu(gfx, charheight, charwidth, trk_width, side_width);
     else if (g_display_pattern_props) draw_patternprops_menu(gfx, w, h);
+    else if (g_display_machine_menu) draw_machine_menu(gfx, w, h);
     
-    mgraphics.translate(-30, -50);  // invert the translation.
     draw_status_bar();
 };
 
@@ -1611,7 +1654,6 @@ function load_song(filepath){
     }
 }
 
-
 function create_fullpath_and_save(){
     var filename = getSafeDatetimeFilename(g_song_name);
     var output_dir = g_song_folder;
@@ -1701,17 +1743,7 @@ function loadbang(){
     _ztrk_initialized = true;
     // post(`ztrk loadbang: patcher =${this.patcher.getattr("varname")}, boxes =${this.patcher.count}\m `);
     sequencer_init();
-    
-    var line1 = "           dP                              dP                        "; 
-    var line2 = "           88                              88                        "; 
-    var line3 = "d888888b d8888P 88d888b. .d8888b. .d8888b. 88  .dP  .d8888b. 88d888b."; 
-    var line4 = "   .d8P'   88   88'  `88 88'  `88 88'  `\"\" 88888\"   88ooood8 88'  `88";
-    var line5 = " .Y8P      88   88       88.  .88 88.  ... 88  `8b. 88.  ... 88      ";
-    var line6 = "d888888P   dP   dP       `88888P8 `88888P' dP   `YP `88888P' dP      ";
-    var lines = [line1, line2, line3, line4, line5, line6];
-
-    for (const line in lines){
-        postMessage('low', lines[line]);
-    }
-    postMessage('info', "initialized. Ready to Rok?");
+    sendTo("zconsole", ["print_logo"]);
+    // sendTo("zconsole", ["set_msg", "info", "hello and more and more and more"]);
 }
+

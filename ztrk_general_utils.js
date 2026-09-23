@@ -1,0 +1,14 @@
+function sendTo(name, msg) {
+    try {
+        var obj = this.patcher.getnamed(name);
+        if (!obj) {
+            post("object '" + name + "' not found\n");
+            return false;
+        }
+        obj.message(msg);
+        return true;
+    } catch (e) {
+        post("sendTo('" + name + "', '" + msg + "') failed: " + e.message + "\n");
+        return false;
+    }
+}

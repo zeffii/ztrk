@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 134.0, 85.0, 2180.0, 1265.0 ],
+        "rect": [ 134.0, 85.0, 1588.0, 1265.0 ],
         "boxes": [
             {
                 "box": {
@@ -28,8 +28,18 @@
                         },
                         "classnamespace": "box",
                         "rect": [ 328.0, 240.0, 1592.0, 923.0 ],
-                        "visible": 1,
                         "boxes": [
+                            {
+                                "box": {
+                                    "fontsize": 48.0,
+                                    "id": "obj-4",
+                                    "maxclass": "comment",
+                                    "numinlets": 1,
+                                    "numoutlets": 0,
+                                    "patching_rect": [ 999.0, -2.0, 570.0, 62.0 ],
+                                    "text": "WORK IN PROGRESS"
+                                }
+                            },
                             {
                                 "box": {
                                     "id": "obj-12",
@@ -229,7 +239,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 330.0, 325.0, 56.0, 25.0 ],
-                                                    "text": "31",
+                                                    "text": "40",
                                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                                 }
                                             },
@@ -307,7 +317,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 138.0, 187.0, 154.0, 22.0 ],
-                                                    "text": "125",
+                                                    "text": "25",
                                                     "varname": "input_keys[3]"
                                                 }
                                             },
@@ -341,7 +351,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 138.0, 373.0, 154.0, 22.0 ],
-                                                    "text": "keys 31 125 0 -10",
+                                                    "text": "keys 40 25 512 57",
                                                     "varname": "input_keys[1]"
                                                 }
                                             },
@@ -892,7 +902,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 301.0, 629.0, 50.0, 22.0 ],
-                                    "text": "0.46"
+                                    "text": "0.705"
                                 }
                             },
                             {
@@ -903,7 +913,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 83.0, 625.0, 50.0, 22.0 ],
-                                    "text": "4.5"
+                                    "text": "1.5"
                                 }
                             },
                             {
@@ -971,7 +981,7 @@
                                             },
                                             {
                                                 "box": {
-                                                    "code": "// ======================YO===================================\r\n// dum — genexpr physical model of a struck membrane drum\r\n// (modal/Bessel-ratio membrane bank + coupled cavity resonator)\r\n// Paste into a gen~ Codebox object.\r\n// ============================================================\r\n\r\n// ---- Geometry ----\r\nParam drumRadius(0.18, 0.05, 0.4);     // m\r\nParam drumDepth(0.15, 0.03, 0.5);      // m\r\nParam hitRadius(0.09, 0, 0.4);         // m, clamped to drumRadius internally\r\n\r\n// ---- Vellum ----\r\nParam vellumThickness(1.0, 0.2, 2.0);\r\nParam tightness(0.6, 0, 1);\r\nParam tightnessEnv(0.15, 0, 1);\r\nParam inflection(0.5, 0, 1);\r\nParam membraneDamp(0.35, 0, 1);\r\n\r\n// ---- Stroke ----\r\n// Param strike(0, 0, 1);                 // unit impulse in, sample-accurate (e.g. from click~/edge~)\r\nParam strokeIntensity(0.8, 0, 1);\r\nParam strokeLinger(0.12, 0, 1);\r\nParam strokeMaterial(0.5, 0, 1);\r\nParam beaterSize(0.3, 0, 1);\r\n\r\n// ---- Cavity ----\r\nParam cavityDamp(0.5, 0, 1);\r\nParam coupling(0.3, 0, 1);\r\n\r\n// ---- Global ----\r\nParam loudness(0.7, 0, 1);\r\n\r\n// ---- state ----\r\nData modeY1(1, 8);   // 1 sample, 8 channels — first history per mode\r\nData modeY2(1, 8);   // 1 sample, 8 channels — second history per mode\r\nHistory cY1;\r\nHistory cY2;\r\nHistory envH;\r\n\r\nsr = samplerate;\r\n\r\n// strike envelope: jumps on impulse, decays over strokeLinger (contact time)\r\nlingerT60 = 0.01 + strokeLinger * 0.4;             // 10ms .. 410ms\r\nlingerCoef = exp(-6.9078 / (lingerT60 * sr));\r\nenvIn = in1 * strokeIntensity;\r\nenv = max(envIn, envH * lingerCoef);\r\nenvH = env;\r\n\r\n// tension: S-curve shaping around 'inflection', plus transient bump from the strike envelope\r\nk = 9;\r\nlo = 1 / (1 + exp(k * inflection));\r\nhi = 1 / (1 + exp(-k * (1 - inflection)));\r\nraw = 1 / (1 + exp(-k * (tightness - inflection)));\r\ntensionShaped = (raw - lo) / (hi - lo);\r\ntension = clamp(tensionShaped + tightnessEnv * env * 0.5, 0.01, 1.5);\r\n\r\n// fundamental frequency from geometry + tension + mass (thickness)\r\nK0 = 28;   // wave-speed calibration constant\r\nf0 = K0 * sqrt(tension / vellumThickness) / max(drumRadius, 0.02);\r\n\r\n// strike position, normalized 0..1\r\nposNorm = clamp(hitRadius / max(drumRadius, 0.001), 0, 1);\r\n\r\n// strike spectral brightness: harder/smaller beater = brighter\r\nbrightness = clamp(strokeMaterial * (1 - 0.5 * beaterSize), 0.05, 1);\r\n\r\n// damping calibration\r\nt60base = 2 - membraneDamp * 1.95;    // 2.0s .. 0.05s\r\n\r\nmembraneOut = 0;\r\n\r\nfor (i = 0; i < 8; i += 1) {\r\n\r\n\t// ideal circular-membrane mode table: freq ratio, angular order m, radial order n\r\n\tratio, m, n = 1.0000, 0, 1;\r\n\tif (i == 1) { ratio, m, n = 1.5933, 1, 1; }\r\n\tif (i == 2) { ratio, m, n = 2.1355, 2, 1; }\r\n\tif (i == 3) { ratio, m, n = 2.2954, 0, 2; }\r\n\tif (i == 4) { ratio, m, n = 2.6531, 3, 1; }\r\n\tif (i == 5) { ratio, m, n = 2.9173, 1, 2; }\r\n\tif (i == 6) { ratio, m, n = 3.1558, 4, 1; }\r\n\tif (i == 7) { ratio, m, n = 3.5001, 2, 2; }\r\n\r\n\t// approximate radial mode shape -> excitation weight at strike position\r\n\t// (r^m near center, forced to zero at the clamped rim, cos term ~ internal nodes)\r\n\tshape = pow(posNorm, m) * (1 - posNorm) * cos((n - 1) * pi * posNorm);\r\n\tposWeight = abs(shape);\r\n\tposWeight = posWeight + (0.5 - posWeight) * (beaterSize * 0.5); // big beater blurs position selectivity\r\n\r\n\tspecGain = pow(brightness, ratio - 1);\r\n\tmodeGain = strokeIntensity * posWeight * specGain;\r\n\r\n\t// frequency + damping for this mode\r\n\tfreq = min(f0 * ratio, sr * 0.45);\r\n\tt60 = t60base / pow(ratio, 1.5);\r\n\tr = exp(-6.9078 / (t60 * sr));\r\n\tr = r * (1 - env * strokeLinger * 0.15);   // slight extra damping while beater is in contact\r\n\tr = clamp(r, 0, 0.9999);\r\n\r\n\ttheta = 2 * pi * freq / sr;\r\n\ty1 = peek(modeY1, 0, i);\r\n\ty2 = peek(modeY2, 0, i);\r\n    y = 2 * r * cos(theta) * y1 - r * r * y2 + modeGain * in1;\r\n\r\n\tpoke(modeY2, y1, 0, i);\r\n\tpoke(modeY1, y,  0, i);\r\n\r\n\tmembraneOut = membraneOut + y;\r\n}\r\n\r\nmembraneOut = membraneOut * 0.35;   // trim for 8-mode sum\r\n\r\n// ---- cavity resonator (shell air resonance), coupled from membrane ----\r\ncavFreq = min(343 / (4 * max(drumDepth, 0.02)), sr * 0.45);\r\ncavT60 = 1.5 - cavityDamp * 1.45;\r\ncavR = clamp(exp(-6.9078 / (cavT60 * sr)), 0, 0.9999);\r\ncavTheta = 2 * pi * cavFreq / sr;\r\n\r\ncy1 = cY1;\r\ncy2 = cY2;\r\ncy = 2 * cavR * cos(cavTheta) * cy1 - cavR * cavR * cy2 + coupling * membraneOut;\r\ncY2 = cy1;\r\ncY1 = cy;\r\n\r\n// ---- mix + output ----\r\ndry = membraneOut * (1 - coupling * 0.5);\r\nwet = cy * coupling;\r\nout1 = tanh((dry + wet) * loudness * 2);\r\nout2 = out1;",
+                                                    "code": "// YO\r\n// genexpr physical model of a struck membrane drum\r\n// (modal/Bessel-ratio membrane bank + coupled cavity resonator)\r\n\r\n\r\n// ---- Geometry ----\r\nParam drumRadius(0.18, 0.05, 0.4);     // m\r\nParam drumDepth(0.15, 0.03, 0.5);      // m\r\nParam hitRadius(0.09, 0, 0.4);         // m, clamped to drumRadius internally\r\n\r\n// ---- Vellum ----\r\nParam vellumThickness(1.0, 0.2, 2.0);\r\nParam tightness(0.6, 0, 1);\r\nParam tightnessEnv(0.15, 0, 1);\r\nParam inflection(0.5, 0, 1);\r\nParam membraneDamp(0.35, 0, 1);\r\n\r\n// ---- Stroke ----\r\n// Param strike(0, 0, 1);                 // unit impulse in, sample-accurate (e.g. from click~/edge~)\r\nParam strokeIntensity(0.8, 0, 1);\r\nParam strokeLinger(0.12, 0, 1);\r\nParam strokeMaterial(0.5, 0, 1);\r\nParam beaterSize(0.3, 0, 1);\r\n\r\n// ---- Cavity ----\r\nParam cavityDamp(0.5, 0, 1);\r\nParam coupling(0.3, 0, 1);\r\n\r\n// ---- Global ----\r\nParam loudness(0.7, 0, 1);\r\n\r\n// ---- state ----\r\nData modeY1(1, 8);   // 1 sample, 8 channels — first history per mode\r\nData modeY2(1, 8);   // 1 sample, 8 channels — second history per mode\r\nHistory cY1;\r\nHistory cY2;\r\nHistory envH;\r\n\r\nsr = samplerate;\r\n\r\n// strike envelope: jumps on impulse, decays over strokeLinger (contact time)\r\nlingerT60 = 0.01 + strokeLinger * 0.4;             // 10ms .. 410ms\r\nlingerCoef = exp(-6.9078 / (lingerT60 * sr));\r\nenvIn = in1 * strokeIntensity;\r\nenv = max(envIn, envH * lingerCoef);\r\nenvH = env;\r\n\r\n// tension: S-curve shaping around 'inflection', plus transient bump from the strike envelope\r\nk = 9;\r\nlo = 1 / (1 + exp(k * inflection));\r\nhi = 1 / (1 + exp(-k * (1 - inflection)));\r\nraw = 1 / (1 + exp(-k * (tightness - inflection)));\r\ntensionShaped = (raw - lo) / (hi - lo);\r\ntension = clamp(tensionShaped + tightnessEnv * env * 0.5, 0.01, 1.5);\r\n\r\n// fundamental frequency from geometry + tension + mass (thickness)\r\nK0 = 28;   // wave-speed calibration constant\r\nf0 = K0 * sqrt(tension / vellumThickness) / max(drumRadius, 0.02);\r\n\r\n// strike position, normalized 0..1\r\nposNorm = clamp(hitRadius / max(drumRadius, 0.001), 0, 1);\r\n\r\n// strike spectral brightness: harder/smaller beater = brighter\r\nbrightness = clamp(strokeMaterial * (1 - 0.5 * beaterSize), 0.05, 1);\r\n\r\n// damping calibration\r\nt60base = 2 - membraneDamp * 1.95;    // 2.0s .. 0.05s\r\n\r\nmembraneOut = 0;\r\n\r\nfor (i = 0; i < 8; i += 1) {\r\n\r\n\t// ideal circular-membrane mode table: freq ratio, angular order m, radial order n\r\n\tratio, m, n = 1.0000, 0, 1;\r\n\tif (i == 1) { ratio, m, n = 1.5933, 1, 1; }\r\n\tif (i == 2) { ratio, m, n = 2.1355, 2, 1; }\r\n\tif (i == 3) { ratio, m, n = 2.2954, 0, 2; }\r\n\tif (i == 4) { ratio, m, n = 2.6531, 3, 1; }\r\n\tif (i == 5) { ratio, m, n = 2.9173, 1, 2; }\r\n\tif (i == 6) { ratio, m, n = 3.1558, 4, 1; }\r\n\tif (i == 7) { ratio, m, n = 3.5001, 2, 2; }\r\n\r\n\t// approximate radial mode shape -> excitation weight at strike position\r\n\t// (r^m near center, forced to zero at the clamped rim, cos term ~ internal nodes)\r\n\tshape = pow(posNorm, m) * (1 - posNorm) * cos((n - 1) * pi * posNorm);\r\n\tposWeight = abs(shape);\r\n\tposWeight = posWeight + (0.5 - posWeight) * (beaterSize * 0.5); // big beater blurs position selectivity\r\n\r\n\tspecGain = pow(brightness, ratio - 1);\r\n\tmodeGain = strokeIntensity * posWeight * specGain;\r\n\r\n\t// frequency + damping for this mode\r\n\tfreq = min(f0 * ratio, sr * 0.45);\r\n\tt60 = t60base / pow(ratio, 1.5);\r\n\tr = exp(-6.9078 / (t60 * sr));\r\n\tr = r * (1 - env * strokeLinger * 0.15);   // slight extra damping while beater is in contact\r\n\tr = clamp(r, 0, 0.9999);\r\n\r\n\ttheta = 2 * pi * freq / sr;\r\n\ty1 = peek(modeY1, 0, i);\r\n\ty2 = peek(modeY2, 0, i);\r\n    y = 2 * r * cos(theta) * y1 - r * r * y2 + modeGain * in1;\r\n\r\n\tpoke(modeY2, y1, 0, i);\r\n\tpoke(modeY1, y,  0, i);\r\n\r\n\tmembraneOut = membraneOut + y;\r\n}\r\n\r\nmembraneOut = membraneOut * 0.35;   // trim for 8-mode sum\r\n\r\n// ---- cavity resonator (shell air resonance), coupled from membrane ----\r\ncavFreq = min(343 / (4 * max(drumDepth, 0.02)), sr * 0.45);\r\ncavT60 = 1.5 - cavityDamp * 1.45;\r\ncavR = clamp(exp(-6.9078 / (cavT60 * sr)), 0, 0.9999);\r\ncavTheta = 2 * pi * cavFreq / sr;\r\n\r\ncy1 = cY1;\r\ncy2 = cY2;\r\ncy = 2 * cavR * cos(cavTheta) * cy1 - cavR * cavR * cy2 + coupling * membraneOut;\r\ncY2 = cy1;\r\ncY1 = cy;\r\n\r\n// ---- mix + output ----\r\ndry = membraneOut * (1 - coupling * 0.5);\r\nwet = cy * coupling;\r\nout1 = tanh((dry + wet) * loudness * 2);\r\nout2 = out1;",
                                                     "fontface": 0,
                                                     "fontname": "<Monospaced>",
                                                     "fontsize": 12.0,
@@ -2847,7 +2857,6 @@
                         },
                         "classnamespace": "box",
                         "rect": [ 134.0, 134.0, 1157.0, 940.0 ],
-                        "visible": 1,
                         "boxes": [
                             {
                                 "box": {
@@ -3097,7 +3106,7 @@
                     "numoutlets": 2,
                     "outlettype": [ "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 9.638554573059082, 1013.0, 709.0, 177.0 ],
+                    "patching_rect": [ 23.0, 1014.0, 709.0, 177.0 ],
                     "textfile": {
                         "filename": "ztrk_console.js",
                         "flags": 0,
@@ -17284,7 +17293,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "31",
+                                    "text": "40",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -17362,7 +17371,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "125",
+                                    "text": "25",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -17396,7 +17405,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 31 125 0 -10",
+                                    "text": "keys 40 25 512 57",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -17935,7 +17944,7 @@
                     "color": [ 0.03137254901960784, 0.6078431372549019, 0.9411764705882353, 1.0 ],
                     "destination": [ "obj-2", 0 ],
                     "hidden": 1,
-                    "midpoints": [ 606.1626733541489, 752.0, 568.0, 752.0, 568.0, 149.0, 723.9578577280045, 149.0 ],
+                    "midpoints": [ 606.1626733541489, 752.0, 568.0, 752.0, 568.0, 78.0, 723.9578577280045, 78.0 ],
                     "source": [ "obj-1", 1 ]
                 }
             },
@@ -18538,6 +18547,7 @@
                 "parentstyle": "",
                 "multi": 0
             }
-        ]
+        ],
+        "bgcolor": [ 0.3686274509803922, 0.3686274509803922, 0.3686274509803922, 1.0 ]
     }
 }
