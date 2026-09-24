@@ -71,8 +71,13 @@ var g_song_folder = null;
 var g_in_edit_mode = 0;
 var g_display_pattern_menu = 0;
 var g_display_pattern_props = 0;
+
 var g_display_machine_menu = 0;
 var g_machine_list = [];
+var g_machine_menu_cat_open = "gen";               // populate these differently lateron.
+var g_machine_menu_subcat_open = "samplers";
+var g_machine_menu_selected_machine = "SmpDemo";
+
 var g_looping = false;
 var g_loop_start = 0;
 var g_loop_end = 128;
@@ -1489,7 +1494,7 @@ function draw_patternprops_menu(gfx, w, h){
     }
 }
 
-function draw_machine_menu(gfx, w, h){
+function draw_machine_menuOLD(gfx, w, h){
     
     const db = MachineDatabase;
     // use tempIterator as example.
@@ -1529,6 +1534,97 @@ function draw_machine_menu(gfx, w, h){
             gfx.move_to(px_location + xpad, py_location + ypad + (idx * charheight));
             gfx.show_text(item);
         }
+    }
+}
+
+function draw_machine_menu(gfx, w, h){
+    
+    const db = MachineDatabase;
+
+    var num_chars_x = 30;
+    var num_chars_y = 30;
+    var xpad = 2 * charwidth;
+    var ypad = 2 * charheight;
+    var prop_w = num_chars_x * charwidth;
+    var prop_h = num_chars_y * charheight;
+    var px_location = (w/2) - (prop_w/2);
+    var py_location = (h/2) - (prop_h/2);
+    var outer_rect = [px_location, py_location, prop_w, prop_h];
+
+    var DARK = [0.12, 0.12, 0.12, 1.0];
+    var BG_CHAR = "█";
+
+    gfx.set_source_rgba(...DARK);
+    gfx.rectangle(...outer_rect);
+    gfx.fill();
+    gfx.rectangle(...outer_rect);
+    gfx.set_source_rgba(0.4, 0.4, 0.4, 1.0);
+    gfx.stroke();
+
+    function prefix(iterator, index){
+        const isLast = index === iterator.length - 1;
+        return isLast ? " └╴" : " ├╴";    
+    }
+    function prefix2(len, index){
+        const isLast = index === len - 1;
+        return isLast ? " └╴" : " ├╴";    
+    }    
+
+    // this needs someone smarter than me to resolve nicely. This is as short as it could get it :)
+
+    gfx.set_source_rgba(...theme_colors.ega_text);
+    var pos_y_idx = 0;
+    var visual_machine_index = 0;
+    for (const category in MachineDatabase) {
+
+        gfx.move_to(px_location + xpad, py_location + ypad + (pos_y_idx * charheight));
+        gfx.show_text(category);
+
+        pos_y_idx += 1;
+        var sub_cat_idx = 0;
+        var num_sub_cats = Object.keys(MachineDatabase[category]).length;
+        for (const subCategory in MachineDatabase[category]) {
+            
+            var display_subcat = `${prefix2(num_sub_cats, sub_cat_idx)}${subCategory}`;
+            gfx.move_to(px_location + xpad, py_location + ypad + (pos_y_idx * charheight));
+            gfx.show_text(display_subcat);
+
+            var machine_idx = 0;
+            const machines = MachineDatabase[category][subCategory];
+            for (const machine of machines) {
+                pos_y_idx += 1;
+
+                var main_branch = (num_sub_cats > 1)  ? "│"  : " ";
+                if ((sub_cat_idx === (num_sub_cats -1)) && (machine_idx === (machines.length-1))) { main_branch = " "; };
+
+                var display_machine = ` ${main_branch}${prefix(machines, machine_idx)} ${machine.machine_name}`;
+                machine_name_line(px_location + xpad, py_location + ypad + (pos_y_idx * charheight), display_machine, visual_machine_index);
+
+                machine_idx +=1
+                visual_machine_index += 1;
+            }
+            sub_cat_idx += 1;
+            pos_y_idx += 1;
+        }
+    }
+
+    function machine_name_line(xloc, yloc, text, idx){
+
+        gfx.set_source_rgba(...theme_colors.ega_text);  // ega !
+        if (selected_machine_idx_in_menu === idx){
+            gfx.set_source_rgba(...theme_colors.ega_text);
+            gfx.move_to(xloc, yloc);
+            gfx.show_text(BG_CHAR.repeat(text.length + 2));
+            gfx.set_source_rgba(...DARK);
+            gfx.move_to(xloc, yloc);
+            gfx.show_text(text);
+        }
+        else {
+            gfx.set_source_rgba(...theme_colors.ega_text);
+            gfx.move_to(xloc, yloc);
+            gfx.show_text(text);
+        }
+        gfx.set_source_rgba(...theme_colors.ega_text);  // ega !
     }
 }
 
