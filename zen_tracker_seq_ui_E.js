@@ -141,17 +141,17 @@ var default_config = {
         {trk: 6, patterns: []}
     ],
     machines: {
-        "notes4+": getMachineInfo("ctrl", "notes4+"),
-        "NVDP5": getMachineInfo("ctrl", "NVDP5"),
-        "FX2+": getMachineInfo("fx", "FX2+"),
-        "DRMS": getMachineInfo("gen", "DRMS"), 
-        "KDR": getMachineInfo("gen", "KDR"),
-        "SDR": getMachineInfo("gen", "SDR"),
-        "HTX": getMachineInfo("gen", "HTX"),
-        "HTX2": getMachineInfo("gen", "HTX2"),
-        "JUNO6": getMachineInfo("gen", "JUNO6"),
-        "SmpDemo": getMachineInfo("gen", "SmpDemo"),
-        "SYNDRUM": getMachineInfo("gen", "SYNDRUM")
+        "notes4+": getMachineInfo("notes4+"),
+        "NVDP5": getMachineInfo("NVDP5"),
+        "FX2+": getMachineInfo("FX2+"),
+        "DRMS": getMachineInfo("DRMS"), 
+        "KDR": getMachineInfo("KDR"),
+        "SDR": getMachineInfo("SDR"),
+        "HTX": getMachineInfo("HTX"),
+        "HTX2": getMachineInfo("HTX2"),
+        "JUNO6": getMachineInfo("JUNO6"),
+        "SmpDemo": getMachineInfo("SmpDemo"),
+        "SYNDRUM": getMachineInfo("SYNDRUM")
     },
     encoded_pattern_cache: {}
 };
