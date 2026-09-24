@@ -8,7 +8,7 @@ const MachineDatabase = {
                     ['nnn', 'Note 1', 0],     ['hh', 'Volume 1', 0],     ['hh', 'Duration 1', 0],
                     ['nnn', 'Note 2', 0],     ['hh', 'Volume 2', 0],     ['hh', 'Duration 2', 0],
                     ['nnn', 'Note 3', 0],     ['hh', 'Volume 3', 0],     ['hh', 'Duration 3', 0]
-                ]
+                ],  kind: "ctrl"
             },
             {   
                 machine_name: "notes5+",
@@ -18,7 +18,7 @@ const MachineDatabase = {
                     ['nnn', 'Note 2', 0],     ['hh', 'Volume 2', 0],     ['hh', 'Duration 2', 0],
                     ['nnn', 'Note 3', 0],     ['hh', 'Volume 3', 0],     ['hh', 'Duration 3', 0],
                     ['nnn', 'Note 4', 0],     ['hh', 'Volume 4', 0],     ['hh', 'Duration 4', 0]
-                ]
+                ],  kind: "ctrl"
             },
             {   
                 machine_name: "NVDP5",
@@ -29,7 +29,7 @@ const MachineDatabase = {
                     ['nnn', 'Note 2', 2],     ['hh', 'Volume 2', 2],     ['hh', 'Duration 2', 2],     ['hh', 'Pan 0', 2],
                     ['nnn', 'Note 3', 3],     ['hh', 'Volume 3', 3],     ['hh', 'Duration 3', 3],     ['hh', 'Pan 0', 3],
                     ['nnn', 'Note 4', 4],     ['hh', 'Volume 4', 4],     ['hh', 'Duration 4', 4],     ['hh', 'Pan 0', 4]
-                ]
+                ],   kind: "ctrl"
             }
         ]
     },
@@ -41,7 +41,7 @@ const MachineDatabase = {
                 params: [
                     ['b', 'Trigger 1', 0],     ['b', 'Trigger 2', 0],       ['b', 'Trigger 3', 0],       ['b', 'Trigger 4', 0],
                     ['ffxxyy', 'Effect 1', 1],  ['ffxxyy', 'Effect 2', 1]
-                ]
+                ],  kind: "fx"
             }
         ]
     },
@@ -56,7 +56,7 @@ const MachineDatabase = {
                     ["hh", "Volume |(t:coeff, d:0.8, s:[0,1], dval: CC)", 0],
                     ["hh", "Pan |(t:coeff, d:0.0, s:[-1,1], dval: 80)", 0],
                     ["hhhh", "Duration |(t:ms, d:0.01, s:[0.01, 6000], dval: 2000)", 0]
-                ]
+                ],  kind: "gen"
             }
         ],
         percussion: [
@@ -75,7 +75,7 @@ const MachineDatabase = {
                     ['hh', 'CL Decay', 7], ['hh', 'CL Tune', 7], ['hh', 'CL Amp', 7],       // Clave
                     ['hh', 'RD Decay', 8], ['hh', 'RD Tune', 8], ['hh', 'RD Amp', 8],       // Ride
                     ['hh', 'CR Decay', 9], ['hh', 'CR Tune', 9], ['hh', 'CR Amp', 9]        // Crash
-                ]
+                ],  kind: "gen"
             },
             {   
                 machine_name: "KDR",
@@ -84,7 +84,7 @@ const MachineDatabase = {
                     ['b', 'Trigger', 0], 
                     ['hh', 'Start', 1], ['hh', 'End', 1], ['hh', 'Buzz', 1], ['hh', 'Click', 1], ['hh', 'Punch', 1], 
                     ['hh', 'TDecay', 2], ['hh', 'TShape', 2], ['hh', 'BDecay', 2], ['hh', 'DSlope', 2], ['hh', 'DTime', 2], ['hh', 'RSlope', 2],
-                ]
+                ],  kind: "gen"
             },
             {
                 machine_name: "SYNDRUM",
@@ -106,7 +106,7 @@ const MachineDatabase = {
                     ["hh", "Cavity Damp |(t:coeff, d:0.5, s:[0,1], dval:80)", 4], 
                     ["hh", "Coupling |(t:coeff, d:0.3, s:[0,1], dval:4D)", 4], 
                     ["hh", "Loudness |(t:coeff, d:0.7, s:[0,1], dval:B3)", 5]
-                ]
+                ],  kind: "gen"
             },
             {
                 machine_name: "SDR",
@@ -116,7 +116,7 @@ const MachineDatabase = {
                     ['hhhh', 'Pitch (hz)', 1], ['hh', 'PEnv (ms)', 1], ['hh', 'Decay (ratio)', 1], ['hh', 'noiseAMT', 1], ['hh', 'toneAMT', 1],
                     ['hh', 'Snap', 2], ['hh', 'Brightness', 2], ['hh', 'toneDecay', 2], ['hh', 'noiseDecay', 2],
                     ['hhhh', 'lowcut (hz)', 3], ['hh', 'Stereo (0=mono, 1=wide)', 3]
-                ]
+                ],  kind: "gen"
             },
             {    
                 machine_name: "HTX",
@@ -130,7 +130,7 @@ const MachineDatabase = {
                     ['hh', 'Damp |(t:coeff, d:0.35, s:[0,0.95])', 1], 
                     ['hhhh', 'Res Freq |(t:hz, d:4000, s:[1500,8000])', 2], 
                     ['hh', 'Res AMT |(t:coeff, d:0.85, s:[0,0.9])', 2]
-                ]
+                ],  kind: "gen"
             },
             {
                 machine_name: "HTX2",
@@ -144,7 +144,7 @@ const MachineDatabase = {
                     ["hh", "Attack Energy |(t:coeff, d:0.4, s:[0,1])", 1], // default hex: 66
                     ["hhhh", "Pitch |(t:hz, d:2200, s:[800,6000])", 2], // default hex: 8086
                     ["hh", "Attack Time |(t:ms, d:4, s:[1,30])", 2] // default hex: 1A
-                ]
+                ],  kind: "gen"
             },
         ],
         synths: [
@@ -173,30 +173,55 @@ const MachineDatabase = {
                     ["hh", "Env Mode |(t:bool, d:1, s:[0,1], dval: FF)", 5],
                     ["hhhh", "Lfo Rate |(t:hz, d:5.0, s:[0.05,20], dval: C4C4)", 6],
                     ["hh", "Lfo Delay |(t:s, d:0.0, s:[0,4], dval: 00)", 6]
-                ]
+                ],  kind: "gen"
             }
         ]
     }
 }
 
-function buildMachineMap(db) {
-    const map = {};
+// function buildMachineMap(db) {
+//     const map = {};
+
+//     function walk(node) {
+//         if (!node || typeof node !== "object") return;
+//         if (Array.isArray(node)) { for (const item of node) walk(item); return; }
+//         if (node.machine_name) { map[node.machine_name] = node.params; }
+//         for (const value of Object.values(node)) { walk(value); }
+//     }
+//     walk(db);
+//     return map;
+// }
+
+// const machineMap = buildMachineMap(MachineDatabase);
+
+function buildMachineMaps(db) {
+    const MParamMap = {};
+    const MKindMap = {};
 
     function walk(node) {
         if (!node || typeof node !== "object") return;
-        if (Array.isArray(node)) { for (const item of node) walk(item); return; }
-        if (node.machine_name) { map[node.machine_name] = node.params; }
-        for (const value of Object.values(node)) { walk(value); }
+        if (Array.isArray(node)) {
+            for (const item of node) walk(item);
+            return;
+        }
+
+        if (node.machine_name) {
+            MParamMap[node.machine_name] = node.params;
+            MKindMap[node.machine_name] = node.kind;
+        }
+
+        for (const value of Object.values(node)) {
+            walk(value);
+        }
     }
     walk(db);
-    return map;
+    return [MParamMap, MKindMap];
 }
 
-const machineMap = buildMachineMap(MachineDatabase);
+const [MParamMap, MKindMap] = buildMachineMaps(MachineDatabase);
 
 function getMachineInfo(name){
-    return machineMap[name];
-    // return MachineDatabase[kind][name];
+    return MParamMap[name];
 }
 
 // i'll write this properly when i have `DB > gen > drums > named_machine `
