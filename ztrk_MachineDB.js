@@ -194,7 +194,7 @@ function buildMachineMap(db) {
 
 const machineMap = buildMachineMap(MachineDatabase);
 
-function getMachineInfo(kind, name){
+function getMachineInfo(name){
     return machineMap[name];
     // return MachineDatabase[kind][name];
 }
