@@ -72,6 +72,7 @@ var g_in_edit_mode = 0;
 var g_display_pattern_menu = 0;
 var g_display_pattern_props = 0;
 var g_display_machine_menu = 0;
+var g_machine_list = [];
 var g_looping = false;
 var g_loop_start = 0;
 var g_loop_end = 128;
@@ -498,6 +499,9 @@ function toggle_pattern_properties_visibility(){
 
 function toggle_machine_menu_visibility(){
     g_display_machine_menu = !g_display_machine_menu;
+    if (g_display_machine_menu){
+        g_machine_list = getMachinesList();
+    }
     mgraphics.redraw();
 }
 
@@ -722,15 +726,19 @@ function msg_int(tick){
     mgraphics.redraw();
 }
 
+function machine_menu_select_idx(direction){
+    selected_machine_idx_in_menu += direction;
+}
+
 // - KEY handling.
 function handle_machinemenu_key(USER_KEY, ASCII_KEY){
     let [ENTER, ESCAPE, DELETE, BACK_SPACE, SPACE, UP_KEY, DOWN_KEY] = [13, 27, 127, 8, 32, 30, 31];
     switch(USER_KEY){
         case UP_KEY:
-            selected_machine_idx_in_menu -= 1;
+            machine_menu_select_idx(-1);
             break;
         case DOWN_KEY:
-            selected_machine_idx_in_menu += 1;
+            machine_menu_select_idx(+1);
             break;
         case ESCAPE:
             g_display_machine_menu = 0;
@@ -1482,8 +1490,8 @@ function draw_patternprops_menu(gfx, w, h){
 }
 
 function draw_machine_menu(gfx, w, h){
-
-    const mlist = getMachinesList();
+    
+    const mlist = g_machine_list;
 
     var num_chars_x = 30;
     var num_chars_y = mlist.length + 3;

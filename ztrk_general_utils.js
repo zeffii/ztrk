@@ -16,3 +16,5 @@ function sendTo(name, msg) {
 function _postMessage(msg){
     sendTo("zconsole", ["set_msg", "info", msg]);
 }
+
+// could have _postInfo _postWarning _postLow _postError

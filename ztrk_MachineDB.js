@@ -96,7 +96,7 @@ const MachineDatabase = {
             ["hh", "Lfo Delay |(t:s, d:0.0, s:[0,4], dval: 00)", 6]
         ],
         "SmpDemo": [
-            ['nnn', 'Note |(t:note, dval: C-5)', 0],
+            ['nnn', 'Note |(t:note, dval: ...)', 0],
             ["hh", "Sample Index |(t:index, d:0., s:[0,10], dval: 00)", 0],
             ["hh", "Volume |(t:coeff, d:0.8, s:[0,1], dval: CC)", 0],
             ["hh", "Pan |(t:coeff, d:0.0, s:[-1,1], dval: 80)", 0],
@@ -127,6 +127,7 @@ function getMachineInfo(kind, name){
     return MachineDatabase[kind][name];
 }
 
+// i'll write this properly when i have `DB > gen > drums > named_machine `
 function getMachinesList(){
     var db = MachineDatabase;
     var out = [];
@@ -138,7 +139,9 @@ function getMachinesList(){
             const isLast = index === names.length - 1;
             let prefix = isLast ? " └╴" : " ├╴";
             out.push(prefix + name);
+
         });
     }
     return out;
 }
+

@@ -439,7 +439,7 @@ function utils_get_defaults_for_markup(track){
         var [descriptor_head, descriptor_tail] = splitAtFirstPipe(current_descriptor);
         if (descriptor_tail){
 
-            const getDval = (str) => { const m = str.match(/dval:\s*([0-9A-F]{4}|[0-9A-F]{2}|\.|1)/); return m ? m[1] : null; };
+            const getDval = (str) => { const m = str.match(/dval:\s*([0-9A-F]{4}|[0-9A-F]{2}|[\.]{3}|\.|1)/); return m ? m[1] : null; };
 
             let dval = getDval(descriptor_tail);
             if (dval) { 
