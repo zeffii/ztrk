@@ -114,7 +114,7 @@ var default_config = {
     tracks: [
         {trk: 0, trk_name: "gen.00", machine: "SmpDemo", trk_symbol: "Λ", kind: "ctrl", patterns: []},    // will just contain references with a puid (see add_pattern)
         {trk: 1, trk_name: "key.01", machine: "NVDP5", trk_symbol: "K", kind: "ctrl", patterns: []},      // like:  {pname: "01", puid: "1789336785399_0", start: 0, length: 32, color: [0.1, 0.4, 0.61] }
-        {trk: 2, trk_name: "Juno",  machine: "JUNO6", trk_symbol: "Λ", kind: "gen", patterns: []},
+        {trk: 2, trk_name: "Juno",  machine: "JUNO6", trk_symbol: "Λ", kind: "gen", patterns: []},        // kind can be looked up using MKindMap[machine_name], kind is a loose term.
         {trk: 3, trk_name: "fx.01",  machine: "FX2+", trk_symbol: "φ", kind: "fx", patterns: []},
         {trk: 4, trk_name: "Snare",  machine: "SDR", trk_symbol: "Λ", kind: "gen", patterns: []},
         {trk: 5, trk_name: "KSYN",  machine: "SYNDRUM", trk_symbol: "Λ", kind: "gen", patterns: []},
@@ -1491,6 +1491,8 @@ function draw_patternprops_menu(gfx, w, h){
 
 function draw_machine_menu(gfx, w, h){
     
+    const db = MachineDatabase;
+    // use tempIterator as example.
     const mlist = g_machine_list;
 
     var num_chars_x = 30;

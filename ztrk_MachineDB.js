@@ -242,3 +242,20 @@ function getMachinesList(){
     return out;
 }
 
+function tempIterator() {
+    for (const category in MachineDatabase) {
+        post(category + '\n');
+
+        for (const subCategory in MachineDatabase[category]) {
+            post('   ', subCategory + '\n');
+
+            const machines = MachineDatabase[category][subCategory];
+
+            if (Array.isArray(machines)) {
+                for (const machine of machines) {
+                    post('       ', machine.machine_name + '\n');
+                }
+            }
+        }
+    }
+}
