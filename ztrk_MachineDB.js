@@ -179,21 +179,6 @@ const MachineDatabase = {
     }
 }
 
-// function buildMachineMap(db) {
-//     const map = {};
-
-//     function walk(node) {
-//         if (!node || typeof node !== "object") return;
-//         if (Array.isArray(node)) { for (const item of node) walk(item); return; }
-//         if (node.machine_name) { map[node.machine_name] = node.params; }
-//         for (const value of Object.values(node)) { walk(value); }
-//     }
-//     walk(db);
-//     return map;
-// }
-
-// const machineMap = buildMachineMap(MachineDatabase);
-
 function buildMachineMaps(db) {
     const MParamMap = {};
     const MKindMap = {};
@@ -224,38 +209,15 @@ function getMachineInfo(name){
     return MParamMap[name];
 }
 
-// i'll write this properly when i have `DB > gen > drums > named_machine `
-function getMachinesList(){
-    var db = MachineDatabase;
-    var out = [];
-    for (var kind in db) {
-        out.push(kind.toUpperCase());
-        
-        const names = Object.keys(db[kind]);
-        names.forEach((name, index) => {
-            const isLast = index === names.length - 1;
-            let prefix = isLast ? " └╴" : " ├╴";
-            out.push(prefix + name);
-
-        });
-    }
-    return out;
-}
-
-function tempIterator() {
+function machineCount() {
+    machine_count = 0;
     for (const category in MachineDatabase) {
-        post(category + '\n');
-
         for (const subCategory in MachineDatabase[category]) {
-            post('   ', subCategory + '\n');
-
             const machines = MachineDatabase[category][subCategory];
-
-            if (Array.isArray(machines)) {
-                for (const machine of machines) {
-                    post('       ', machine.machine_name + '\n');
-                }
+            for (const machine of machines) {
+                machine_count += 1;
             }
         }
     }
+    return machine_count;
 }

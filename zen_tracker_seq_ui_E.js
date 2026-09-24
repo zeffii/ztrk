@@ -77,6 +77,7 @@ var g_machine_list = [];
 var g_machine_menu_cat_open = "gen";               // populate these differently lateron.
 var g_machine_menu_subcat_open = "samplers";
 var g_machine_menu_selected_machine = "SmpDemo";
+var db_machine_count = 0;
 
 var g_looping = false;
 var g_loop_start = 0;
@@ -504,9 +505,9 @@ function toggle_pattern_properties_visibility(){
 
 function toggle_machine_menu_visibility(){
     g_display_machine_menu = !g_display_machine_menu;
-    if (g_display_machine_menu){
-        g_machine_list = getMachinesList();
-    }
+    // if (g_display_machine_menu){
+    //     g_machine_list = getMachinesList();
+    // }
     mgraphics.redraw();
 }
 
@@ -733,6 +734,8 @@ function msg_int(tick){
 
 function machine_menu_select_idx(direction){
     selected_machine_idx_in_menu += direction;
+    selected_machine_idx_in_menu = Math.max(0, selected_machine_idx_in_menu);
+    selected_machine_idx_in_menu = Math.min(db_machine_count-1, selected_machine_idx_in_menu);
 }
 
 // - KEY handling.
@@ -1494,49 +1497,6 @@ function draw_patternprops_menu(gfx, w, h){
     }
 }
 
-function draw_machine_menuOLD(gfx, w, h){
-    
-    const db = MachineDatabase;
-    // use tempIterator as example.
-    const mlist = g_machine_list;
-
-    var num_chars_x = 30;
-    var num_chars_y = mlist.length + 3;
-    var xpad = 2 * charwidth;
-    var ypad = 2 * charheight;
-    var prop_w = num_chars_x * charwidth;
-    var prop_h = num_chars_y * charheight;
-    var px_location = (w/2) - (prop_w/2);
-    var py_location = (h/2) - (prop_h/2);
-    var outer_rect = [px_location, py_location, prop_w, prop_h];
-
-    var DARK = [0.12, 0.12, 0.12, 1.0];
-    var BG_CHAR = "█";
-    gfx.set_source_rgba(...DARK);
-    gfx.rectangle(...outer_rect);
-    gfx.fill();
-    gfx.rectangle(...outer_rect);
-    gfx.set_source_rgba(0.4, 0.4, 0.4, 1.0);
-    gfx.stroke();
-    
-    gfx.set_source_rgba(...theme_colors.ega_text);  // ega !
-    for (const [idx, item] of mlist.entries()){
-        if (selected_machine_idx_in_menu === idx){
-            gfx.set_source_rgba(...theme_colors.ega_text);
-            gfx.move_to(px_location + xpad, py_location + ypad + (idx * charheight));
-            gfx.show_text(BG_CHAR.repeat(item.length + 2));
-            gfx.set_source_rgba(...DARK);
-            gfx.move_to(px_location + xpad, py_location + ypad + (idx * charheight));
-            gfx.show_text(item);
-        }
-        else {
-            gfx.set_source_rgba(...theme_colors.ega_text);
-            gfx.move_to(px_location + xpad, py_location + ypad + (idx * charheight));
-            gfx.show_text(item);
-        }
-    }
-}
-
 function draw_machine_menu(gfx, w, h){
     
     const db = MachineDatabase;
@@ -1885,6 +1845,7 @@ function loadbang(){
     _ztrk_initialized = true;
     // post(`ztrk loadbang: patcher =${this.patcher.getattr("varname")}, boxes =${this.patcher.count}\m `);
     sequencer_init();
+    db_machine_count = machineCount();
     sendTo("zconsole", ["print_logo"]);
     // sendTo("zconsole", ["set_msg", "info", "hello and more and more and more"]);
 }
