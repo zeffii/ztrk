@@ -122,7 +122,7 @@ const MachineDatabase = {
                 machine_name: "HTX",
                 description: "hihat or clap",
                 params: [
-                    ['b', 'Trigger', 0], 
+                    ['b', 'Trigger |(t:trigger, dval:.) ', 0], 
                     ['hh', 'Amp |(t:coeff, d:0.8, s:[0,1.0])', 1], 
                     ['hhhh', 'Pitch |(t:hz, d:2200, s:[800,6000])', 1], 
                     ['hh', 'Brightness |(t:coeff, d:0.7, s:[0,0.95])', 1], 
@@ -136,14 +136,14 @@ const MachineDatabase = {
                 machine_name: "HTX2",
                 description: "better hats",
                 params: [
-                    ['b', 'Trigger', 0],
-                    ["hh", "Amp |(t:coeff, d:0.8, s:[0,1])", 1], // default hex: CC
-                    ["hh", "Tone |(t:coeff, d:0.5, s:[0,1])", 1], // default hex: 80
-                    ["hh", "Decay Rate |(t:s, d:0.15, s:[0.02,2])", 1], // default hex: 11
-                    ["hh", "Decay Shape |(t:coeff, d:0.3, s:[0,1])", 1], // default hex: 4D
-                    ["hh", "Attack Energy |(t:coeff, d:0.4, s:[0,1])", 1], // default hex: 66
-                    ["hhhh", "Pitch |(t:hz, d:2200, s:[800,6000])", 2], // default hex: 8086
-                    ["hh", "Attack Time |(t:ms, d:4, s:[1,30])", 2] // default hex: 1A
+                    ['b', 'Trigger |(t:trigger, dval:.)', 0],
+                    ["hh", "Amp |(t:coeff, d:0.8, s:[0,1], dval: CC)", 1],
+                    ["hh", "Tone |(t:coeff, d:0.5, s:[0,1], dval: 80)", 1],
+                    ["hh", "Decay Rate |(t:s, d:0.15, s:[0.02,2], dval: 11)", 1],
+                    ["hh", "Decay Shape |(t:coeff, d:0.3, s:[0,1], dval: 4D)", 1],
+                    ["hh", "Attack Energy |(t:coeff, d:0.4, s:[0,1], dval: 66)", 1],
+                    ["hhhh", "Pitch |(t:hz, d:2200, s:[800,6000], dval: 8086)", 2],
+                    ["hh", "Attack Time |(t:ms, d:4, s:[1,30], dval: 1A)", 2]
                 ],  kind: "gen"
             },
         ],
