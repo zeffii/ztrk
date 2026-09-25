@@ -288,7 +288,7 @@ function paint() {
 
 	if (rows.length === 0) {
 		mgraphics.set_source_rgba([0.6, 0.6, 0.6, 1.0]);
-		mgraphics.select_font_face("Arial");
+		mgraphics.select_font_face("Consolas");
 		mgraphics.set_font_size(12);
 		mgraphics.move_to(6, h / 2);
 		mgraphics.show_text("no buffer(s) set");

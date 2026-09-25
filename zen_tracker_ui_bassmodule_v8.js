@@ -222,9 +222,9 @@ class Tracker  {
         }
         if (command.send_back) {
             if ('origin' in command){
-                post(`send back to sequencer with update. from: ${command.origin}`);
+                // post(`send back to sequencer with update. from: ${command.origin}`);
             } else {
-                post("send back to sequencer with update. ---untracked");
+                // post("send back to sequencer with update. ---untracked");
             }
             var outputDict = new Dict('pattern_markup_dict');
             outputDict.parse(JSON.stringify({edit_request: this.pattern_markup.puid, payload: this.pattern_markup}));
@@ -728,7 +728,7 @@ class Tracker  {
 
             let row_values = utils_get_defaults_for_markup(this.pattern_markup.descriptors.track);
             if (row_values === null) {
-                post('invalud defaults', row_values);
+                post('invalid defaults', row_values);
                 return;
             }
 

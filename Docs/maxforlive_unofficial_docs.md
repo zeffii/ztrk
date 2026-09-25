@@ -239,3 +239,12 @@ and you send information to them like
 outlet(1, "dictionary", outputDict.name);
 
 ```
+
+if you want to track the index of the inlet of a message
+
+```js
+function anything() {
+    var args = arrayfromargs(arguments);
+    outlet(0, inlet, args); // prepends the inlet number
+}
+```

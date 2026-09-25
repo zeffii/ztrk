@@ -42,6 +42,12 @@ const MachineDatabase = {
                     ['b', 'Trigger 1', 0],     ['b', 'Trigger 2', 0],       ['b', 'Trigger 3', 0],       ['b', 'Trigger 4', 0],
                     ['ffxxyy', 'Effect 1', 1],  ['ffxxyy', 'Effect 2', 1]
                 ],  kind: "fx"
+            },
+            {
+                machine_name: "Mixer 12",
+                description: "12 Channel Mixer",
+                params: MachineGeneratorMixer(12),
+                kind: "fx"
             }
         ]
     },
@@ -92,7 +98,7 @@ const MachineDatabase = {
                 params: [
                     ['b', 'Trigger |(t:trigger, dval:.)', 0], 
                     ["hh", "Drum Radius |(t:m, d:0.18, s:[0.05,0.4], dval:5F)", 1], 
-                    ["hh", "Drum Depth |(t:m, d:0.15, s:[0.03,0.5], dval:41)", 1], 
+                    ["hh", "Drum Depth |(t:m, d:0.15, s:[0.03,2.0], dval:41)", 1], 
                     ["hh", "Hit Radius |(t:m, d:0.09, s:[0,0.4], dval:39)", 1], 
                     ["hh", "Vellum Thickness |(t:coeff, d:1.0, s:[0.2,2], dval:71)", 2], 
                     ["hh", "Tightness |(t:coeff, d:0.6, s:[0,1], dval:99)", 2], 
@@ -220,4 +226,19 @@ function machineCount() {
         }
     }
     return machine_count;
+}
+
+function MachineGeneratorMixer(tracks){
+    var output_scheme = [];
+
+    output_scheme.push(["hh", "Master Volume |(t:coeff, d:0.8, s:[0,1], dval: CC)", 0])
+
+    for (let idx = 1; idx < (tracks + 1); idx++) {
+        output_scheme.push(...[
+                ["hh", `Volume ${idx}|(t:coeff, d:0.8, s:[0,1], dval: CC)`, idx],
+                ["hh", `Pan ${idx}|(t:coeff, d:0.0, s:[-1,1], dval: 80)`, idx]
+            ]
+        )
+    }
+    return output_scheme;
 }

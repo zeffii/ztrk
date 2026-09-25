@@ -204,4 +204,21 @@ function list(...l) {
     var data = parts.join(' ') + "\n";
     var my_output = generate(data) || "failure to communicate";
     outlet(0, my_output);    
+    outlet_dictionary(1, formatted_as_dict(my_output));
+}
+
+function formatted_as_dict(multiline_string){
+
+    const str = `
+        "MACHINE": [
+            ['b', 'Trigger', 0], 
+            ["hh", "Saw |(t:coeff, d:0.7, s:[0,1], dval:B3)", 1], 
+            // ...rest of your entries
+        ]
+    `;
+
+    const machineDict = eval(`({${multiline_string}})`);
+    // post(machineDict.MACHINE.length + "\n"); // 22
+    return machineDict;
+
 }
