@@ -5,47 +5,43 @@
 //   t:note    -> event passthrough (raw>=0 -> round(raw*127), else raw), no History
 //   t:cc14    -> two-channel event passthrough (coarse*255, fine*65535, -1 = no data), no History
 //   anything else (t:coeff, t:m, ...) -> latched value, held in History, scaled from raw [0,1] to [lo,hi]
-
-autowatch = 1;
-outlets = 1;
-inlets = 1;
-
-mgraphics.init();
-mgraphics.relative_coords = 0;
-mgraphics.autofill = 0;
-
-
-function parseMeta(metaPart) {
+ 
+function parseMeta(metaPart, leadingType) {
+	if (!metaPart) {
+		// entries like ['b', 'Trigger', 0] carry no |(...) block at all
+		return { t: leadingType === 'b' ? 'trigger' : '', def: 0, scale: [0, 1], log: false };
+	}
 	const s = metaPart.trim().replace(/^\(|\)$/, '').replace(/\)$/, '');
 	const t = (s.match(/t:([^,]+)/) || [, '']) [1].trim();
 	const dRaw = (s.match(/d:([-\d.]+)/) || [, '0']) [1];
 	const sMatch = s.match(/s:\[([^\]]+)\]/);
 	const scale = sMatch ? sMatch[1].split(',').map(Number) : [0, 1];
-	return { t, def: parseFloat(dRaw), scale };
+	const log = /log:true/.test(s);
+	return { t, def: parseFloat(dRaw), scale, log };
 }
-
+ 
 function toVarName(name) {
 	return '_' + name.trim().replace(/[^a-zA-Z]/g, '').toUpperCase();
 }
-
+ 
 // how many buffer channels each kind consumes
 const CHANNELS_FOR = { trigger: 1, note: 1, cc14: 2 };
 const channelsFor = t => CHANNELS_FOR[t] || 1; // default: plain scaled coeff/m param
-
+ 
 function generateDecoder(params, opts = {}) {
 	const { bufferName = 'buf', chParam = 'chIndex' } = opts;
-
+ 
 	let chCursor = 0;
 	const parsed = params.map((p, i) => {
 		const [type, desc] = p;
 		const [namePart, metaPart] = desc.split('|');
 		const name = namePart.trim();
-		const meta = parseMeta(metaPart);
+		const meta = parseMeta(metaPart, type);
 		const channel = chCursor;
 		chCursor += channelsFor(meta.t);
 		return { index: i, type, name, varName: toVarName(name), channel, ...meta };
 	});
-
+ 
 	const lines = [];
 	lines.push(`Buffer ${bufferName};`);
 	lines.push(`Param ${chParam}(0, min=0, max=${chCursor});`);
@@ -55,56 +51,61 @@ function generateDecoder(params, opts = {}) {
 		if (p.t === 'trigger' || p.t === 'note' || p.t === 'cc14') return; // event-driven, not held state
 		lines.push(`History ${p.varName}(${p.def});`);
 	});
-
+ 
 	lines.push('');
 	lines.push(`pindex = in1;`);
 	lines.push(`trig = (in2 > 0.0);`);
 	lines.push(`edge = trig && !_GATEPREV;`);
 	lines.push(`_GATEPREV = trig;`);
 	lines.push('');
-
+ 
 	const fmt = n => parseFloat(n.toFixed(6));
 	const OUTLETS_FOR = { cc14: 2 };
 	let outCursor = 0;
-
+ 
 	parsed.forEach((p) => {
 		const outN = outCursor + 1;
 		outCursor += OUTLETS_FOR[p.t] || 1;
 		lines.push(`// ${p.index} ${p.name}`);
-
+ 
 		if (p.t === 'trigger') {
 			lines.push(`raw = peek(buf, pindex, ${chParam}+${p.channel});`);
 			lines.push(`out${outN} = (edge && raw > 0.5) ? 1.0 : 0.0;`);
-
+ 
 		} else if (p.t === 'note') {
 			lines.push(`raw = peek(buf, pindex, ${chParam}+${p.channel});`);
 			lines.push(`out${outN} = (raw >= 0.0) ? round(raw * 127.0) : raw;`);
-
+ 
 		} else if (p.t === 'cc14') {
 			const outFine = outN + 1; // consumes two consecutive Codebox outlets, like the params index
 			lines.push(`coarse = peek(buf, pindex, ${chParam}+${p.channel});`);
 			lines.push(`fine   = peek(buf, pindex, ${chParam}+${p.channel + 1});`);
 			lines.push(`out${outN} = (coarse == -1.0) ? -1.0 : round(coarse * 255.0);`);
 			lines.push(`out${outFine} = (fine == -1.0) ? -1.0 : round(fine * 65535.0);`);
-
+ 
 		} else {
 			const [lo, hi] = p.scale;
-			const span = fmt(hi - lo);
 			let expr;
-			if (lo === 0 && hi === 1) expr = 'raw';
-			else if (lo === 0) expr = `raw * ${span}`;
-			else expr = `${fmt(lo)} + raw * ${span}`;
-
+			if (p.log) {
+				// exponential interpolation: lo * (hi/lo)^raw, raw in [0,1]
+				expr = `${fmt(lo)} * pow(${fmt(hi / lo)}, raw)`;
+			} else {
+				const span = fmt(hi - lo);
+				if (lo === 0 && hi === 1) expr = 'raw';
+				else if (lo === 0) expr = `raw * ${span}`;
+				else expr = `${fmt(lo)} + raw * ${span}`;
+			}
+ 
 			lines.push(`raw = peek(buf, pindex, ${chParam}+${p.channel});`);
 			lines.push(`${p.varName} = (edge && raw >= 0.0) ? (${expr}) : ${p.varName};`);
 			lines.push(`out${outN} = ${p.varName};`);
 		}
 		lines.push('');
 	});
-
+ 
 	return lines.join('\n');
 }
-
+ 
 const params = [
 	['b', 'Trigger |(t:trigger, dval:.)', 0],
 	["hh", "Drum Radius |(t:m, d:0.18, s:[0.05,0.4], dval:5F)", 1],
@@ -151,7 +152,7 @@ function msg_dictionary(dictName){
     var data = JSON.parse(d.stringify());
     d.freepeer();  // free now that we own our own copy of thet passed dict
 	post(JSON.stringify(data.MACHINE, null, 2));
-	output = generateDecoder(params); // data.MACHINE);
-	// output = generateDecoder(eval(data.MACHINE));
+	// output = generateDecoder(params); // data.MACHINE);
+	output = generateDecoder(data.MACHINE);
 	outlet(0, output);  
 }
