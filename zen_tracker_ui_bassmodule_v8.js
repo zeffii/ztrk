@@ -638,7 +638,6 @@ class Tracker  {
         //[x]  handles shifted rows
         post('transpose notes only: ' + notes_flag);
 
-        // post('initiating transpose function: ' + direction + '\n');
         if (this.#started_selection_mode){
 
             var sel_rect = this.get_adjusted_selection_rect();
@@ -655,13 +654,16 @@ class Tracker  {
                 var row_data = this_row_data.split(' ');
                 var new_row_data = [];
                 for (const param_idx in row_data){
-                    // var NOTES = row_data[param_idx].length === 3;
-                    var adjusted_value = transpose_value(row_data[param_idx], direction);
-                    new_row_data.push(adjusted_value);
+                    let NOTE = (row_data[param_idx].length === 3);
+
+                    if (notes_flag && !NOTE) {
+                        new_row_data.push(row_data[param_idx]);
+                    } else {
+                        new_row_data.push(transpose_value(row_data[param_idx], direction));
+                    }
                 }
                 var replacement_part = new_row_data.join(' ');
                 pattern[shifted_row] = replaceAt(pattern[shifted_row], sel_rect.start_index, replacement_part, sel_rect.selection_length);
-
             }
 
             this.push_to_live();
@@ -675,7 +677,6 @@ class Tracker  {
 
         //[x]  handles shifted rows
 
-        // post('initiating copy function\n');
         var sel_rect = this.get_adjusted_selection_rect();
         //  selection_info: {start_index: 7  selection_length: 29  top: 2  bottom: 8  num_rows: 7}
         //  selection_data: [rows,....]
@@ -1093,9 +1094,7 @@ class Tracker  {
                     // 2 places to the left of the current caret.col, hence -1 in position
                     non_note_cursor_input(this, key, caret, pattern, caret_row3, -2);  
                 }
-
             }
-
         }
         return mutates;
     }
@@ -1147,13 +1146,11 @@ class Tracker  {
     }
 
     onwheel(x, y, scrollx, scrolly, mod1, shift, caps, opt, mod2) {
-        // post("wheel scroll at " + x + ", " + y + ": " + scrolly + `${shift}` + "\n");
-        
         if (shift){
             function signToOne(value) { 
                 return value > 0 ? 1 : value < 0 ? -1 : 0; }
             this.scroll_pattern(signToOne(scrolly));
-         }
+        }
     }
 
     keys(a1, a2, a3, a4) {
@@ -1202,11 +1199,11 @@ class Tracker  {
             var CTRL_AND_T = 20;
             var [UP_KEY, DOWN_KEY] = [30, 31];
             var [LEFT_KEY, RIGHT_KEY] = [28, 29];
+            var [L_BRACKET, R_BRACKET] = [123, 125];
             var SELECTOR = this.#g_key_codes[2];
             var USER_KEY = this.#g_key_codes[0];
             var [MINUS, PLUS] = [95, 43];   // not the numkeys at the moment.     (+shift) /
             var [MINUS1, PLUS1] = [45, 61];   // not the numkeys at the moment.            /  ---- same keys, but different int depending on accelerator pressed.
-            var [MINUS2, PLUS2] = [165, 215];   // not the numkeys at the moment. (+altGr) / 
 
             const ASCII = (key) => String.fromCharCode(key).toUpperCase();  // ..duplicate. (how about a ztrk_general_functions.js for tools that are cross editor ? )
             const userkey_in = (array) => found_in(array, USER_KEY);   // helper to avoid passing USER_KEY manually.
@@ -1238,24 +1235,18 @@ class Tracker  {
                 if (found_in([UP_KEY, DOWN_KEY], USER_KEY)){
                     if (this.handle_shift_selection(this.faux_pattern, USER_KEY)){ return; }
                 }
-                if (found_in([MINUS2, PLUS2], USER_KEY)){
-                    // when holding alt, the userkey for minus and plus are different numbers, hence not MINUS but MINUS2..lame.?
-                    const NOTES_ONLY = true;
-                    switch(USER_KEY){
-                        case MINUS2: this.handle_transpose_selection(this.faux_pattern, 'DOWN', NOTES_ONLY); return;
-                        case PLUS2: this.handle_transpose_selection(this.faux_pattern, 'UP', NOTES_ONLY); return;
-                        default: break;
-                    }
-                }
             }
 
             if (isShiftDown){
                 if (ASCII(USER_KEY) === 'I'){
                     if (this.handle_interpolate_selection(this.faux_pattern)){ return; } 
                 }
+                const NOTES_ONLY = true;
                 switch(USER_KEY){
                     case MINUS: this.handle_transpose_selection(this.faux_pattern, 'DOWN', false); return;
                     case PLUS: this.handle_transpose_selection(this.faux_pattern, 'UP', false); return;
+                    case L_BRACKET: this.handle_transpose_selection(this.faux_pattern, 'DOWN', NOTES_ONLY); return;
+                    case R_BRACKET: this.handle_transpose_selection(this.faux_pattern, 'UP', NOTES_ONLY); return;
                     default: break;
                 }
             }
