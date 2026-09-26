@@ -44,9 +44,9 @@
                     "filename": "ztrk_params_to_gendspDecode.js",
                     "id": "obj-3",
                     "maxclass": "v8ui",
-                    "numinlets": 1,
-                    "numoutlets": 1,
-                    "outlettype": [ "" ],
+                    "numinlets": 2,
+                    "numoutlets": 2,
+                    "outlettype": [ "", "" ],
                     "parameter_enable": 0,
                     "patching_rect": [ 875.0, 21.0, 254.0, 24.0 ],
                     "textfile": {
