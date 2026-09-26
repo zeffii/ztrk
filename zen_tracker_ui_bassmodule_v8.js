@@ -1526,20 +1526,15 @@ class Tracker  {
         }
     }
 
-
     draw_tick_position(){
 
         function findLargestBeforeX(x, mlist, length) {
             let best = null;
-
             for (const value of mlist) {
-                if (value < x && (best === null || value > best)) {
-                    best = value;
-                }
+                if (value < x && (best === null || value > best)) { best = value; }
             }
 
             if (best === null) return null;
-
             const diff = x - best;
             return diff > length ? null : diff;
         }
@@ -1568,10 +1563,17 @@ class Tracker  {
 
         for (const idx in this.faux_pattern){
 
+            gfx.set_source_rgba(...this.theme_colors.data_color);
             var idxx = rotated_index_list[idx];
             gfx.move_to(this.start_x, this.start_y + (idx * this.settings_font_size));
             var pattern_row = fmt(idxx) + this.faux_pattern[idxx];
             gfx.show_text(pattern_row);
+
+            if (idxx === 0){
+                gfx.set_source_rgba(...this.theme_colors.divider_gfx_color);
+                gfx.move_to(this.start_x-2*this.charwidth, this.start_y + (idx * this.settings_font_size));
+                gfx.show_text("▼");
+            }
         }
     }
 
