@@ -86,6 +86,7 @@ key_handler = my_tracker.key_handler.bind(my_tracker);
 dictionary = my_tracker.dictionary.bind(my_tracker);
 onclick = my_tracker.onclick.bind(my_tracker);
 ondrag = my_tracker.ondrag.bind(my_tracker);
+onwheel = my_tracker.onwheel.bind(my_tracker);
 onidle = my_tracker.onidle.bind(my_tracker);
 onidleout = my_tracker.onidleout.bind(my_tracker);
 paint = my_tracker.paint.bind(my_tracker);

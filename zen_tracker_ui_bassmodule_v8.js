@@ -88,7 +88,8 @@ class Tracker  {
         this.text_h = this.settings_font_size;
         this.start_x = 30;
         this.start_y = 30;
-        this.scroll_window_start = 0;
+        
+        this.g_limited_scrolling = 1;
         this.pattern_row_shift = 0;
         this.num_visible_rows = 0;
 
@@ -100,6 +101,7 @@ class Tracker  {
             caret_color: [0.7, 0.2, 0.4, 1],
             selection_rect_color: [0.7, 0.7, 0.9, 1],
             row_highlight_color: [0.1, 0.2, 0.4, 1],
+            row_highlight_color2: [0.06, 0.16, 0.34, 1],
             edit_indicator_color: [0.9, 0.5, 0.5, 1.0],
             fx_bg_color: [0.1, 0.1, 0.3, 0.42],
             fx_fg_color: [0.1, 0.5, 0.8, 1.0],
@@ -238,11 +240,14 @@ class Tracker  {
         var new_width = (this.charwidth * (num_characters + 6)) + this.start_x;
         box.size(new_width, h);
         if (num_rows !== null){
-            box.size(new_width, 34*this.charheight+20);
+            box.size(new_width, (num_rows + 2) * this.charheight+20);
         }
     }
 
     handle_received_pattern(payload){
+
+        this.pattern_row_shift = 0;
+        this.#caret = { row: 0, col: 0};
 
         this.pattern_markup = payload;
 
@@ -257,7 +262,9 @@ class Tracker  {
 
         this.cols = this.pattern_markup.lexical_track.length;
         this.rows = this.pattern_markup.length;
-        this.update_v8_boxsize(this.cols, null);
+
+        var row_count = (this.rows >= 64) ? 64 : this.rows;
+        this.update_v8_boxsize(this.cols, row_count);
 
         this.#received_first_pattern = true;
         this.#g_in_edit_mode = true;
@@ -1137,6 +1144,16 @@ class Tracker  {
         this.refresh();
     }
 
+    onwheel(x, y, scrollx, scrolly, mod1, shift, caps, opt, mod2) {
+        // post("wheel scroll at " + x + ", " + y + ": " + scrolly + `${shift}` + "\n");
+        
+        if (shift){
+            function signToOne(value) { 
+                return value > 0 ? 1 : value < 0 ? -1 : 0; }
+            this.scroll_pattern(signToOne(scrolly));
+         }
+    }
+
     keys(a1, a2, a3, a4) {
         var CTRL = 4352;
         var SPACE = 32
@@ -1347,25 +1364,32 @@ class Tracker  {
                             break;
                         case UP_KEY: {
 
-                            // note to self, if scrolling by 1, then the row highlighter needs to adjust too, but here we just 4 for simplicity.
-                            // if the caret is at the top, it is at row_window 0, and i wwant this to scroll the pattern by 4. this moves the cursor too.
-                            const row_window = this.#caret.row
-                            if (row_window === 0){
-                                this.scroll_pattern(-4);
-                                this.moveCaret(4, 0);
-                            }else{
+                            if (this.g_limited_scrolling){
                                 this.moveCaret(-1, 0); 
-                            }
+                            } else {
+
+                                // note to self, if scrolling by 1, then the row highlighter needs to adjust too, but here we just 4 for simplicity.
+                                // if the caret is at the top, it is at row_window 0, and i wwant this to scroll the pattern by 4. this moves the cursor too.
+                                const row_window = this.#caret.row
+                                if (row_window === 0){
+                                    this.scroll_pattern(-4);
+                                    this.moveCaret(4, 0);
+                                }else{
+                                    this.moveCaret(-1, 0); 
+                                }
+                            }    
                             break;
                         }
                         case DOWN_KEY: {
                             this.moveCaret(1, 0); 
 
-                            // if the caret is beyond visible range now, also shift the pattern and deshift the caret. 
-                            const row_window = this.#caret.row
-                            if (row_window > (this.num_visible_rows - 4)){
-                                this.scroll_pattern(4);
-                                this.moveCaret(-4, 0); 
+                            if (!this.g_limited_scrolling){
+                                // if the caret is beyond visible range now, also shift the pattern and deshift the caret. 
+                                const row_window = this.#caret.row
+                                if (row_window > (this.num_visible_rows - 4)){
+                                    this.scroll_pattern(4);
+                                    this.moveCaret(-4, 0); 
+                                }
                             }
                             break;
                         }
@@ -1423,16 +1447,35 @@ class Tracker  {
 
     }
 
-    draw_highlighted_lines(every_nth){
+    draw_highlighted_lines(every_nth, sig = 4){
 
-        this.set_rgb(this.asRGB(...this.theme_colors.row_highlight_color), 1.3);
-        var total_draw_amount = Math.floor(this.pattern_markup.length / Math.max(every_nth, 1));
-        for (var i = 0; i < total_draw_amount; i++){
-            var tick_y = this.start_y + (i * every_nth * this.settings_font_size) - (0.75 * this.text_h);
+        const hlit1 = this.theme_colors.row_highlight_color;
+        const hlit2 = this.theme_colors.row_highlight_color2;
+
+        const step = Math.max(every_nth, 1);
+        const group = Math.max(step * sig, 1);
+
+        for (let i = 0; i < this.pattern_markup.length; i++){
+
+            const logical_row = i + this.pattern_row_shift;
+
+            // negative-safe modulo
+            const mod_step = ((logical_row % step) + step) % step;
+            const mod_group = ((logical_row % group) + group) % group;
+
+            if (mod_step !== 0){
+                continue;
+            }
+
+            const tick_y = this.start_y + (i * this.settings_font_size) - (0.75 * this.text_h);
+            const color = (mod_group === 0) ? hlit2 : hlit1;
+
+            this.set_rgb(this.asRGB(...color), 1.3);
             this.mgraphics.rectangle(this.start_x, tick_y, this.text_w, this.settings_font_size);
             this.mgraphics.fill();
         }
     }
+
 
     draw_edit_mode_indicator(h){
 

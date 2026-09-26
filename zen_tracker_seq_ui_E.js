@@ -514,6 +514,7 @@ function toggle_machine_menu_visibility(){
 
 function toggle_looping(){
     g_looping = !g_looping;
+    // upaate timeinfo this patcher SEQUENCER_START , END ? or wait till user sets them manually. (going for later now)
     mgraphics.redraw();
 }
 
@@ -545,18 +546,47 @@ function clear_sequencer(){
 
 }
 
+function loop_point_dispatch(kind, value){
+    var subpatch = this.patcher.getnamed("TimeInfo");
+    if (!subpatch) {
+        post("looks like you nooked timeinfo");
+        return null;
+    }
+    var internalPatcher = subpatch.subpatcher();
+    var obj = internalPatcher.getnamed("SEQUENCE_" + kind);
+    obj.message("set", value);
+    obj.message("bang");
+}
+
+
 function loop(mode){
     g_looping = mode;
     mgraphics.redraw();
 }
 
 function loop_start(tick){
+    // [ ] todo
+    // Add loop bounds checking, 
+    // 1:   g_loop_start !== g_loop_end
+    // 2:   if (g_loop_start > g_loop_end) { g_loop_start, g_loop_end = g_loop_end, g_loop_start}
+    // if (g_loop_start !== g_loop_end && g_loop_start > g_loop_end) {
+        // [g_loop_start, g_loop_end] = [g_loop_end, g_loop_start];
+        // }
     g_loop_start = tick;
+    loop_point_dispatch("START", g_loop_start);
     mgraphics.redraw();
 }
 
 function loop_end(tick){
+    // [ ] todo    
+    // Add loop bounds checking, 
+    // 1:   g_loop_start !== g_loop_end
+    // 2:   if (g_loop_start < g_loop_end) { g_loop_start, g_loop_end = g_loop_end, g_loop_start}
+    // if (g_loop_start !== g_loop_end && g_loop_start > g_loop_end) {
+    // [g_loop_start, g_loop_end] = [g_loop_end, g_loop_start];
+    // }    
     g_loop_end = tick;
+    loop_point_dispatch("END", g_loop_end);
     mgraphics.redraw();
 }
 
