@@ -1313,9 +1313,7 @@ function draw_looping_indicators(){
         mgraphics.line_to(500, ypos);
         mgraphics.stroke();
 
-        // A  Circle Background   ..some fonts including my favourite Consolas may not draw nicely ontop of the circlemiddle
-        // if this message is still here when you read it. it simply didn't bother me enough.
-        // mgraphics.set_source_rgb(bg_color);
+        // A  Circle Background 
         set_rgb({r: 0.2, g: 0.6, b:0.9}, 1.3);
         mgraphics.ellipse(-2*charwidth - (0.30 * charheight), (ypos - 0.52 * charheight), charheight, charheight);
         mgraphics.fill();
@@ -1331,7 +1329,6 @@ function draw_looping_indicators(){
         var loop_end_y = -10.5 + ((g_loop_end / 16.0 ) * charheight);
         draw_line_marker(loop_start_y, "A");
         draw_line_marker(loop_end_y, "B");
-
     }
 }
 
@@ -1349,7 +1346,6 @@ function draw_track_cursor(){
 
 function draw_edit_mode_indicator(h){
     if (g_in_edit_mode){
-        // this.mgraphics.set_source_rgba(0.9, 0.5, 0.5, 1.0); // this.edit_indicator_color
         mgraphics.set_source_rgba(...theme_colors.edit_indicator_color);
         mgraphics.rectangle(0, 0, 5, 39, 39);
         mgraphics.fill();        
@@ -1395,11 +1391,7 @@ function draw_ticks_column(charheight){
     for (var idx = 0; idx < 38; idx++){
         mgraphics.move_to(0,  (idx * charheight));
         var pattern_row = String(fmt4(idx * 16)) + '|';
-        if (idx % 4 === 0){
-            set_rgb(color, 1.3);
-        } else {
-            set_rgb(color, 1.0);
-        }
+        set_rgb(color, (idx % 4 === 0) ? 1.3 : 1.0);
         mgraphics.show_text(pattern_row);
     }    
 }
