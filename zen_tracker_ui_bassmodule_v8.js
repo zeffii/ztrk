@@ -73,6 +73,7 @@ class Tracker  {
         this.pattern_markup = pattern_markup;
         this.faux_pattern = this.make_empty_pattern(this.pattern_markup);
         this.pattern_markup.data = this.faux_pattern;
+        this.pattern_starts_at_ticks = null;
 
         // set states of local params
         this.g_pattern_playhead = 8;
@@ -262,6 +263,7 @@ class Tracker  {
 
         this.cols = this.pattern_markup.lexical_track.length;
         this.rows = this.pattern_markup.length;
+        this.pattern_starts_at_ticks = this.pattern_markup?.pstarts ?? null;  // copilot :)
 
         var row_count = (this.rows >= 64) ? 64 : this.rows;
         this.update_v8_boxsize(this.cols, row_count);
@@ -1530,9 +1532,30 @@ class Tracker  {
     }
 
 
-    draw_tick_position(tick){
-        var gfx = this.mgraphics;        
-        var tick_y = this.start_y + (this.g_pattern_playhead * this.settings_font_size) - (0.75 * this.text_h);
+    draw_tick_position(){
+
+        function findLargestBeforeX(x, mlist, length) {
+            let best = null;
+
+            for (const value of mlist) {
+                if (value < x && (best === null || value > best)) {
+                    best = value;
+                }
+            }
+
+            if (best === null) return null;
+
+            const diff = x - best;
+            return diff > length ? null : diff;
+        }
+
+        var gfx = this.mgraphics;
+
+        // _postMessage(this.pattern_starts_at_ticks);
+        var tick_idx = this.g_pattern_playhead;
+        tick_idx = findLargestBeforeX(tick_idx, this.pattern_starts_at_ticks, this.pattern_markup.length);
+
+        var tick_y = this.start_y + (tick_idx * this.settings_font_size) - (0.75 * this.text_h);
         gfx.set_source_rgba(...this.theme_colors.tick_index_color);
         gfx.rectangle(this.start_x, tick_y, this.text_w, this.settings_font_size);
         gfx.fill();
