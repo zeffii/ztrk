@@ -567,29 +567,31 @@ function loop(mode){
 }
 
 function loop_start(tick){
-    // [ ] todo
-    // Add loop bounds checking, 
-    // 1:   g_loop_start !== g_loop_end
-    // 2:   if (g_loop_start > g_loop_end) { g_loop_start, g_loop_end = g_loop_end, g_loop_start}
-    // if (g_loop_start !== g_loop_end && g_loop_start > g_loop_end) {
-        // [g_loop_start, g_loop_end] = [g_loop_end, g_loop_start];
-        // }
-    g_loop_start = tick;
-    loop_point_dispatch("START", g_loop_start);
-    mgraphics.redraw();
+	if (tick === g_loop_end) {
+		_postMessage("loop: start and end can't share the same tick");
+		return;
+	}
+	g_loop_start = tick;
+	if (g_loop_start > g_loop_end) {
+		[g_loop_start, g_loop_end] = [g_loop_end, g_loop_start];
+	}
+	loop_point_dispatch("START", g_loop_start);
+	loop_point_dispatch("END", g_loop_end);
+	mgraphics.redraw();
 }
 
 function loop_end(tick){
-    // [ ] todo    
-    // Add loop bounds checking, 
-    // 1:   g_loop_start !== g_loop_end
-    // 2:   if (g_loop_start < g_loop_end) { g_loop_start, g_loop_end = g_loop_end, g_loop_start}
-    // if (g_loop_start !== g_loop_end && g_loop_start > g_loop_end) {
-    // [g_loop_start, g_loop_end] = [g_loop_end, g_loop_start];
-    // }    
-    g_loop_end = tick;
-    loop_point_dispatch("END", g_loop_end);
-    mgraphics.redraw();
+	if (tick === g_loop_start) {
+		_postMessage("loop: start and end can't share the same tick");
+		return;
+	}
+	g_loop_end = tick;
+	if (g_loop_start > g_loop_end) {
+		[g_loop_start, g_loop_end] = [g_loop_end, g_loop_start];
+	}
+	loop_point_dispatch("START", g_loop_start);
+	loop_point_dispatch("END", g_loop_end);
+	mgraphics.redraw();
 }
 
 function song_name(name){
