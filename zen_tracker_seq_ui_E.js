@@ -19,6 +19,8 @@ var theme_colors = {
     def_fx_color: [0.9, 0.34, 0.3, 1.0],
     def_ctrl_color: [0.1, 0.4, 0.61, 1.0],
     time_markers: [0.4, 0.9, 1.0, 1.0],
+    marker_bgcolor: [0.1, 0.4, 1.0, 1.0],
+    marker_fgcolor: [0.6, 0.97, 1.0, 1.0],
     ticks_column: [0.4, 0.9, 1.0, 1.0],
     bg_color: [0.1, 0.2, 0.4, 1.0],
     header_text: [0.4, 0.9, 1.0, 1],
@@ -1279,30 +1281,35 @@ function draw_current_tick(){
 
 function draw_looping_indicators(){
 
+    var bg_color = theme_colors.marker_bgcolor;
+    var fg_color = theme_colors.marker_fgcolor;
+    
+    function draw_line_marker(ypos, mtext){
+        // A  Line
+        set_rgb({r: 0.2, g: 0.6, b:0.9}, 1.3);
+        mgraphics.move_to(0, ypos);
+        mgraphics.line_to(500, ypos);
+        mgraphics.stroke();
+
+        // A  Circle Background   ..some fonts including my favourite Consolas may not draw nicely ontop of the circlemiddle
+        // if this message is still here when you read it. it simply didn't bother me enough.
+        // mgraphics.set_source_rgb(bg_color);
+        set_rgb({r: 0.2, g: 0.6, b:0.9}, 1.3);
+        mgraphics.ellipse(-2*charwidth - (0.30 * charheight), (ypos - 0.52 * charheight), charheight, charheight);
+        mgraphics.fill();
+
+        // A  Text
+        mgraphics.set_source_rgb(fg_color);
+        mgraphics.move_to(-2*charwidth, (ypos + (0.25 * charheight)));  // centered on line, to the right.
+        mgraphics.show_text(mtext);
+    }
+
     if (g_looping){
         var loop_start_y = -10.5 + ((g_loop_start / 16.0) * charheight);
         var loop_end_y = -10.5 + ((g_loop_end / 16.0 ) * charheight);
-        set_rgb({r: 0.2, g: 0.6, b:0.9}, 1.3);
-        
-        // A
-        mgraphics.move_to(0, loop_start_y);
-        mgraphics.line_to(500, loop_start_y);
-        mgraphics.stroke();
-        // background?
-        //set_rgb({r: 0.1, g: 0.1, b:0.1}, 1.3);
-        //mgraphics.ellipse(-2*charwidth, loop_start_y - 0.25 * charheight, charwidth, charheight);
-        //mgraphics.fill();
+        draw_line_marker(loop_start_y, "A");
+        draw_line_marker(loop_end_y, "B");
 
-        set_rgb({r: 0.2, g: 0.6, b:0.9}, 1.3);
-        mgraphics.move_to(-2*charwidth, loop_start_y + (0.25 * charheight));  // centered on line, to the right.
-        mgraphics.show_text('A');
-
-        // B
-        mgraphics.move_to(0, loop_end_y);
-        mgraphics.line_to(500, loop_end_y);
-        mgraphics.stroke();
-        mgraphics.move_to(-2*charwidth, loop_end_y + (0.25 * charheight));  // centered on line, to the right.
-        mgraphics.show_text('B');
     }
 }
 
