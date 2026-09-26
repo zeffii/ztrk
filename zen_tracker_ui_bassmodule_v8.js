@@ -1492,15 +1492,19 @@ class Tracker  {
         /*
         draws rectangles under the command part of the ffxxyy parameter tracks/columns
         This is not essential but adds UI contrast.
+
+        restore this if i broke it.
         */
+        var cw = this.charwidth;  //alias
+
         var param_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bffxxyy\b/g);
-        var xx_start = this.start_x + (4 * this.charwidth); // where to start from
+        var xx_start = this.start_x + (4 * cw); // where to start from
         var rect_length = this.charheight * this.pattern_markup.length;
         var rect_y_start = (this.start_y - (0.9 * this.charheight));
         // post(this.faux_pattern.length);
         for (const idx in param_indices){
             this.mgraphics.set_source_rgba(...this.theme_colors.fx_bg_color);
-            this.mgraphics.rectangle(xx_start + (param_indices[idx] * this.charwidth), rect_y_start, (this.charwidth * 2), rect_length);
+            this.mgraphics.rectangle(xx_start + (param_indices[idx] * cw), rect_y_start, (cw * 2), rect_length);
             this.mgraphics.fill();
         }
     }
@@ -1783,7 +1787,8 @@ class Tracker  {
         var gfx = this.mgraphics;
         var [w, h] = gfx.size;
 
-        var pattern_properties = `${this.pattern_markup.pattern_name} / ${this.pattern_markup.track_name} / ${this.pattern_markup.length}`;
+        let mu = this.pattern_markup;
+        var pattern_properties = `${mu.pattern_name} / ${mu.track_name} / ${mu.length}`;
         var str_width = gfx.text_measure(pattern_properties)[0];
 
         this.set_rgb(this.asRGB(...this.theme_colors.pattern_info_bg_color), 2.3);
