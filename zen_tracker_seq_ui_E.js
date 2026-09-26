@@ -1283,12 +1283,18 @@ function draw_looping_indicators(){
         var loop_start_y = -10.5 + ((g_loop_start / 16.0) * charheight);
         var loop_end_y = -10.5 + ((g_loop_end / 16.0 ) * charheight);
         set_rgb({r: 0.2, g: 0.6, b:0.9}, 1.3);
+        
         mgraphics.move_to(0, loop_start_y);
         mgraphics.line_to(500, loop_start_y);
         mgraphics.stroke();
+        mgraphics.move_to(-2*charwidth, loop_start_y + (0.25 * charheight));  // centered on line, to the right.
+        mgraphics.show_text('A');
+
         mgraphics.move_to(0, loop_end_y);
         mgraphics.line_to(500, loop_end_y);
         mgraphics.stroke();
+        mgraphics.move_to(-2*charwidth, loop_end_y + (0.25 * charheight));  // centered on line, to the right.
+        mgraphics.show_text('B');
     }
 }
 
