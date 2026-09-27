@@ -642,9 +642,9 @@ function send_pattern_to_tracker(){
     _postMessage(JSON.stringify(pstarts));
     pattern_exchange_markup.pstarts = pstarts;  // inject into the exchange format.
 
-    var pranges = find_global_tick_ranges_of(pattern.puid);  // doesn't handle interupted patterns yet!
-    _postMessage(JSON.stringify(pranges));
-    pattern_exchange_markup.pranges = pranges;  // inject into the exchange format.
+    // var pranges = find_global_tick_ranges_of(pattern.puid);  // doesn't handle interupted patterns yet!
+    // _postMessage(JSON.stringify(pranges));
+    // pattern_exchange_markup.pranges = pranges;  // inject into the exchange format.
 
     post('Telling Tracker to show pattern \n');
     var outputDict = new Dict('pattern_markup_dict');
@@ -768,23 +768,30 @@ function find_start_ticks_of_all_instances_of(puid){
     return start_ticks;
 }
 
-function find_global_tick_ranges_of(puid){
-    let track_index = null;
-    let start_ticks = [];
-    for (const [machine_idx, track_data] of sequencer_config.tracks.entries()) {
-        for (const [idx, pattern] of track_data.patterns.entries()) {
-            if (pattern.puid === puid) {
-                track_index = machine_idx;
-                start_ticks.push({start: pattern.start, duration: 64});
-            }
-        }
-    }
-    if (track_index === null){
-        _postMessage(`SEQ: find_global_tick_ranges_of(puid): failed uid: ${puid}, stale session? spooky. how?!`);
-        return null;
-    }
-    return start_ticks;
-}
+// function find_global_tick_ranges_of(puid){
+//     /*
+//     example.  a pattern may have several ranges in which it is active.
+//               BBBBBBBBCCCCCCC                  <-- two smaller pattern overlaps
+//     AAAAAAAAAA_______________AAAAAAAAAAAA      <-- one long A pattern
+//     \start    <--occluded--->           \end   <-- occlusion flat list of ticks?  
+
+//     */
+//     let track_index = null;
+//     let start_ticks = [];
+//     for (const [machine_idx, track_data] of sequencer_config.tracks.entries()) {
+//         for (const [idx, pattern] of track_data.patterns.entries()) {
+//             if (pattern.puid === puid) {
+//                 track_index = machine_idx;
+//                 start_ticks.push({start: pattern.start, duration: 64});
+//             }
+//         }
+//     }
+//     if (track_index === null){
+//         _postMessage(`SEQ: find_global_tick_ranges_of(puid): failed uid: ${puid}, stale session? spooky. how?!`);
+//         return null;
+//     }
+//     return start_ticks;
+// }
 
 //  I O 
 

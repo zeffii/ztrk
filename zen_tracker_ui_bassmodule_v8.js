@@ -265,7 +265,7 @@ class Tracker  {
         this.cols = this.pattern_markup.lexical_track.length;
         this.rows = this.pattern_markup.length;
         this.pattern_starts_at_ticks = this.pattern_markup?.pstarts ?? null;  // copilot :)
-        this.pattern_global_tick_ranges = this.pattern_markup?.pranges ?? null;  // copilot :)
+        // this.pattern_global_tick_ranges = this.pattern_markup?.pranges ?? null;  // copilot :)
 
         var row_count = (this.rows >= 64) ? 64 : this.rows;
         this.update_v8_boxsize(this.cols, row_count);
