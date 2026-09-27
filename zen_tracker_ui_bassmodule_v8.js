@@ -74,6 +74,7 @@ class Tracker  {
         this.faux_pattern = this.make_empty_pattern(this.pattern_markup);
         this.pattern_markup.data = this.faux_pattern;
         this.pattern_starts_at_ticks = null;
+        this.pattern_global_tick_ranges = null;
 
         // set states of local params
         this.g_pattern_playhead = 8;
@@ -264,6 +265,7 @@ class Tracker  {
         this.cols = this.pattern_markup.lexical_track.length;
         this.rows = this.pattern_markup.length;
         this.pattern_starts_at_ticks = this.pattern_markup?.pstarts ?? null;  // copilot :)
+        this.pattern_global_tick_ranges = this.pattern_markup?.pranges ?? null;  // copilot :)
 
         var row_count = (this.rows >= 64) ? 64 : this.rows;
         this.update_v8_boxsize(this.cols, row_count);
