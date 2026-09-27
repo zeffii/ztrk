@@ -1,5 +1,6 @@
 // Cached mono waveform + zoom + selection + loop + equal xfade + playhead + mouse + dict
 // Proper hybrid rendering (peak style vs true sample lines)
+include("ztrk_general_utils.js");
 
 mgraphics.init();
 mgraphics.relative_coords = 0;
@@ -42,11 +43,19 @@ var linewidth = 1.0;
 
 // marker bookkeeping.
 var markers = [];      // [{idx, marker}, ...]
-var marker_list = [];
 const wipe_markers = () => { markers.length = 0; };
-const wipe_marker_list = () => { marker_list.length = 0; };
 const add_marker = (marker) => { markers.push(marker); };
-//const sort_markers = () => {marker.sort((a, b) => b.marker - a.marker);}
+const generate_marker_list = () => { return markers.map(item => item.marker); };
+const sort_markers = () => {
+    markers = [...markers]
+        .sort((a, b) => a.marker - b.marker)
+        .map((item, index) => ({ ...item, idx: index }));
+};
+
+// function sort_markers(){
+//     _postLow(JSON.stringify(markers));
+
+// }
 
 // dictionary
 var d = new Dict();
@@ -65,7 +74,7 @@ function outputDict() {
     d.set("loopEnd", loopEnd);
     d.set("xfade", xfade);
     d.set("playhead", playhead);
-    d.set("onsets", marker_list);
+    d.set("onsets", generate_marker_list());
     if (buf) {
         d.set("frames", buf.framecount());
         d.set("length_ms", buf.length());
@@ -86,11 +95,8 @@ function dictionary(dictName) {
     // remember to remove this object key before storing it.
     if ("onsets" in data) {
         wipe_markers();
-        wipe_marker_list();
-        
         data.onsets.forEach((element, idx) => {
             add_marker({idx: idx, marker: element});
-            marker_list.push(element)
         })
         mgraphics.redraw();
         outputDict()
@@ -306,6 +312,9 @@ function draw_onsets(){
     var w = mgraphics.size[0];
     var h = mgraphics.size[1];
 
+    mgraphics.set_font_size(12); // ztrk_get_font_size());
+    mgraphics.select_font_face("Consolas", "normal", "normal"); //...ztrk_get_font_family());
+
     mgraphics.set_source_rgba(markerCol);
     mgraphics.set_line_width(1.5);
     markers.forEach((element, idx) => {
@@ -313,8 +322,27 @@ function draw_onsets(){
         mgraphics.move_to(px + 0.5, 0);
         mgraphics.line_to(px + 0.5, h);
         mgraphics.stroke();
+        mgraphics.set_source_rgba(markerCol);
+        var idx_label = `${idx}`;
+        const [tw, th] = mgraphics.text_measure(idx_label);
+        mgraphics.move_to(px + 8, 12);
+        mgraphics.show_text(idx_label);
+        mgraphics.move_to(px + 8, 12 + th);
+        mgraphics.show_text(`${element.marker}`);
     });
 }
+
+// Handler for Keys.
+// function onkeydown(keycode: number, textcharacter: number, updown: number, mod1: number, shift: number, caps: number, opt: number, mod2: number): number;
+function onkeydown(keycode, textcharacter, updown, mod1, shift, caps, opt, mod2){
+    _postInfo(JSON.stringify([keycode, textcharacter]));
+    const S_KEY = 115;
+    switch (keycode){
+        case S_KEY: sort_markers(); mgraphics.redraw();
+        default: break;
+    }
+}
+
 
 // -------------------- paint --------------------
 function paint() {
@@ -427,8 +455,14 @@ function onclick(x, y, button, mod1, shift, caps, opt, mod2) {
     dragOriginSample = xToSample(x, w);
 
     if (mode === "empty") {
-        selStart = selEnd = Math.round(dragOriginSample);
-        dragMode = "selecting";
+        if (shift){
+            add_marker({idx: markers.length, marker: Math.round(dragOriginSample)});
+            sort_markers();
+            mgraphics.redraw();
+        } else{
+            selStart = selEnd = Math.round(dragOriginSample);
+            dragMode = "selecting";
+        }
     }
     else if (mode === "insideloop" && opt) {
         dragMode = "moveloop";
@@ -527,11 +561,11 @@ function ondrag(x, y, button, mod1, shift, caps, opt, mod2) {
     
     // handle marker movements:
     if (dragMode.startsWith("movemarker:")) {
+        // an unfortunate side effect of this is that it moves any and all touching markers
         var marker_id = parseInt(dragMode.slice(11));
-        // markers[marker_id].marker = Math.round(Math.min(dragOriginSample, s));
-        // markers[marker_id].marker = clamp(Math.round(s), 0, frames - 1);
         markers[marker_id].marker = clamp(Math.round(origMarker + delta), 0, frames - 1);
     }
+    sort_markers();
 
     outputDict();
     mgraphics.redraw();

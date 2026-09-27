@@ -2,8 +2,11 @@ function sendTo(name, msg) {
     try {
         var obj = this.patcher.getnamed(name);
         if (!obj) {
-            post("object '" + name + "' not found\n");
-            return false;
+            obj = this.patcher.parentpatcher.getnamed(name);
+            if (!obj) {
+                post("object '" + name + "' not found in patcher or parentpatcher\n");
+                return false;
+            }
         }
         obj.message(msg);
         return true;

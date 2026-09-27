@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 68.0, 89.0, 1006.0, 1265.0 ],
+        "rect": [ 68.0, 89.0, 1761.0, 1265.0 ],
         "boxes": [
             {
                 "box": {
@@ -1230,7 +1230,7 @@
                             },
                             {
                                 "box": {
-                                    "code": "// Stereo  panning of stereo signal\r\n// p in [-1, 1]\r\ngL = (p <= 0) ? 1.0 : (1.0 - p)\r\ngR = (p >= 0) ? 1.0 : (1.0 + p)\r\noutL = L * gL\r\noutR = R * gR\r\n\r\n// stereo panning of mono signal.\r\nangle = (p + 1) * PI / 4\r\ngL = cos(angle)\r\ngR = sin(angle)\r\noutL = in * gL\r\noutR = in * gR\r\n\r\n\r\n/////  GENDSP based mixing BELOW!\r\n\r\n\r\n// inputs: inL, inR, p (-1..1), mode (0 = linear, 1 = const-power)\r\na = (p + 1) * PI / 4;\r\nlinL = (p <= 0) ? 1.0 : (1.0 - p);\r\nlinR = (p >= 0) ? 1.0 : (1.0 + p);\r\ncpL  = cos(a) * SQRT2;\r\ncpR  = sin(a) * SQRT2;\r\n\r\ngL = (mode > 0.5) ? cpL : linL;\r\ngR = (mode > 0.5) ? cpR : linR;\r\n\r\noutL = inL * gL;\r\noutR = inR * gR;",
+                                    "code": "// Stereo  panning of stereo signal\r\n// p in [-1, 1]\r\n//gL = (p <= 0) ? 1.0 : (1.0 - p);\r\n//gR = (p >= 0) ? 1.0 : (1.0 + p);\r\n//outL = L * gL;\r\n//outR = R * gR;\r\n\r\n// stereo panning of mono signal.\r\n//angle = (p + 1) * PI / 4;\r\n//gL = cos(angle);\r\n//gR = sin(angle);\r\n//outL = in * gL;\r\n//outR = in * gR;\r\n\r\n\r\n/////  GENDSP based mixing BELOW!\r\n\r\n\r\n// inputs: inL, inR, p (-1..1), mode (0 = linear, 1 = const-power)\r\n//a = (p + 1) * PI / 4;\r\n//linL = (p <= 0) ? 1.0 : (1.0 - p);\r\n//linR = (p >= 0) ? 1.0 : (1.0 + p);\r\n//cpL  = cos(a) * SQRT2;\r\n//cpR  = sin(a) * SQRT2;\r\n\r\n//gL = (mode > 0.5) ? cpL : linL;\r\n//gR = (mode > 0.5) ? cpR : linR;\r\n\r\n//outL = inL * gL;\r\n//outR = inR * gR;",
                                     "fontface": 0,
                                     "fontname": "<Monospaced>",
                                     "fontsize": 12.0,
@@ -1243,18 +1243,6 @@
                                     "saved_object_attributes": {
                                         "title": "panning"
                                     }
-                                }
-                            },
-                            {
-                                "box": {
-                                    "attr": "title",
-                                    "id": "obj-2",
-                                    "maxclass": "attrui",
-                                    "numinlets": 1,
-                                    "numoutlets": 1,
-                                    "outlettype": [ "" ],
-                                    "parameter_enable": 0,
-                                    "patching_rect": [ 1050.0, 24.0, 150.0, 22.0 ]
                                 }
                             },
                             {
@@ -1299,12 +1287,6 @@
                                 "patchline": {
                                     "destination": [ "obj-56", 0 ],
                                     "source": [ "obj-10", 1 ]
-                                }
-                            },
-                            {
-                                "patchline": {
-                                    "destination": [ "obj-1", 0 ],
-                                    "source": [ "obj-2", 0 ]
                                 }
                             },
                             {
@@ -1655,7 +1637,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 330.0, 325.0, 56.0, 25.0 ],
-                                                    "text": "127",
+                                                    "text": "116",
                                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                                 }
                                             },
@@ -1733,7 +1715,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 138.0, 187.0, 154.0, 22.0 ],
-                                                    "text": "117",
+                                                    "text": "17",
                                                     "varname": "input_keys[3]"
                                                 }
                                             },
@@ -1767,7 +1749,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 138.0, 373.0, 154.0, 22.0 ],
-                                                    "text": "keys 127 117 0 -6",
+                                                    "text": "keys 116 17 0 116",
                                                     "varname": "input_keys[1]"
                                                 }
                                             },
@@ -3752,8 +3734,20 @@
                             "modernui": 1
                         },
                         "classnamespace": "box",
-                        "rect": [ 339.0, 206.0, 1285.0, 1173.0 ],
+                        "rect": [ 901.0, 190.0, 1694.0, 1173.0 ],
+                        "visible": 1,
                         "boxes": [
+                            {
+                                "box": {
+                                    "id": "obj-3",
+                                    "maxclass": "newobj",
+                                    "numinlets": 1,
+                                    "numoutlets": 2,
+                                    "outlettype": [ "float", "bang" ],
+                                    "patching_rect": [ 1360.0, 521.0, 46.0, 22.0 ],
+                                    "text": "buffer~"
+                                }
+                            },
                             {
                                 "box": {
                                     "id": "obj-31",
@@ -3930,13 +3924,12 @@
                             {
                                 "box": {
                                     "id": "obj-40",
-                                    "linecount": 2,
                                     "maxclass": "message",
                                     "numinlets": 2,
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
-                                    "patching_rect": [ 701.0, 146.0, 529.0, 36.0 ],
-                                    "text": "\"C:/Users/zeffi/GITWORX/zero-g-ce-13/Zero-G - Creative Essentials Vol. 13 -- Jungle Frenzy Vol. 1/WAV/TRACK_23/apache_mono_single_loop.wav\""
+                                    "patching_rect": [ 701.0, 146.0, 529.0, 22.0 ],
+                                    "text": "C:/Users/zeffi/GITWORX/465204_5105660-lq.mp3"
                                 }
                             },
                             {
@@ -4090,8 +4083,6 @@
                                     "saved_object_attributes": {
                                         "autostart": 0,
                                         "defer": 0,
-                                        "node_bin_path": "",
-                                        "npm_bin_path": "",
                                         "watch": 1
                                     },
                                     "text": "node.script ztrk_wave_dispatch_for_node.js",
@@ -5269,8 +5260,6 @@
                                     "saved_object_attributes": {
                                         "autostart": 1,
                                         "defer": 0,
-                                        "node_bin_path": "",
-                                        "npm_bin_path": "",
                                         "watch": 1
                                     },
                                     "text": "node.script ztrk_gendsp_linter_for_node.js",
@@ -19639,7 +19628,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "127",
+                                    "text": "116",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -19717,7 +19706,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "117",
+                                    "text": "17",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -19751,7 +19740,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 127 117 0 -6",
+                                    "text": "keys 116 17 0 116",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -20119,7 +20108,7 @@
                     "numoutlets": 3,
                     "outlettype": [ "", "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 718.0, 13.0, 525.0, 428.0 ],
+                    "patching_rect": [ 718.0, 13.0, 491.8359375, 620.0 ],
                     "textfile": {
                         "filename": "hex_tracker.js",
                         "flags": 0,
@@ -20384,7 +20373,7 @@
                     "color": [ 0.6352941176470588, 0.2784313725490196, 0.2784313725490196, 1.0 ],
                     "destination": [ "obj-1", 0 ],
                     "hidden": 1,
-                    "midpoints": [ 980.5, 851.0, 636.0, 851.0, 636.0, 123.0, 15.0, 123.0, 15.0, 150.0, 10.5, 150.0 ],
+                    "midpoints": [ 963.91796875, 851.0, 636.0, 851.0, 636.0, 123.0, 15.0, 123.0, 15.0, 150.0, 10.5, 150.0 ],
                     "order": 1,
                     "source": [ "obj-2", 1 ]
                 }
