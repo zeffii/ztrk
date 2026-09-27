@@ -639,7 +639,7 @@ function send_pattern_to_tracker(){
     };
 
     var pstarts = find_start_ticks_of_all_instances_of(pattern.puid); // doesn't handle interupted patterns yet!
-    // _postMessage(JSON.stringify(pstarts));
+    _postMessage(JSON.stringify(pstarts));
     pattern_exchange_markup.pstarts = pstarts;  // inject into the exchange format.
 
     post('Telling Tracker to show pattern \n');

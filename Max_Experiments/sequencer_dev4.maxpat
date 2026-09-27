@@ -4090,8 +4090,6 @@
                                     "saved_object_attributes": {
                                         "autostart": 0,
                                         "defer": 0,
-                                        "node_bin_path": "",
-                                        "npm_bin_path": "",
                                         "watch": 1
                                     },
                                     "text": "node.script ztrk_wave_dispatch_for_node.js",
@@ -4640,7 +4638,6 @@
                         },
                         "classnamespace": "box",
                         "rect": [ 134.0, 134.0, 1759.0, 1200.0 ],
-                        "visible": 1,
                         "boxes": [
                             {
                                 "box": {
@@ -5270,8 +5267,6 @@
                                     "saved_object_attributes": {
                                         "autostart": 1,
                                         "defer": 0,
-                                        "node_bin_path": "",
-                                        "npm_bin_path": "",
                                         "watch": 1
                                     },
                                     "text": "node.script ztrk_gendsp_linter_for_node.js",
@@ -5483,7 +5478,6 @@
                         },
                         "classnamespace": "box",
                         "rect": [ 536.0, 93.0, 1855.0, 1152.0 ],
-                        "visible": 1,
                         "boxes": [
                             {
                                 "box": {
@@ -8274,7 +8268,6 @@
                                         },
                                         "classnamespace": "box",
                                         "rect": [ 339.0, 103.0, 1532.0, 1170.0 ],
-                                        "visible": 1,
                                         "boxes": [
                                             {
                                                 "box": {
