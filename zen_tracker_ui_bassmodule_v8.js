@@ -1532,6 +1532,9 @@ class Tracker  {
     draw_tick_position(){
 
         function findLargestBeforeX(x, mlist, length) {
+            /*
+                converts global tick to local tick for this pattern
+            */
             let best = null;
             for (const value of mlist) {
                 if (value < x && (best === null || value > best)) { best = value; }
@@ -1547,6 +1550,11 @@ class Tracker  {
         // _postMessage(this.pattern_starts_at_ticks);
         var tick_idx = this.g_pattern_playhead;
         tick_idx = findLargestBeforeX(tick_idx, this.pattern_starts_at_ticks, this.pattern_markup.length);
+        /* 
+        if (!in_playing_ranges(ranges, tick_idx)){
+            return;
+        }
+        */
         tick_idx = getRotatedIndex(this, tick_idx); 
         var tick_y = this.start_y + (tick_idx * this.settings_font_size) - (0.75 * this.text_h);
         gfx.set_source_rgba(...this.theme_colors.tick_index_color);
