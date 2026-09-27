@@ -429,7 +429,7 @@ class Tracker  {
         var [descriptor_head, descriptor_tail] = splitAtFirstPipe(current_descriptor);
         // outputDict.parse(JSON.stringify({track: idx[1], head: descriptor_head, tail: descriptor_tail || "<no info, lazy?>"}));
         // this.send(2, "dictionary", outputDict.name);
-        _postWarning(`PE: ${idx[1]}, ${descriptor_head}, ${descriptor_tail || "<no info, lazy?>"}`);
+        _postLow(`PE: ${idx[1]}, ${descriptor_head}, ${descriptor_tail || "<no info, lazy?>"}`);
     }
 
     // remove this function.
