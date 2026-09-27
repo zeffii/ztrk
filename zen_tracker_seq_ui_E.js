@@ -1,6 +1,6 @@
 include("ztrk_seq_utils.js");
 include("ztrk_MachineDB.js");  // for getMachineInfo(kind, name);
-include("ztrk_general_utils.js");
+include("ztrk_general_utils.js");   // for zconsole _postInfo/Warning/Error/Low ..etc
 // include("ztrk_pattern_utils.js");  <-- might have to.
 
 autowatch = 1;
@@ -35,16 +35,16 @@ if (!g_font_dict.contains("fontSize"))   g_font_dict.set("fontSize", 12);
 const ztrk_get_font_family = () => g_font_dict.get("fontFamily");
 const ztrk_get_font_size   = () => g_font_dict.get("fontSize");
 
-const __logging = (obj, kind, msg) => {
-    var msg_real = msg.split(' ');
-    msg_real.unshift(kind);
-    obj.message("set_msg", msg_real); 
-}
+// const __logging = (obj, kind, msg) => {
+//     var msg_real = msg.split(' ');
+//     msg_real.unshift(kind);
+//     obj.message("set_msg", msg_real); 
+// }
 
-const postMessage = (kind, message) => {
-    var zconsole = this.patcher.getnamed("zconsole");
-    if (zconsole){ __logging(zconsole, kind, message); }
-}
+// const postMessage = (kind, message) => {
+//     var zconsole = this.patcher.getnamed("zconsole");
+//     if (zconsole){ __logging(zconsole, kind, message); }
+// }
 
 var settings_font_size = ztrk_get_font_size();  // 12;
 var charwidth = 0;
@@ -746,6 +746,7 @@ function find_pattern_occurrences_for_buffer_write(track, puid){
     return occurrences;
 }
 
+// find global_tick_range_of_all_instances_of(puid) //
 function find_start_ticks_of_all_instances_of(puid){
     let track_index = null;
     let start_ticks = [];
@@ -1786,7 +1787,7 @@ function save(filepath, content) {
             pos += chunk_size;
         }
         f.close();
-        postMessage('info', `wrote file to ${shortenPath(filepath, keepLast = 3)}`);
+        _postInfo(`wrote file to ${shortenPath(filepath, keepLast = 3)}`);
     }
 }
 
@@ -1913,6 +1914,5 @@ function loadbang(){
     sequencer_init();
     db_machine_count = machineCount();
     sendTo("zconsole", ["print_logo"]);
-    // sendTo("zconsole", ["set_msg", "info", "hello and more and more and more"]);
 }
 

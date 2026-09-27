@@ -18,7 +18,7 @@ without these folks, this tracker would have taken much longer to make.
 */
 
 include("ztrk_pattern_utils.js");
-include("ztrk_general_utils.js");
+include("ztrk_general_utils.js");  // for zconsole _postInfo/Warning/Error/Low ..etc
 
 var g_ui_state = new Dict("ztrk_ui_state");
 const get_active_view = () => g_ui_state.get("active_view");
@@ -30,11 +30,11 @@ if (!g_font_dict.contains("fontSize"))   g_font_dict.set("fontSize", 12);
 const ztrk_get_font_family = () => g_font_dict.get("fontFamily");
 const ztrk_get_font_size   = () => g_font_dict.get("fontSize");
 
-const __logging = (obj, kind, msg) => {   // see ztrk console.js for usage.
-    var msg_real = msg.split(' ');
-    msg_real.unshift(kind);
-    obj.message("set_msg", msg_real); 
-}
+// const __logging = (obj, kind, msg) => {   // see ztrk console.js for usage.
+//     var msg_real = msg.split(' ');
+//     msg_real.unshift(kind);
+//     obj.message("set_msg", msg_real); 
+// }
 
 class Tracker  {
 
@@ -330,7 +330,6 @@ class Tracker  {
             'bottom': selection.bottom,
             'num_rows': selected_num_rows
         }
-
     }
 
     wheres_the_caret(){
@@ -428,7 +427,7 @@ class Tracker  {
         var [descriptor_head, descriptor_tail] = splitAtFirstPipe(current_descriptor);
         // outputDict.parse(JSON.stringify({track: idx[1], head: descriptor_head, tail: descriptor_tail || "<no info, lazy?>"}));
         // this.send(2, "dictionary", outputDict.name);
-        _postMessage(`PE: ${idx[1]}, ${descriptor_head}, ${descriptor_tail || "<no info, lazy?>"}`);
+        _postWarning(`PE: ${idx[1]}, ${descriptor_head}, ${descriptor_tail || "<no info, lazy?>"}`);
     }
 
     // remove this function.
@@ -1179,9 +1178,13 @@ class Tracker  {
         // };
         if (get_active_view() !== "tracker") return;
 
+        // click into tracker view should set this view as active, and sequence view not.
+        // if i have two pattern views open side by side, there will need to be tracker_view_1, tracker_view_2
+
         if (this.#g_in_edit_mode){
 
             // post(' inside keyhandler:  ', this.#g_keyrepeat, ", ", this.#g_key_codes);
+            // KeyJam handler to be wireless and sent from "handle_note_input"
 
             var SHIFT = 512;
             var ALT = 2048;
@@ -1195,6 +1198,7 @@ class Tracker  {
             var V_KEY = 22;
             var X_KEY = 24;
             var T_KEY = 116;
+            var I_KEY = 73;
             var SPACE = 32;
             var CTRL_AND_T = 20;
             var [UP_KEY, DOWN_KEY] = [30, 31];
@@ -1202,10 +1206,10 @@ class Tracker  {
             var [L_BRACKET, R_BRACKET] = [123, 125];
             var SELECTOR = this.#g_key_codes[2];
             var USER_KEY = this.#g_key_codes[0];
-            var [MINUS, PLUS] = [95, 43];   // not the numkeys at the moment.     (+shift) /
-            var [MINUS1, PLUS1] = [45, 61];   // not the numkeys at the moment.            /  ---- same keys, but different int depending on accelerator pressed.
+            var [MINUS, PLUS] = [95, 43];   // not the numkeys.     (+shift) /
+            var [MINUS1, PLUS1] = [45, 61];   // not the numkeys.            /  same keys, but diff. int depending on Selector pressed.
 
-            const ASCII = (key) => String.fromCharCode(key).toUpperCase();  // ..duplicate. (how about a ztrk_general_functions.js for tools that are cross editor ? )
+            const ASCII = (key) => String.fromCharCode(key);  // ..duplicate. (how about a ztrk_general_functions.js for tools that are cross editor ? )
             const userkey_in = (array) => found_in(array, USER_KEY);   // helper to avoid passing USER_KEY manually.
 
             let isAltDown = (SELECTOR === ALT);
@@ -1219,7 +1223,7 @@ class Tracker  {
             maxmsp captures some of the kb shortcuts for its own purposes:
             - ctrl+I = inspector
             - f5 = magnifying glass
-            - ..and a few others i'm forgetting right now
+            - ..and a few others i'm forgetting right now.. all quite annoying.
             This means i'm substituting occupied ones for similar but available ones. 
             Not ideal but it does tempt me to implement some input hardware for interaction.
 
@@ -1238,15 +1242,14 @@ class Tracker  {
             }
 
             if (isShiftDown){
-                if (ASCII(USER_KEY) === 'I'){
-                    if (this.handle_interpolate_selection(this.faux_pattern)){ return; } 
-                }
+                // _postMessage(this.#g_key_codes);
                 const NOTES_ONLY = true;
                 switch(USER_KEY){
                     case MINUS: this.handle_transpose_selection(this.faux_pattern, 'DOWN', false); return;
                     case PLUS: this.handle_transpose_selection(this.faux_pattern, 'UP', false); return;
                     case L_BRACKET: this.handle_transpose_selection(this.faux_pattern, 'DOWN', NOTES_ONLY); return;
                     case R_BRACKET: this.handle_transpose_selection(this.faux_pattern, 'UP', NOTES_ONLY); return;
+                    case I_KEY: this.handle_interpolate_selection(this.faux_pattern); return;  
                     default: break;
                 }
             }
@@ -1544,7 +1547,7 @@ class Tracker  {
         // _postMessage(this.pattern_starts_at_ticks);
         var tick_idx = this.g_pattern_playhead;
         tick_idx = findLargestBeforeX(tick_idx, this.pattern_starts_at_ticks, this.pattern_markup.length);
-
+        tick_idx = getRotatedIndex(this, tick_idx); 
         var tick_y = this.start_y + (tick_idx * this.settings_font_size) - (0.75 * this.text_h);
         gfx.set_source_rgba(...this.theme_colors.tick_index_color);
         gfx.rectangle(this.start_x, tick_y, this.text_w, this.settings_font_size);
@@ -1733,8 +1736,6 @@ class Tracker  {
             gfx.line_to(splitstart * this.charwidth, (this.pattern_markup.length + 2) * this.charheight);
             gfx.stroke();
         }
-
-
     }
 
     draw_splash(){
@@ -1760,13 +1761,11 @@ class Tracker  {
         // var mstr = generate_svg(conditions);
         // gfx.svg_render(mstr);
 
-
         this.set_rgb(this.asRGB(...this.theme_colors.data_color), 1.3);
         var load_message = "ZTRK loaded: Waiting for patterns..";
         var load_width = gfx.text_measure(load_message)[0];
         gfx.move_to(((w/2.0) - load_width/2), h/2);
         gfx.show_text(load_message);
-
 
         // bottom right
         this.set_rgb(this.asRGB(...this.theme_colors.status_text_color), 1.3);
