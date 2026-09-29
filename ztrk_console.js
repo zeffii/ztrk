@@ -1,3 +1,4 @@
+// const {ZKEYMAP} = require("ztrk_general_utils.js");
 
 autowatch = 1;
 outlets = 2;
@@ -34,6 +35,12 @@ var drag_start_offset = 0;
 var scrollbar_side = 1;
 var padding = 10;
 
+var terminal_text = "";
+var syntax_highlight = "basic"; //  off 
+var inserting = 0;
+var insert_index = 0;
+var direction = 0;
+
 function max_scroll(){
     return Math.max(0, output_list.length - num_items_to_display);
 }
@@ -52,10 +59,11 @@ function set_scrollbar_side(num){
 
 
 var log_color = {
-    'warning': [0.9, 0.2, 0.2, 1.0],
-    'info': [0.5, 0.7, 0.95, 1.0],
-    'debug': [0.2, 0.9, 0.2, 1.0],
-    'low': [1.0, 0.502, 0.0, 1.0]
+    warning: [0.9, 0.2, 0.2, 1.0],
+    info: [0.5, 0.7, 0.95, 1.0],
+    debug: [0.2, 0.9, 0.2, 1.0],
+    low: [1.0, 0.502, 0.0, 1.0],
+    special: [1.0, 0.802, 0.81, 1.0]
 };
 
 var default_theme_colors = {
@@ -103,20 +111,51 @@ function draw_lines(gfx){
 
     var end = output_list.length - scroll_offset;
     var start = Math.max(0, end - num_items_to_display);
-    var recent_list = output_list.slice(start, end);    
+    var recent_list = output_list.slice(start, end);
+    var insert = "|";
 
+    // history
     for (const [idx, line] of recent_list.reverse().entries()){
         var color = log_color[line[0]] || log_color.info;
         gfx.set_source_rgba(...color);
-        gfx.move_to(10, h - ((idx+1) * charheight) - padding);
-        // gfx.show_text(`${line[2]}: ${line[1]}`);
+        gfx.move_to(10, h - ((idx+1) * charheight) - padding - charheight);
         gfx.show_text(`${line[1]}`);
     }
+    // terminal
+    if (syntax_highlight === "off"){
+        gfx.set_source_rgba(...log_color.low);
+        gfx.move_to(10, h - padding - charheight);
+        gfx.show_text(`$ ${terminal_text}`);
+        gfx.set_source_rgba(...log_color.special);
+        gfx.show_text("⁃");
+    } else {
+        gfx.set_source_rgba(...log_color.low);
+        gfx.move_to(10, h - padding - charheight);
+        gfx.show_text(`$ `);
+        for (const char of terminal_text){
+            gfx.set_source_rgba(...log_color.low);
+            if ("()/\\[]{}!><,*&^%$#@~|;:".indexOf(char) > -1)
+                gfx.set_source_rgba(...log_color.special);
+            else if ("0123456789".indexOf(char) > -1){
+                gfx.set_source_rgba(...log_color.info);
+            }
+            gfx.show_text(char);
+        }
+        gfx.set_source_rgba(...log_color.special);
+        gfx.show_text("⁃");
+    }
+
+    if (inserting) {
+        gfx.set_source_rgba(...log_color.special);
+        gfx.move_to(10, h - padding - charheight);
+        gfx.show_text(" ".repeat(insert_index) + insert);
+    }
+
 }
 
 function draw_scrollbar(gfx){
     var [w, h] = gfx.size;
-    var track_h = h - charheight;
+    var track_h = h - (2 * charheight);
     var total = output_list.length;
     if (total <= num_items_to_display) return; // nothing to scroll
 
@@ -169,6 +208,47 @@ function set_msg(...args){
     mgraphics.redraw();
 }
 
+// Handler for Keys.
+// function onkeydown(keycode: number, textcharacter: number, updown: number, mod1: number, shift: number, caps: number, opt: number, mod2: number): number;
+function onkeydown(keycode, textcharacter, updown, mod1, shift, caps, opt, mod2){
+    // that handles repeat keys no problem!
+    const ASCII = (key) => String.fromCharCode(key);
+    //set_msg('info', [JSON.stringify([keycode, textcharacter, updown, shift, ASCII(textcharacter)])]);
+    
+    const [SPACE, BACKSPACE, TAB, INSERT, HOME, DEL] = [-2, -7, -5, -8, -15, -6];
+    const [LEFT, RIGHT, UP, DOWN] = [-11, -12, -9, -10];
+
+    function insert_char(){ terminal_text += ASCII(textcharacter) };
+    function perform_backspace() { terminal_text = terminal_text.slice(0, -1); }
+    function move_cursorLR(keycode){
+        if (inserting){
+            direction = (keycode === LEFT) ? -1 : 1;
+            insert_index += direction;
+        }
+    }
+
+    switch (keycode){
+        case SPACE: insert_char(); break;
+        case BACKSPACE: case DEL: 
+            perform_backspace(); break;
+        case LEFT: case RIGHT: 
+            move_cursorLR(keycode); break;
+        case UP: case DOWN: 
+            set_msg('info', "NAVIGATION U/D"); break;
+        case INSERT:
+            inserting = !inserting; 
+            if (inserting) {
+                direction = 0;
+                insert_index = terminal_text.length + direction;
+            }
+            break;
+        default: 
+            terminal_text += ASCII(textcharacter); break;
+            // set_msg('info', ASCII(textcharacter)); break;
+    }
+    mgraphics.redraw();
+}
+
 function onclick(x, y, but, cmd, shift, capslock, option, ctrl){
 
     var [w, h] = mgraphics.size;
@@ -214,23 +294,4 @@ function print_logo(){
     set_msg('info', "i'm alive!");
 
 }
-
-
-/*
-
-    FUNCTION
-
-    const __logging = (obj, kind, msg) => {
-        var msg_real = msg.split(' ');
-        msg_real.unshift(kind);
-        obj.message("set_msg", msg_real); 
-    }
-
-    USAGE:
-
-    var zconsole = this.patcher.getnamed("zconsole");
-    if (zconsole){ __logging(zconsole, "warning", "Gather all start positions."); }
-
-*/
-
 

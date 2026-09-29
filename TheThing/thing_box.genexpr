@@ -1,7 +1,10 @@
-// paste into a gen~ codebox (0 inlets needed, 2 outlets)
-// needs [buffer~ thingparams 100 1] in the patcher and thing_patch.genexpr in the search path
+// unrolled mode (STYLE.mode = "unrolled", the default): codebox inside an ordinary [gen~], 0 inlets, 2 outlets
+// send note / noteoff messages to the [v8ui] to play it
+// needs [buffer~ thingparams 100 1] and [buffer~ thingsamples] in the patcher,
+// and thing_patch.genexpr in the search path
 
 require("thing_patch");
 Buffer P("thingparams");
+Buffer S("thingsamples");
 
-out1, out2 = thing_patch(P);
+out1, out2 = thing_patch(P, S);
