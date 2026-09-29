@@ -147,7 +147,7 @@ function draw_lines(gfx){
 
     if (inserting) {
         gfx.set_source_rgba(...log_color.special);
-        gfx.move_to(10, h - padding - charheight);
+        gfx.move_to(10 + (1.5 * charwidth), h - padding - charheight);
         gfx.show_text(" ".repeat(insert_index) + insert);
     }
 
@@ -224,13 +224,21 @@ function onkeydown(keycode, textcharacter, updown, mod1, shift, caps, opt, mod2)
         if (inserting){
             direction = (keycode === LEFT) ? -1 : 1;
             insert_index += direction;
+            insert_index = Math.max(0, insert_index);
+            insert_index = Math.min(terminal_text.length, insert_index);
+            set_msg('info', `Insert Index: ${insert_index}`);
         }
     }
 
     switch (keycode){
         case SPACE: insert_char(); break;
-        case BACKSPACE: case DEL: 
-            perform_backspace(); break;
+        case BACKSPACE: case DEL:
+            if (inserting){
+                terminal_text = terminal_text.substring(0, insert_index) + terminal_text.substring(insert_index + 1);
+                insert_index -= 1;
+            } else {
+                perform_backspace(); break;
+            }
         case LEFT: case RIGHT: 
             move_cursorLR(keycode); break;
         case UP: case DOWN: 
@@ -243,7 +251,13 @@ function onkeydown(keycode, textcharacter, updown, mod1, shift, caps, opt, mod2)
             }
             break;
         default: 
-            terminal_text += ASCII(textcharacter); break;
+            let ch = ASCII(textcharacter);
+            if (inserting){
+                terminal_text = terminal_text.slice(0, insert_index) + ch + terminal_text.slice(insert_index);
+            }
+            else {
+                terminal_text += ch;
+            }
             // set_msg('info', ASCII(textcharacter)); break;
     }
     mgraphics.redraw();
