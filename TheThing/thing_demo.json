@@ -1,0 +1,60 @@
+{
+ "nodes": {
+  "n1": {
+   "id": "n1",
+   "type": "note",
+   "x": 8,
+   "y": 8,
+   "base": 32,
+   "vals": {}
+  },
+  "n2": {
+   "id": "n2",
+   "type": "osc",
+   "x": 190,
+   "y": 8,
+   "base": 32,
+   "vals": {
+    "wave": 2,
+    "tune": 0,
+    "tune_amt": 1,
+    "pw": 0.5,
+    "pw_amt": 0.2
+   }
+  },
+  "n7": {
+   "id": "n7",
+   "type": "out",
+   "x": 642,
+   "y": 33,
+   "base": 60,
+   "vals": {
+    "level": 0.32666666666666666
+   }
+  }
+ },
+ "wires": [
+  {
+   "from": {
+    "node": "n1",
+    "port": "freq"
+   },
+   "to": {
+    "node": "n2",
+    "port": "freq"
+   }
+  },
+  {
+   "from": {
+    "node": "n2",
+    "port": "out"
+   },
+   "to": {
+    "node": "n7",
+    "port": "l"
+   }
+  }
+ ],
+ "idc": 7,
+ "next": 62
+}

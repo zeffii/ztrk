@@ -52,6 +52,15 @@ const sort_markers = () => {
         .map((item, index) => ({ ...item, idx: index }));
 };
 
+function set_playhead_ratio(val){
+    // ratio to sample
+    if (!buf) return;
+
+    var num_frames = buf.framecount();
+    var playhead_exact = parseInt(num_frames * val);
+    setplayhead(playhead_exact);
+}
+
 // function sort_markers(){
 //     _postLow(JSON.stringify(markers));
 
@@ -346,8 +355,7 @@ function onkeydown(keycode, textcharacter, updown, mod1, shift, caps, opt, mod2)
 
 // -------------------- paint --------------------
 function paint() {
-    var w = mgraphics.size[0];
-    var h = mgraphics.size[1];
+    var [w, h] = mgraphics.size;
 
     if (dirty || w !== lastW || h !== lastH || !cachedImage) {
         rebuildCache(w, h);
