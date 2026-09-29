@@ -226,7 +226,7 @@ function onkeydown(keycode, textcharacter, updown, mod1, shift, caps, opt, mod2)
             insert_index += direction;
             insert_index = Math.max(0, insert_index);
             insert_index = Math.min(terminal_text.length, insert_index);
-            set_msg('info', `Insert Index: ${insert_index}`);
+            // set_msg('info', `Insert Index: ${insert_index}`);
         }
     }
 
