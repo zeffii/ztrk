@@ -4,6 +4,8 @@
 //   "unrolled"  all voices live inside ONE [gen~]; the voice-dependent nodes are written out once per voice.
 //               Notes arrive as SIGNALS on the gen~ inlets and are allocated to voices inside the gen~, sample-accurately:
 //               inlet 1 = pitch, inlet 2 = velocity (0 = note off), inlet 3 = trigger (one-sample impulse per event).
+//               For testing, this object has matching outlets: 1 = pitch, 2 = velocity, 3 = bang. Wire them
+//               [v8ui] out1 > [sig~] > gen~ in1, out2 > [sig~] > in2, out3 > [click~] > in3, then use note / noteoff.
 //   "mc"        the generated patch is ONE voice for [mc.gen~]; mc.noteallocator~ supplies the voices
 //               (inlets: pitch, gate, velocity per voice).
 //
@@ -15,6 +17,7 @@
 // MESSAGES  add <type> [x y] | remove <id> | connect <n> <out> <n> <in> | clear | rebuild | dump
 //           setfont <family> [size]
 //           setmode unrolled|mc | setvoices <n>        (unrolled: max 16)
+//           note <pitch> <vel> | noteoff <pitch> | list <pitch> <vel>    message-rate test input (unrolled mode)
 //           undo | redo | history | revert <index>
 //           autosave <path>   file written after EVERY change (loaded too, if it already exists)
 //           commit [<path>]   file written ONLY when you send this (path is remembered)
@@ -27,7 +30,7 @@
 
 autowatch = 1;
 inlets = 1;
-outlets = 1;
+outlets = 3;   // pitch, velocity, trigger bang: message-rate way to drive the three note signals
 mgraphics.init();
 mgraphics.relative_coords = 0;
 mgraphics.autofill = 0;
@@ -598,6 +601,18 @@ function setmode(mode, voices) {
 }
 
 function setvoices(n) { setmode(STYLE.mode, n); }
+
+// message-rate note input for testing: the outlets feed [sig~] [sig~] [click~] (see header). Order matters:
+// pitch and velocity are sent first so they are in place when the trigger lands.
+function note(pitch, vel) {
+	if (STYLE.mode === "mc") return;
+	outlet(0, pitch);
+	outlet(1, vel);
+	outlet(2, "bang");
+}
+
+function noteoff(pitch) { note(pitch, 0); }
+function list(pitch, vel) { note(pitch, vel); }
 
 function sample(i, start, len, sr) {
 	G.samples[i] = [start, len, sr];

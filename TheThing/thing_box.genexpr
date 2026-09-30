@@ -1,4 +1,5 @@
 // unrolled mode (STYLE.mode = "unrolled", the default): codebox inside an ordinary [gen~], 3 inlets, 2 outlets
+// test wiring: [v8ui] out1 > [sig~] > in1, out2 > [sig~] > in2, out3 > [click~] > in3, then send the v8ui: note 60 100 / noteoff 60
 //   inlet 1 = pitch (MIDI note number), inlet 2 = velocity (0 = note off), inlet 3 = trigger (one-sample impulse per note event)
 //   voices are allocated inside the gen~, on the sample the trigger arrives
 // needs [buffer~ thingparams 100 1] and [buffer~ thingsamples] in the patcher,

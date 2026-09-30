@@ -14,6 +14,7 @@ if (!g_font_dict.contains("fontSize"))   g_font_dict.set("fontSize", 12);
 const ztrk_get_font_family = () => g_font_dict.get("fontFamily");
 const ztrk_get_font_size   = () => g_font_dict.get("fontSize");
 
+var active_input = 0;
 var line_idx = 0;
 var output_list = [];
 var settings_font_size = ztrk_get_font_size(); // 12;
@@ -103,7 +104,13 @@ function draw_status_bar(gfx){
     var ztrk_console_text = "zconsole v.009";
     var identifier_width = gfx.text_measure(ztrk_console_text + ' ')[0];
     gfx.move_to(w - identifier_width, h - (0.25 * charheight));
-    gfx.show_text(ztrk_console_text);    
+    gfx.show_text(ztrk_console_text);
+
+    if (active_input){
+        gfx.set_source_rgb(0.84, 0.24, 0.44);
+        gfx.move_to(charwidth, h - (0.25 * charheight));
+        gfx.show_text('■');
+    }
 }
 
 function draw_lines(gfx){
@@ -133,9 +140,13 @@ function draw_lines(gfx){
         gfx.move_to(10, h - padding - charheight);
         gfx.show_text(`$ `);
         for (const char of terminal_text){
+            /*
+            this is where you can explicitly add color for certain characters, and even font weight. but ..it's just a console.
+            */
             gfx.set_source_rgba(...log_color.low);
-            if ("()/\\[]{}!><,*&^%$#@~|;:".indexOf(char) > -1)
+            if ("()/\\[]{}!><,*&^%$#@~|;:".indexOf(char) > -1) {   
                 gfx.set_source_rgba(...log_color.special);
+            } 
             else if ("0123456789".indexOf(char) > -1){
                 gfx.set_source_rgba(...log_color.info);
             }
@@ -208,14 +219,21 @@ function set_msg(...args){
     mgraphics.redraw();
 }
 
+function dispatch(){
+    set_msg('low', terminal_text);
+    // insert into typed history? up/down might rotate through old entires?
+    terminal_text = "";
+
+}
+
 // Handler for Keys.
 // function onkeydown(keycode: number, textcharacter: number, updown: number, mod1: number, shift: number, caps: number, opt: number, mod2: number): number;
 function onkeydown(keycode, textcharacter, updown, mod1, shift, caps, opt, mod2){
     // that handles repeat keys no problem!
     const ASCII = (key) => String.fromCharCode(key);
-    //set_msg('info', [JSON.stringify([keycode, textcharacter, updown, shift, ASCII(textcharacter)])]);
+    set_msg('info', [JSON.stringify([keycode, textcharacter, updown, shift, ASCII(textcharacter)])]);
     
-    const [SPACE, BACKSPACE, TAB, INSERT, HOME, DEL] = [-2, -7, -5, -8, -15, -6];
+    const [SPACE, BACKSPACE, TAB, INSERT, HOME, DEL, ENTER] = [-2, -7, -5, -8, -15, -6, -4];
     const [LEFT, RIGHT, UP, DOWN] = [-11, -12, -9, -10];
 
     function insert_char(){ terminal_text += ASCII(textcharacter) };
@@ -257,6 +275,9 @@ function onkeydown(keycode, textcharacter, updown, mod1, shift, caps, opt, mod2)
                 insert_index = terminal_text.length + direction;
             }
             break;
+        case ENTER:
+            // also implement a ctrl+Enter route.
+            dispatch(); break;
         default: 
             let ch = ASCII(textcharacter);
             if (inserting){
@@ -271,12 +292,23 @@ function onkeydown(keycode, textcharacter, updown, mod1, shift, caps, opt, mod2)
 
 function onclick(x, y, but, cmd, shift, capslock, option, ctrl){
 
+    active_input = 1;
     var [w, h] = mgraphics.size;
     var hit = (scrollbar_side === 1) ? (x >= w - scrollbar_width) : (x <= scrollbar_width);
     if (hit){
         drag_start_y = y;
         drag_start_offset = scroll_offset;
     }
+    mgraphics.redraw();
+}
+
+// function onidle(x, y, button, mod1, shift, caps, opt, mod2){
+//     g_mouse_on_rect = true;
+// }
+
+function onidleout(x, y, button, mod1, shift, caps, opt, mod2){
+    active_input = 0;
+    mgraphics.redraw();
 }
 
 function ondrag(x, y, but, cmd, shift, capslock, option, ctrl){

@@ -9,18 +9,8 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 203.0, 122.0, 1381.0, 1228.0 ],
+        "rect": [ 31.0, 89.0, 1533.0, 1228.0 ],
         "boxes": [
-            {
-                "box": {
-                    "id": "obj-42",
-                    "maxclass": "message",
-                    "numinlets": 2,
-                    "numoutlets": 1,
-                    "outlettype": [ "" ],
-                    "patching_rect": [ 767.0, 992.0, 50.0, 22.0 ]
-                }
-            },
             {
                 "box": {
                     "id": "obj-39",
@@ -347,7 +337,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                                    "text": "116",
+                                                    "text": "127",
                                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                                 }
                                             },
@@ -436,7 +426,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                                    "text": "17",
+                                                    "text": "117",
                                                     "varname": "input_keys[3]"
                                                 }
                                             },
@@ -481,7 +471,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                                    "text": "keys 116 17 0 116",
+                                                    "text": "keys 127 117 0 -6",
                                                     "varname": "input_keys[1]"
                                                 }
                                             },
@@ -2479,7 +2469,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 330.0, 325.0, 56.0, 25.0 ],
-                                                    "text": "116",
+                                                    "text": "127",
                                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                                 }
                                             },
@@ -2557,7 +2547,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 138.0, 187.0, 154.0, 22.0 ],
-                                                    "text": "17",
+                                                    "text": "117",
                                                     "varname": "input_keys[3]"
                                                 }
                                             },
@@ -2591,7 +2581,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 138.0, 373.0, 154.0, 22.0 ],
-                                                    "text": "keys 116 17 0 116",
+                                                    "text": "keys 127 117 0 -6",
                                                     "varname": "input_keys[1]"
                                                 }
                                             },
@@ -3070,49 +3060,6 @@
                     "numinlets": 2,
                     "numoutlets": 0,
                     "patching_rect": [ 1535.0, 667.0, 36.0, 36.0 ]
-                }
-            },
-            {
-                "box": {
-                    "id": "obj-10",
-                    "maxclass": "newobj",
-                    "numinlets": 0,
-                    "numoutlets": 0,
-                    "patcher": {
-                        "fileversion": 1,
-                        "appversion": {
-                            "major": 9,
-                            "minor": 1,
-                            "revision": 5,
-                            "architecture": "x64",
-                            "modernui": 1
-                        },
-                        "classnamespace": "box",
-                        "rect": [ 43.0, 290.0, 1326.0, 1007.0 ],
-                        "boxes": [
-                            {
-                                "box": {
-                                    "filename": "ztrk_modular_ui.js",
-                                    "id": "obj-1",
-                                    "maxclass": "v8ui",
-                                    "numinlets": 1,
-                                    "numoutlets": 1,
-                                    "outlettype": [ "" ],
-                                    "parameter_enable": 0,
-                                    "patching_rect": [ 409.0, 134.0, 865.0, 633.0 ],
-                                    "textfile": {
-                                        "filename": "ztrk_modular_ui.js",
-                                        "flags": 0,
-                                        "embed": 0,
-                                        "autowatch": 1
-                                    }
-                                }
-                            }
-                        ],
-                        "lines": []
-                    },
-                    "patching_rect": [ 1165.0, -227.0, 62.0, 22.0 ],
-                    "text": "p Modular"
                 }
             },
             {
@@ -5056,6 +5003,8 @@
                                     "saved_object_attributes": {
                                         "autostart": 0,
                                         "defer": 0,
+                                        "node_bin_path": "",
+                                        "npm_bin_path": "",
                                         "watch": 1
                                     },
                                     "text": "node.script ztrk_wave_dispatch_for_node.js",
@@ -6323,6 +6272,8 @@
                                     "saved_object_attributes": {
                                         "autostart": 1,
                                         "defer": 0,
+                                        "node_bin_path": "",
+                                        "npm_bin_path": "",
                                         "watch": 1
                                     },
                                     "text": "node.script ztrk_gendsp_linter_for_node.js",
@@ -20691,7 +20642,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "116",
+                                    "text": "127",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -20769,7 +20720,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "17",
+                                    "text": "117",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -20803,7 +20754,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 116 17 0 116",
+                                    "text": "keys 127 117 0 -6",
                                     "varname": "input_keys[1]"
                                 }
                             },
