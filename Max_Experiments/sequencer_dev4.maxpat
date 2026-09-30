@@ -9,8 +9,43 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 31.0, 89.0, 1533.0, 1228.0 ],
+        "rect": [ 145.0, 163.0, 1269.0, 1228.0 ],
         "boxes": [
+            {
+                "box": {
+                    "hidden": 1,
+                    "id": "obj-44",
+                    "maxclass": "newobj",
+                    "numinlets": 1,
+                    "numoutlets": 0,
+                    "patching_rect": [ 846.0, 750.0, 95.0, 22.0 ],
+                    "text": "s KeyJazzNotes"
+                }
+            },
+            {
+                "box": {
+                    "hidden": 1,
+                    "id": "obj-42",
+                    "maxclass": "message",
+                    "numinlets": 2,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 759.0, 767.0, 50.0, 22.0 ],
+                    "text": "53"
+                }
+            },
+            {
+                "box": {
+                    "hidden": 1,
+                    "id": "obj-10",
+                    "maxclass": "newobj",
+                    "numinlets": 2,
+                    "numoutlets": 2,
+                    "outlettype": [ "", "" ],
+                    "patching_rect": [ 765.0, 689.0, 85.0, 22.0 ],
+                    "text": "route noteplay"
+                }
+            },
             {
                 "box": {
                     "id": "obj-39",
@@ -337,7 +372,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                                    "text": "127",
+                                                    "text": "118",
                                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                                 }
                                             },
@@ -426,7 +461,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                                    "text": "117",
+                                                    "text": "9",
                                                     "varname": "input_keys[3]"
                                                 }
                                             },
@@ -471,7 +506,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                                    "text": "keys 127 117 0 -6",
+                                                    "text": "keys 118 9 0 118",
                                                     "varname": "input_keys[1]"
                                                 }
                                             },
@@ -2469,7 +2504,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 330.0, 325.0, 56.0, 25.0 ],
-                                                    "text": "127",
+                                                    "text": "118",
                                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                                 }
                                             },
@@ -2547,7 +2582,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 138.0, 187.0, 154.0, 22.0 ],
-                                                    "text": "117",
+                                                    "text": "9",
                                                     "varname": "input_keys[3]"
                                                 }
                                             },
@@ -2581,7 +2616,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 138.0, 373.0, 154.0, 22.0 ],
-                                                    "text": "keys 127 117 0 -6",
+                                                    "text": "keys 118 9 0 118",
                                                     "varname": "input_keys[1]"
                                                 }
                                             },
@@ -4523,8 +4558,7 @@
                             "modernui": 1
                         },
                         "classnamespace": "box",
-                        "rect": [ 433.0, 139.0, 1525.0, 993.0 ],
-                        "visible": 1,
+                        "rect": [ 122.0, 134.0, 1510.0, 547.0 ],
                         "boxes": [
                             {
                                 "box": {
@@ -4844,12 +4878,13 @@
                             {
                                 "box": {
                                     "id": "obj-40",
+                                    "linecount": 2,
                                     "maxclass": "message",
                                     "numinlets": 2,
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
-                                    "patching_rect": [ 701.0, 146.0, 530.0, 22.0 ],
-                                    "text": "C:/Users/zeffi/Downloads/empire-of-the-sun-we-are-the-people-lyrics-k-453-t-0.flac"
+                                    "patching_rect": [ 701.0, 146.0, 530.0, 36.0 ],
+                                    "text": "\"C:/Users/zeffi/Downloads/samples_techno_prisoners/Zero-G - Creative Essentials Vol. 23 -- Techno Prisoners/TRACK_22/23_22_02.flac\""
                                 }
                             },
                             {
@@ -20642,7 +20677,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "127",
+                                    "text": "118",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -20720,7 +20755,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "117",
+                                    "text": "9",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -20754,7 +20789,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 127 117 0 -6",
+                                    "text": "keys 118 9 0 118",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -21122,7 +21157,7 @@
                     "numoutlets": 3,
                     "outlettype": [ "", "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 718.0, 13.0, 525.0, 428.0 ],
+                    "patching_rect": [ 718.0, 13.0, 491.8359375, 620.0 ],
                     "textfile": {
                         "filename": "hex_tracker.js",
                         "flags": 0,
@@ -21318,6 +21353,22 @@
             },
             {
                 "patchline": {
+                    "destination": [ "obj-42", 1 ],
+                    "hidden": 1,
+                    "order": 1,
+                    "source": [ "obj-10", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-44", 0 ],
+                    "hidden": 1,
+                    "order": 0,
+                    "source": [ "obj-10", 0 ]
+                }
+            },
+            {
+                "patchline": {
                     "destination": [ "obj-13", 1 ],
                     "hidden": 1,
                     "source": [ "obj-12", 1 ]
@@ -21363,9 +21414,16 @@
                     "color": [ 0.6352941176470588, 0.2784313725490196, 0.2784313725490196, 1.0 ],
                     "destination": [ "obj-1", 0 ],
                     "hidden": 1,
-                    "midpoints": [ 980.5, 851.0, 636.0, 851.0, 636.0, 123.0, 15.0, 123.0, 15.0, 150.0, 10.5, 150.0 ],
+                    "midpoints": [ 963.91796875, 851.0, 636.0, 851.0, 636.0, 123.0, 15.0, 123.0, 15.0, 150.0, 10.5, 150.0 ],
                     "order": 1,
                     "source": [ "obj-2", 1 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-10", 0 ],
+                    "hidden": 1,
+                    "source": [ "obj-2", 0 ]
                 }
             },
             {

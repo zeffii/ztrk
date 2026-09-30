@@ -1035,7 +1035,8 @@ class Tracker  {
                     pattern[caret_row] = replaceAt(current_row, caret.col, note, 3);
                     this.push_to_buffers();
                     mutates = true;
-                    this.send(0, ['noteplay', note_to_int(note) ,50, 50]);
+                    // this.send(0, ['noteplay', note_to_int(note) ,50, 50]);
+                    this.send(0, ['noteplay', note_to_int(note)]);
 
                 } else if (key in NoteClearList){
                     non_note_cursor_input(this, key, caret, pattern, caret_row, 0);
@@ -1579,9 +1580,20 @@ class Tracker  {
             gfx.set_source_rgba(...this.theme_colors.data_color);
             var idxx = rotated_index_list[idx];
             gfx.move_to(this.start_x, this.start_y + (idx * this.settings_font_size));
-            var pattern_row = fmt(idxx) + this.faux_pattern[idxx];
+            var tick_row = fmt(idxx);
+            var pattern_row = this.faux_pattern[idxx];
+
+            // tick
+            var [cR, cG, cB, cA] = this.theme_colors.data_color;
+            var _d = (idxx % 4 === 0) ? 1.3 : 1.0;
+            gfx.set_source_rgb(cR/_d, cG/_d, cB/_d);
+            gfx.show_text(tick_row);
+
+            // data
+            gfx.set_source_rgba(...this.theme_colors.data_color);
             gfx.show_text(pattern_row);
 
+            // 000 marker.
             if (idxx === 0){
                 gfx.set_source_rgba(...this.theme_colors.divider_gfx_color);
                 gfx.move_to(this.start_x-2*this.charwidth, this.start_y + (idx * this.settings_font_size));
