@@ -2,8 +2,10 @@
 // Target: [v8ui @filename thing.js]  (Max 9, modern JS).
 // Two ways to get polyphony (STYLE.mode):
 //   "unrolled"  all voices live inside ONE [gen~]; the voice-dependent nodes are written out once per voice.
-//               Notes go to this object (note / noteoff / list) and JS allocates the voices.
-//   "mc"        the generated patch is ONE voice for [mc.gen~]; mc.noteallocator~ supplies the voices.
+//               Notes arrive as SIGNALS on the gen~ inlets and are allocated to voices inside the gen~, sample-accurately:
+//               inlet 1 = pitch, inlet 2 = velocity (0 = note off), inlet 3 = trigger (one-sample impulse per event).
+//   "mc"        the generated patch is ONE voice for [mc.gen~]; mc.noteallocator~ supplies the voices
+//               (inlets: pitch, gate, velocity per voice).
 //
 // WHERE TO TWEAK
 //   STYLE    fonts, colours, spacing, node widths (in characters), note-input conventions
@@ -13,7 +15,6 @@
 // MESSAGES  add <type> [x y] | remove <id> | connect <n> <out> <n> <in> | clear | rebuild | dump
 //           setfont <family> [size]
 //           setmode unrolled|mc | setvoices <n>        (unrolled: max 16)
-//           note <pitch> <vel> | noteoff <pitch> | list <pitch> <vel>       (unrolled mode only)
 //           undo | redo | history | revert <index>
 //           autosave <path>   file written after EVERY change (loaded too, if it already exists)
 //           commit [<path>]   file written ONLY when you send this (path is remembered)
@@ -35,12 +36,11 @@ const STYLE = {
 	bufname: "thingparams", outfile: "thing_patch", rebuildMs: 300, mapBase: 1024, maxUndo: 200,
 	mode: "unrolled",           // "unrolled" = all voices in one gen~ | "mc" = one voice, for [mc.gen~]
 	voices: 8,                  // unrolled voice count (1..16)
-	voiceBase: 1280,            // unrolled mode: voice slots (freq, gate, vel x voices) live here in the parameter buffer
-	// mc mode hookup: what arrives on the three mc.gen~ inputs
-	pitchIsMidi: true,          // true: input 1 is a MIDI note number, false: it is already Hz
-	velScale: 1 / 127,          // input 3 is multiplied by this to give 0..1
+	// note input conventions (both modes)
+	pitchIsMidi: true,          // true: the pitch input is a MIDI note number, false: it is already Hz
+	velScale: 1 / 127,          // the velocity input is multiplied by this to give 0..1
 	// text + spacing (row height, label width and node width all follow the font)
-	font: "Consolas", fs: 10, lineH: 1.35, pad: 3, portR: 3, hitR: 6, wireW: 1.5,
+	font: "Arial", fs: 9, lineH: 1.35, pad: 3, portR: 3, hitR: 6, wireW: 1.5,
 	nodeChars: 20, labelChars: 6,   // default node width and knob-label width, in characters
 	cBg: [0.10, 0.10, 0.11, 1], cNode: [0.17, 0.17, 0.19, 1],
 	cTitle: [0.24, 0.24, 0.29, 1], cTitlePoly: [0.20, 0.32, 0.26, 1],
@@ -65,9 +65,7 @@ const MODULES = {
 			`${c.out("gate")} = vgate;`,
 			`${c.out("vel")} = vvel * ${STYLE.velScale};`,
 		] : [
-			`${c.out("freq")} = peek(P, ${STYLE.voiceBase + 3 * c.v});`,
-			`${c.out("gate")} = peek(P, ${STYLE.voiceBase + 3 * c.v + 1});`,
-			`${c.out("vel")} = peek(P, ${STYLE.voiceBase + 3 * c.v + 2});`,
+			`${c.out("freq")}, ${c.out("gate")}, ${c.out("vel")} = t_vslot(${c.v}, voice_tv, voice_ev, vpitch, vvel);`,
 		],
 	},
 	osc: {
@@ -240,6 +238,48 @@ t_smp(P, S, gate, freq, idx, vol, off, loop, la, lb, lty, xf, root) {
 	return nr > 0.5 ? x * vol : 0;
 }
 `;
+
+// unrolled mode only: allocator + one slot per voice, both generated for STYLE.voices voices.
+// t_alloc watches the note event stream and picks a voice (free voices first, then the oldest note).
+// t_vslot is called once per voice; it holds that voice's pitch/gate/velocity and reacts to note-off by matching pitch.
+function voiceLib() {
+	const ids = [...Array(STYLE.voices).keys()];
+	const each = f => ids.map(f).join("\n");
+	const hz = p => STYLE.pitchIsMidi ? `440 * pow(2, (${p} - 69) / 12)` : p;
+	return `
+t_alloc(pitch, vel, trig) {
+	History ck(0);
+${each(i => `\tHistory bz${i}(0);\n\tHistory ag${i}(0);\n\tHistory pt${i}(0);`)}
+	ev = 0;
+	if (trig > 0.5) { ev = vel > 0 ? 1 : 2; }
+	nck = ck + (ev == 1 ? 1 : 0);
+	ck = nck;
+	best = ag0 + bz0 * 1000000000;
+	bi = 0;
+${ids.slice(1).map(i => `\tsc = ag${i} + bz${i} * 1000000000;\n\tif (sc < best) { best = sc; bi = ${i}; }`).join("\n")}
+	tv = ev == 1 ? bi : -1;
+${each(i => `\tif (ev == 1 && bi == ${i}) { bz${i} = 1; ag${i} = nck; pt${i} = pitch; }\n\tif (ev == 2 && bz${i} > 0.5 && pt${i} == pitch) { bz${i} = 0; }`)}
+	return tv, ev;
+}
+
+t_vslot(i, tv, ev, pitch, vel) {
+	History g(0);
+	History p(0);
+	History f(0);
+	History v(0);
+	non = ev == 1 && tv == i;
+	noff = ev == 2 && g > 0.5 && p == pitch;
+	og, ng, np, nf, nv = g, g, p, f, v;
+	if (non) {
+		np, nf, nv, ng = pitch, ${hz("pitch")}, vel * ${STYLE.velScale}, 1;
+		og = g > 0.5 ? 0 : 1;
+	}
+	if (noff) { og, ng = 0, 0; }
+	g, p, f, v = ng, np, nf, nv;
+	return nf, og, nv;
+}
+`;
+}
 
 // ---------------------------------------------------------------- graph state
 let G = { nodes: {}, wires: [], samples: {}, idc: 0, next: 0 };
@@ -423,6 +463,7 @@ function ctxFor(n, m, v, sums, memo) {
 
 function generate() {
 	const mc = STYLE.mode === "mc", memo = {}, sums = { L: [], R: [] }, body = [];
+	if (!mc) body.push("\tvoice_tv, voice_ev = t_alloc(vpitch, vvel, vtrig);");
 	topo().forEach(n => {
 		const m = MODULES[n.type], np = m.params.length;
 		body.push(`\t// ${n.id} ${m.label}`);
@@ -436,7 +477,8 @@ function generate() {
 	return [
 		"// generated by thing.js -- do not edit",
 		CORELIB,
-		mc ? "thing_patch(P, S, vpitch, vgate, vvel) {" : "thing_patch(P, S) {",
+		...(mc ? [] : [voiceLib()]),
+		mc ? "thing_patch(P, S, vpitch, vgate, vvel) {" : "thing_patch(P, S, vpitch, vvel, vtrig) {",
 		...body,
 		`\tmixL = ${sums.L.join(" + ") || "0"};`,
 		`\tmixR = ${sums.R.join(" + ") || "0"};`,
@@ -556,38 +598,6 @@ function setmode(mode, voices) {
 }
 
 function setvoices(n) { setmode(STYLE.mode, n); }
-
-// voice allocation for unrolled mode (in mc mode mc.noteallocator~ does this instead)
-const voiceState = [];
-let clock = 0;
-
-function note(pitch, vel) {
-	if (STYLE.mode === "mc") return;
-	if (!vel) return noteoff(pitch);
-	let vi = 0, best = Infinity;
-	for (let i = 0; i < STYLE.voices; i++) {
-		const s = (voiceState[i] ??= { pitch: -1, on: false, t: 0 });
-		const score = s.on ? 1e9 + s.t : s.t;   // free voices first, then the oldest note
-		if (score < best) { best = score; vi = i; }
-	}
-	const g = STYLE.voiceBase + 3 * vi, retrig = voiceState[vi].on;
-	Object.assign(voiceState[vi], { pitch, on: true, t: ++clock });
-	bufPoke(g, 440 * Math.pow(2, (pitch - 69) / 12));
-	bufPoke(g + 2, vel / 127);
-	if (retrig) {
-		bufPoke(g + 1, 0);
-		new Task(() => bufPoke(g + 1, 1)).schedule(5);   // the gate must drop for a moment or the envelope will not restart
-	} else bufPoke(g + 1, 1);
-}
-
-function noteoff(pitch) {
-	if (STYLE.mode === "mc") return;
-	voiceState.forEach((s, i) => {
-		if (s && s.on && s.pitch === pitch) { s.on = false; bufPoke(STYLE.voiceBase + 3 * i + 1, 0); }
-	});
-}
-
-function list(pitch, vel) { note(pitch, vel); }
 
 function sample(i, start, len, sr) {
 	G.samples[i] = [start, len, sr];

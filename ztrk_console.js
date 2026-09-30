@@ -231,11 +231,18 @@ function onkeydown(keycode, textcharacter, updown, mod1, shift, caps, opt, mod2)
     }
 
     switch (keycode){
-        case SPACE: insert_char(); break;
         case BACKSPACE: case DEL:
             if (inserting){
-                terminal_text = terminal_text.substring(0, insert_index) + terminal_text.substring(insert_index + 1);
-                insert_index -= 1;
+                if (keycode === DEL){
+                    terminal_text = terminal_text.substring(0, insert_index) + terminal_text.substring(insert_index + 1);
+                    insert_index -= 1; 
+                    insert_index = Math.max(0, insert_index);
+                } else if (keycode === BACKSPACE){
+                    terminal_text = terminal_text.substring(0, insert_index-1) + terminal_text.substring(insert_index);
+                    insert_index -= 1; 
+                    insert_index = Math.max(0, insert_index);
+                    break;
+                }
             } else {
                 perform_backspace(); break;
             }
@@ -258,7 +265,6 @@ function onkeydown(keycode, textcharacter, updown, mod1, shift, caps, opt, mod2)
             else {
                 terminal_text += ch;
             }
-            // set_msg('info', ASCII(textcharacter)); break;
     }
     mgraphics.redraw();
 }

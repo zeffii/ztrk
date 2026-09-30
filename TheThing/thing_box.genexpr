@@ -1,5 +1,6 @@
-// unrolled mode (STYLE.mode = "unrolled", the default): codebox inside an ordinary [gen~], 0 inlets, 2 outlets
-// send note / noteoff messages to the [v8ui] to play it
+// unrolled mode (STYLE.mode = "unrolled", the default): codebox inside an ordinary [gen~], 3 inlets, 2 outlets
+//   inlet 1 = pitch (MIDI note number), inlet 2 = velocity (0 = note off), inlet 3 = trigger (one-sample impulse per note event)
+//   voices are allocated inside the gen~, on the sample the trigger arrives
 // needs [buffer~ thingparams 100 1] and [buffer~ thingsamples] in the patcher,
 // and thing_patch.genexpr in the search path
 
@@ -7,4 +8,4 @@ require("thing_patch");
 Buffer P("thingparams");
 Buffer S("thingsamples");
 
-out1, out2 = thing_patch(P, S);
+out1, out2 = thing_patch(P, S, in1, in2, in3);
