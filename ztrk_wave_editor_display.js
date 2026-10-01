@@ -23,6 +23,8 @@ var selStart = -1, selEnd = -1;
 var loopStart = -1, loopEnd = -1;
 var xfade = 0;                  // single value – applied equally on both sides
 var playhead = -1;
+var info_samplerate = 0;
+var info_mslength = 0.0;
 
 // mouse
 var dragMode = "none";
@@ -182,6 +184,14 @@ function onresize(w, h) {
     mgraphics.redraw();
 }
 
+function set_samplerate(val){
+    info_samplerate = val;
+}
+
+function set_mslength(val_ms){
+    info_mslength = val_ms;
+}
+
 // -------------------- helpers --------------------
 function sampleToX(sample, w) {
     if (viewEnd <= viewStart) return 0;
@@ -203,6 +213,32 @@ function clampXfade() {
     } else {
         xfade = 0;
     }
+}
+
+// Dispatch
+
+function send_ms_to_groove_playstart(){
+   try {
+       let name = "start_from_playhead";
+       var obj = this.patcher.getnamed(name);
+       var [w, h] = mgraphics.size;
+       // var samples = xToSample(playhead, w);
+       // var sr =  info_samplerate;
+       // var ms = (samples / sr) * 1000;
+       var x = sampleToX(playhead, w)
+       var samples = xToSample(playhead, w);
+       var ms = 0;
+       if (x > 0.0){
+            ms = samples / info_samplerate;
+            // ms = info_mslength * (x / w);
+       }
+    
+       obj.message("set", Math.round(ms));
+       _postInfo(Math.round(ms) );
+   } catch (e) {
+       _postError("ERR: " + e + "\n");
+   }
+
 }
 
 
@@ -344,10 +380,12 @@ function draw_onsets(){
 // Handler for Keys.
 // function onkeydown(keycode: number, textcharacter: number, updown: number, mod1: number, shift: number, caps: number, opt: number, mod2: number): number;
 function onkeydown(keycode, textcharacter, updown, mod1, shift, caps, opt, mod2){
-    _postInfo(JSON.stringify([keycode, textcharacter]));
+    _postInfo(JSON.stringify([keycode, textcharacter, updown, mod1, shift, caps, opt, mod2]));
     const S_KEY = 115;
+    const SPACEBAR = -2
     switch (keycode){
-        case S_KEY: sort_markers(); mgraphics.redraw();
+        case SPACEBAR: 
+            send_ms_to_groove_playstart(); break;
         default: break;
     }
 }
@@ -462,12 +500,18 @@ function onclick(x, y, button, mod1, shift, caps, opt, mod2) {
     dragMode = mode;
     dragOriginSample = xToSample(x, w);
 
+    _postInfo(JSON.stringify([x, y, button, mod1, shift, caps, opt, mod2]));
+
     if (mode === "empty") {
         if (shift){
             add_marker({idx: markers.length, marker: Math.round(dragOriginSample)});
             sort_markers();
             mgraphics.redraw();
-        } else{
+        } else if (opt===8){
+            _postInfo(`hitting alt!`);
+            setplayhead(Math.round(dragOriginSample));
+            dragMode = "playhead";
+        } else {
             selStart = selEnd = Math.round(dragOriginSample);
             dragMode = "selecting";
         }

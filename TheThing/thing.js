@@ -3,7 +3,7 @@
 // Two ways to get polyphony (STYLE.mode):
 //   "unrolled"  all voices live inside ONE [gen~]; the voice-dependent nodes are written out once per voice.
 //               Notes arrive as SIGNALS on the gen~ inlets and are allocated to voices inside the gen~, sample-accurately:
-//               inlet 1 = pitch, inlet 2 = velocity (0 = note off), inlet 3 = trigger (one-sample impulse per event).
+//               inlet 1 = pitch, inlet 2 = velocity (0 = note off, negative = ALL notes off), inlet 3 = trigger (one-sample impulse per event).
 //               For testing, this object has matching outlets: 1 = pitch, 2 = velocity, 3 = bang. Wire them
 //               [v8ui] out1 > [sig~] > gen~ in1, out2 > [sig~] > in2, out3 > [click~] > in3, then use note / noteoff.
 //   "mc"        the generated patch is ONE voice for [mc.gen~]; mc.noteallocator~ supplies the voices
@@ -18,6 +18,7 @@
 //           setfont <family> [size]
 //           setmode unrolled|mc | setvoices <n>        (unrolled: max 16)
 //           note <pitch> <vel> | noteoff <pitch> | list <pitch> <vel>    message-rate test input (unrolled mode)
+//           allnotesoff (or panic)    releases every sounding voice (envelopes run their release)
 //           undo | redo | history | revert <index>
 //           autosave <path>   file written after EVERY change (loaded too, if it already exists)
 //           commit [<path>]   file written ONLY when you send this (path is remembered)
@@ -254,14 +255,14 @@ t_alloc(pitch, vel, trig) {
 	History ck(0);
 ${each(i => `\tHistory bz${i}(0);\n\tHistory ag${i}(0);\n\tHistory pt${i}(0);`)}
 	ev = 0;
-	if (trig > 0.5) { ev = vel > 0 ? 1 : 2; }
+	if (trig > 0.5) { ev = vel > 0 ? 1 : (vel < 0 ? 3 : 2); }
 	nck = ck + (ev == 1 ? 1 : 0);
 	ck = nck;
 	best = ag0 + bz0 * 1000000000;
 	bi = 0;
 ${ids.slice(1).map(i => `\tsc = ag${i} + bz${i} * 1000000000;\n\tif (sc < best) { best = sc; bi = ${i}; }`).join("\n")}
 	tv = ev == 1 ? bi : -1;
-${each(i => `\tif (ev == 1 && bi == ${i}) { bz${i} = 1; ag${i} = nck; pt${i} = pitch; }\n\tif (ev == 2 && bz${i} > 0.5 && pt${i} == pitch) { bz${i} = 0; }`)}
+${each(i => `\tif (ev == 1 && bi == ${i}) { bz${i} = 1; ag${i} = nck; pt${i} = pitch; }\n\tif (ev == 3 || (ev == 2 && bz${i} > 0.5 && pt${i} == pitch)) { bz${i} = 0; }`)}
 	return tv, ev;
 }
 
@@ -271,7 +272,7 @@ t_vslot(i, tv, ev, pitch, vel) {
 	History f(0);
 	History v(0);
 	non = ev == 1 && tv == i;
-	noff = ev == 2 && g > 0.5 && p == pitch;
+	noff = ev == 3 || (ev == 2 && g > 0.5 && p == pitch);
 	og, ng, np, nf, nv = g, g, p, f, v;
 	if (non) {
 		np, nf, nv, ng = pitch, ${hz("pitch")}, vel * ${STYLE.velScale}, 1;
@@ -612,6 +613,8 @@ function note(pitch, vel) {
 }
 
 function noteoff(pitch) { note(pitch, 0); }
+function allnotesoff() { note(0, -1); }   // velocity -1 is the "release everything" event
+function panic() { allnotesoff(); }
 function list(pitch, vel) { note(pitch, vel); }
 
 function sample(i, start, len, sr) {
