@@ -1099,9 +1099,7 @@ function key_handler(){
     }
     */
     if (USER_KEY === F8){
-        _postMessage("PAUSE UNPAUSE");
-        _sendAdvanced("TimeInfo::SEQUENCER_ACTIVE toggle");
-        return;
+        _sendAdvanced("TimeInfo::SEQUENCER_ACTIVE toggle"); return;
     }
 
     // space toggles edit mode
