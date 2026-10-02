@@ -393,3 +393,9 @@ function print_logo(){
 
 }
 
+// function notifydeleted() {
+//     if (blink_timer !== null) {
+//         clearInterval(blink_timer);
+//         blink_timer = null;
+//     }
+// }
