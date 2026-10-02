@@ -301,6 +301,8 @@ function onkeydown(keycode, textcharacter, updown, mod1, shift, caps, opt, mod2)
             move_cursorLR(keycode); break;
         case UP: case DOWN: {
 
+            if (command_history.length === 0) break;
+            
             direction = (keycode === UP) ? 1 : -1;
             command_history_index += direction
             command_history_index = clamped(command_history_index, 0, command_history.length - 1);

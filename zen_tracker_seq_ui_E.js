@@ -81,6 +81,8 @@ var g_machine_menu_subcat_open = "samplers";
 var g_machine_menu_selected_machine = "SmpDemo";
 var db_machine_count = 0;
 
+const TRACK_NAME_MAX = 7;
+
 var g_looping = false;
 var g_loop_start = 0;
 var g_loop_end = 128;
@@ -198,13 +200,54 @@ function add_machine_to_sequencer(){
     cols += 1;
     const trk_idx = sequencer_config.tracks.length; // next available track.
     const trk_kind = MKindMap[named_machine];
-    const new_trk = {trk: trk_idx, trk_name: `m${trk_idx}`,  machine: named_machine, trk_symbol: "#", kind: trk_kind, patterns: []}
+    const new_procedural_name = initial_name_creation(trk_idx, named_machine)
+    const new_trk = {trk: trk_idx, trk_name: new_procedural_name,  machine: named_machine, trk_symbol: "#", kind: trk_kind, patterns: []}
     _postLow(`adding a track and patterns`);
     sequencer_config.tracks.push(new_trk);
     sequencer_config.patterns.push({trk: trk_idx, patterns: []});
     const current_track_count = trk_idx + 1;
     _postLow(`adding a buffer`);
     init_track_buffers(this.patcher, current_track_count);
+    mgraphics.redraw();
+
+}
+
+function swap_track_buffers(a, b){
+    const bufA = new Buffer(`t${a}_buf`);
+    const bufB = new Buffer(`t${b}_buf`);
+    const chans = Math.min(bufA.channelcount(), bufB.channelcount());
+    const frames = Math.min(bufA.framecount(), bufB.framecount());
+
+    for (let ch = 1; ch <= chans; ch++){
+        const dataA = bufA.peek(ch, 0, frames);
+        const dataB = bufB.peek(ch, 0, frames);
+        bufA.poke(ch, 0, dataB);
+        bufB.poke(ch, 0, dataA);
+    }
+}
+
+function swap_config_entries(list, a, b, key_for_index){
+    [list[a], list[b]] = [list[b], list[a]];
+    list[a][key_for_index] = a;
+    list[b][key_for_index] = b;
+}
+
+function move_machine_lane(trk_idx, direction){
+    const other = trk_idx + direction;
+    if (other < 0 || other >= sequencer_config.tracks.length) return;
+
+    // 1. swap buffer contents
+    swap_track_buffers(trk_idx, other);
+
+    // 2. swap tracks (and their .trk field)
+    swap_config_entries(sequencer_config.tracks, trk_idx, other, "trk");
+
+    // 3. swap pattern pools (and their .trk field)
+    swap_config_entries(sequencer_config.patterns, trk_idx, other, "trk");
+    
+    // 4. move caret, refresh, tell buffer viz to redraw too.
+    g_tcaret.col += direction;
+    outlet(0, "refresh", "buffer_viz");
     mgraphics.redraw();
 
 }
@@ -224,6 +267,56 @@ const tick_from_row = (row) => row * 16;
 
 
 // - multi line utils
+
+function initial_name_creation(trk, machine){
+    /*
+    Called once, when a track is created (add_machine_to_sequencer, )
+    Never called again. The lane index baked into the name is a snapshot of where
+    the track was created; it is allowed to go stale if the lane later shifts.
+    */
+
+    const raw = (machine || "TRK").toString();
+    // strip anything that isn't alphanumeric, take first 4, uppercase
+    const stem = raw.replace(/[^A-Z0-9]/gi, '').slice(0, 4).toUpperCase().padEnd(4, ' ');
+    const lane = String(trk).padStart(2, '0');
+    return `${stem}-${lane}`.slice(0, TRACK_NAME_MAX);
+}
+
+function set_track_name(trk, new_name){
+    /*
+    Called from handle_patternprops_key when the user commits a trk_name edit.
+    Returns true if the name was accepted and stored, false if rejected.
+    Rejections post a warning through zconsole; the track keeps its old name.
+    */
+
+    const trimmed = (new_name || "").trim();
+
+    // Empty input: reject. Names are assigned at creation and must not be
+    // cleared, because the reader-side map depends on every track having one.
+    if (!trimmed){
+        _postWarning("track name cannot be empty");
+        return false;
+    }
+
+    // Length cap.
+    if (trimmed.length > TRACK_NAME_MAX){
+        _postWarning(`track name too long (max ${TRACK_NAME_MAX})`);
+        return false;
+    }
+
+    // Case-insensitive uniqueness against the other tracks.
+    for (const [idx, t] of sequencer_config.tracks.entries()){
+        if (idx === trk) continue;
+        if (t.trk_name.toLowerCase() === trimmed.toLowerCase()){
+            _postWarning(`track name "${trimmed}" already exists`);
+            return false;
+        }
+    }
+
+    sequencer_config.tracks[trk].trk_name = trimmed;
+    return true;
+}
+
 
 function get_cached_puid_or_compute_and_cache_it(puid){
     /*
@@ -880,9 +973,10 @@ function handle_patternprops_key(USER_KEY, ASCII_KEY){
         mgraphics.redraw();
         return;
     }
-    function set_track_name(new_name){
-        sequencer_config.tracks[trk].trk_name = new_name;
-    }
+
+    // function set_track_name(new_name){
+    //     sequencer_config.tracks[trk].trk_name = new_name;
+    // }
 
     let NUM_PROP_FIELDS = 4; // 0: Length, 1: Name, 2: Color
     var pref = sequencer_config.tracks[trk].patterns[found_idx];
@@ -977,6 +1071,7 @@ function key_handler(){
     var [UP_KEY, DOWN_KEY] = [30, 31];
     var [LEFT_KEY, RIGHT_KEY] = [28, 29];
     var [MINUS1, PLUS1] = [45, 61]; // reuse the pattern editor's octave keys for length
+    var [L_BRACKET, R_BRACKET] = [123, 125];
     var arrows = [UP_KEY, DOWN_KEY, LEFT_KEY, RIGHT_KEY];
     
     var SELECTOR = g_key_codes[2];
@@ -1021,9 +1116,11 @@ function key_handler(){
     if (!g_in_edit_mode) return;
 
     if (SELECTOR === SHIFT){
-        // stub implementation.
-        // a bare shift press commences (or just reaffirms) the selection
-        // anchor at wherever the caret currently sits.
+
+        if (found_in([L_BRACKET, R_BRACKET], USER_KEY)){
+            move_machine_lane(g_tcaret.col, USER_KEY === L_BRACKET ? -1 : 1);
+            return;
+}
         start_selection();
         return;
     }
