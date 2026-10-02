@@ -3,14 +3,38 @@
         "fileversion": 1,
         "appversion": {
             "major": 9,
-            "minor": 1,
-            "revision": 5,
+            "minor": 2,
+            "revision": 0,
             "architecture": "x64",
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 137.0, 85.0, 1675.0, 1228.0 ],
+        "rect": [ 137.0, 85.0, 1752.0, 1228.0 ],
         "boxes": [
+            {
+                "box": {
+                    "hidden": 1,
+                    "id": "obj-54",
+                    "maxclass": "toggle",
+                    "numinlets": 1,
+                    "numoutlets": 1,
+                    "outlettype": [ "int" ],
+                    "parameter_enable": 0,
+                    "patching_rect": [ 750.0, -72.0, 24.0, 24.0 ]
+                }
+            },
+            {
+                "box": {
+                    "hidden": 1,
+                    "id": "obj-49",
+                    "maxclass": "message",
+                    "numinlets": 2,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 741.0, -36.0, 95.0, 22.0 ],
+                    "text": "set_dot_bars $1"
+                }
+            },
             {
                 "box": {
                     "hidden": 1,
@@ -31,7 +55,7 @@
                     "numoutlets": 1,
                     "outlettype": [ "" ],
                     "patching_rect": [ 759.0, 767.0, 50.0, 22.0 ],
-                    "text": "79"
+                    "text": "74"
                 }
             },
             {
@@ -56,8 +80,8 @@
                         "fileversion": 1,
                         "appversion": {
                             "major": 9,
-                            "minor": 1,
-                            "revision": 5,
+                            "minor": 2,
+                            "revision": 0,
                             "architecture": "x64",
                             "modernui": 1
                         },
@@ -66,6 +90,7 @@
                         "boxes": [
                             {
                                 "box": {
+                                    "embed": 0,
                                     "filename": "ztrk_parameter_view_test.js",
                                     "id": "obj-1",
                                     "maxclass": "v8ui",
@@ -100,8 +125,8 @@
                         "fileversion": 1,
                         "appversion": {
                             "major": 9,
-                            "minor": 1,
-                            "revision": 5,
+                            "minor": 2,
+                            "revision": 0,
                             "architecture": "x64",
                             "modernui": 1
                         },
@@ -236,8 +261,8 @@
                                         "fileversion": 1,
                                         "appversion": {
                                             "major": 9,
-                                            "minor": 1,
-                                            "revision": 5,
+                                            "minor": 2,
+                                            "revision": 0,
                                             "architecture": "x64",
                                             "modernui": 1
                                         },
@@ -372,7 +397,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                                    "text": "116",
+                                                    "text": "28",
                                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                                 }
                                             },
@@ -461,7 +486,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                                    "text": "17",
+                                                    "text": "123",
                                                     "varname": "input_keys[3]"
                                                 }
                                             },
@@ -506,7 +531,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                                    "text": "keys 116 17 0 116",
+                                                    "text": "keys 28 123 0 -11",
                                                     "varname": "input_keys[1]"
                                                 }
                                             },
@@ -907,6 +932,7 @@
                             {
                                 "box": {
                                     "border": 0,
+                                    "embed": 0,
                                     "filename": "ztrk_envelope_ui.js",
                                     "id": "obj-46",
                                     "maxclass": "v8ui",
@@ -938,6 +964,7 @@
                             },
                             {
                                 "box": {
+                                    "embed": 0,
                                     "filename": "ztrk_synth_mk3.js",
                                     "id": "obj-60",
                                     "maxclass": "v8ui",
@@ -1750,8 +1777,8 @@
                         "fileversion": 1,
                         "appversion": {
                             "major": 9,
-                            "minor": 1,
-                            "revision": 5,
+                            "minor": 2,
+                            "revision": 0,
                             "architecture": "x64",
                             "modernui": 1
                         },
@@ -1951,8 +1978,8 @@
                                         "fileversion": 1,
                                         "appversion": {
                                             "major": 9,
-                                            "minor": 1,
-                                            "revision": 5,
+                                            "minor": 2,
+                                            "revision": 0,
                                             "architecture": "x64",
                                             "modernui": 1
                                         },
@@ -2286,8 +2313,8 @@
                         "fileversion": 1,
                         "appversion": {
                             "major": 9,
-                            "minor": 1,
-                            "revision": 5,
+                            "minor": 2,
+                            "revision": 0,
                             "architecture": "x64",
                             "modernui": 1
                         },
@@ -2389,8 +2416,8 @@
                                         "fileversion": 1,
                                         "appversion": {
                                             "major": 9,
-                                            "minor": 1,
-                                            "revision": 5,
+                                            "minor": 2,
+                                            "revision": 0,
                                             "architecture": "x64",
                                             "modernui": 1
                                         },
@@ -2504,7 +2531,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 330.0, 325.0, 56.0, 25.0 ],
-                                                    "text": "116",
+                                                    "text": "28",
                                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                                 }
                                             },
@@ -2582,7 +2609,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 138.0, 187.0, 154.0, 22.0 ],
-                                                    "text": "17",
+                                                    "text": "123",
                                                     "varname": "input_keys[3]"
                                                 }
                                             },
@@ -2616,7 +2643,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 138.0, 373.0, 154.0, 22.0 ],
-                                                    "text": "keys 116 17 0 116",
+                                                    "text": "keys 28 123 0 -11",
                                                     "varname": "input_keys[1]"
                                                 }
                                             },
@@ -2955,6 +2982,7 @@
                             },
                             {
                                 "box": {
+                                    "embed": 0,
                                     "filename": "deepseek_codeviewer2.js",
                                     "id": "obj-25",
                                     "maxclass": "v8ui",
@@ -3108,8 +3136,8 @@
                         "fileversion": 1,
                         "appversion": {
                             "major": 9,
-                            "minor": 1,
-                            "revision": 5,
+                            "minor": 2,
+                            "revision": 0,
                             "architecture": "x64",
                             "modernui": 1
                         },
@@ -3352,8 +3380,8 @@
                                         "fileversion": 1,
                                         "appversion": {
                                             "major": 9,
-                                            "minor": 1,
-                                            "revision": 5,
+                                            "minor": 2,
+                                            "revision": 0,
                                             "architecture": "x64",
                                             "modernui": 1
                                         },
@@ -3761,8 +3789,8 @@
                                         "fileversion": 1,
                                         "appversion": {
                                             "major": 9,
-                                            "minor": 1,
-                                            "revision": 5,
+                                            "minor": 2,
+                                            "revision": 0,
                                             "architecture": "x64",
                                             "modernui": 1
                                         },
@@ -3857,6 +3885,7 @@
                             },
                             {
                                 "box": {
+                                    "embed": 0,
                                     "filename": "ztrk_SCurve_viz.js",
                                     "id": "obj-4",
                                     "maxclass": "v8ui",
@@ -4552,13 +4581,13 @@
                         "fileversion": 1,
                         "appversion": {
                             "major": 9,
-                            "minor": 1,
-                            "revision": 5,
+                            "minor": 2,
+                            "revision": 0,
                             "architecture": "x64",
                             "modernui": 1
                         },
                         "classnamespace": "box",
-                        "rect": [ -136.0, 302.0, 1983.0, 1053.0 ],
+                        "rect": [ 225.0, 239.0, 1983.0, 726.0 ],
                         "boxes": [
                             {
                                 "box": {
@@ -4603,7 +4632,6 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ -254.0, -34.0, 45.0, 23.0 ],
-                                    "presentation_linecount": 2,
                                     "text": "481",
                                     "varname": "start_from_playhead"
                                 }
@@ -4676,7 +4704,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 149.75, 571.0, 50.0, 22.0 ],
-                                    "text": "2"
+                                    "text": "1"
                                 }
                             },
                             {
@@ -4955,7 +4983,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 701.0, 146.0, 530.0, 36.0 ],
-                                    "text": "\"C:/Users/zeffi/GITWORX/junglewarefare/s1gblwhrecrsx3klphga/Zero-G Jungle Warfare 1, 2 & 3/VOL 3/Instruments/Pads/Pad 1 (JW3).wav\""
+                                    "text": "\"C:/Users/zeffi/Downloads/samples_junglefrenzy_1/Zero-G - Creative Essentials Vol. 13 -- Jungle Frenzy Vol. 1/WAV/TRACK_23/13_23_08.WAV\""
                                 }
                             },
                             {
@@ -5109,8 +5137,6 @@
                                     "saved_object_attributes": {
                                         "autostart": 0,
                                         "defer": 0,
-                                        "node_bin_path": "",
-                                        "npm_bin_path": "",
                                         "watch": 1
                                     },
                                     "text": "node.script ztrk_wave_dispatch_for_node.js",
@@ -5225,6 +5251,7 @@
                             },
                             {
                                 "box": {
+                                    "embed": 0,
                                     "filename": "ztrk_wave_editor_display.js",
                                     "id": "obj-1",
                                     "maxclass": "v8ui",
@@ -5797,8 +5824,8 @@
                         "fileversion": 1,
                         "appversion": {
                             "major": 9,
-                            "minor": 1,
-                            "revision": 5,
+                            "minor": 2,
+                            "revision": 0,
                             "architecture": "x64",
                             "modernui": 1
                         },
@@ -6284,8 +6311,8 @@
                         "fileversion": 1,
                         "appversion": {
                             "major": 9,
-                            "minor": 1,
-                            "revision": 5,
+                            "minor": 2,
+                            "revision": 0,
                             "architecture": "x64",
                             "modernui": 1
                         },
@@ -6433,8 +6460,6 @@
                                     "saved_object_attributes": {
                                         "autostart": 1,
                                         "defer": 0,
-                                        "node_bin_path": "",
-                                        "npm_bin_path": "",
                                         "watch": 1
                                     },
                                     "text": "node.script ztrk_gendsp_linter_for_node.js",
@@ -6533,6 +6558,7 @@
             },
             {
                 "box": {
+                    "embed": 0,
                     "filename": "ztrk_console.js",
                     "id": "obj-145",
                     "maxclass": "v8ui",
@@ -6639,8 +6665,8 @@
                         "fileversion": 1,
                         "appversion": {
                             "major": 9,
-                            "minor": 1,
-                            "revision": 5,
+                            "minor": 2,
+                            "revision": 0,
                             "architecture": "x64",
                             "modernui": 1
                         },
@@ -9429,8 +9455,8 @@
                                         "fileversion": 1,
                                         "appversion": {
                                             "major": 9,
-                                            "minor": 1,
-                                            "revision": 5,
+                                            "minor": 2,
+                                            "revision": 0,
                                             "architecture": "x64",
                                             "modernui": 1
                                         },
@@ -12034,8 +12060,8 @@
                         "fileversion": 1,
                         "appversion": {
                             "major": 9,
-                            "minor": 1,
-                            "revision": 5,
+                            "minor": 2,
+                            "revision": 0,
                             "architecture": "x64",
                             "modernui": 1
                         },
@@ -13064,8 +13090,8 @@
                                         "fileversion": 1,
                                         "appversion": {
                                             "major": 9,
-                                            "minor": 1,
-                                            "revision": 5,
+                                            "minor": 2,
+                                            "revision": 0,
                                             "architecture": "x64",
                                             "modernui": 1
                                         },
@@ -13820,8 +13846,8 @@
                         "fileversion": 1,
                         "appversion": {
                             "major": 9,
-                            "minor": 1,
-                            "revision": 5,
+                            "minor": 2,
+                            "revision": 0,
                             "architecture": "x64",
                             "modernui": 1
                         },
@@ -14850,8 +14876,8 @@
                                         "fileversion": 1,
                                         "appversion": {
                                             "major": 9,
-                                            "minor": 1,
-                                            "revision": 5,
+                                            "minor": 2,
+                                            "revision": 0,
                                             "architecture": "x64",
                                             "modernui": 1
                                         },
@@ -15572,8 +15598,8 @@
                         "fileversion": 1,
                         "appversion": {
                             "major": 9,
-                            "minor": 1,
-                            "revision": 5,
+                            "minor": 2,
+                            "revision": 0,
                             "architecture": "x64",
                             "modernui": 1
                         },
@@ -15791,8 +15817,8 @@
                         "fileversion": 1,
                         "appversion": {
                             "major": 9,
-                            "minor": 1,
-                            "revision": 5,
+                            "minor": 2,
+                            "revision": 0,
                             "architecture": "x64",
                             "modernui": 1
                         },
@@ -17302,8 +17328,8 @@
                                         "fileversion": 1,
                                         "appversion": {
                                             "major": 9,
-                                            "minor": 1,
-                                            "revision": 5,
+                                            "minor": 2,
+                                            "revision": 0,
                                             "architecture": "x64",
                                             "modernui": 1
                                         },
@@ -18331,8 +18357,8 @@
                         "fileversion": 1,
                         "appversion": {
                             "major": 9,
-                            "minor": 1,
-                            "revision": 5,
+                            "minor": 2,
+                            "revision": 0,
                             "architecture": "x64",
                             "modernui": 1
                         },
@@ -19615,8 +19641,8 @@
                                         "fileversion": 1,
                                         "appversion": {
                                             "major": 9,
-                                            "minor": 1,
-                                            "revision": 5,
+                                            "minor": 2,
+                                            "revision": 0,
                                             "architecture": "x64",
                                             "modernui": 1
                                         },
@@ -20678,8 +20704,8 @@
                         "fileversion": 1,
                         "appversion": {
                             "major": 9,
-                            "minor": 1,
-                            "revision": 5,
+                            "minor": 2,
+                            "revision": 0,
                             "architecture": "x64",
                             "modernui": 1
                         },
@@ -20803,7 +20829,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "116",
+                                    "text": "28",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -20881,7 +20907,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "17",
+                                    "text": "123",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -20915,7 +20941,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 116 17 0 116",
+                                    "text": "keys 28 123 0 -11",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -21276,6 +21302,7 @@
             },
             {
                 "box": {
+                    "embed": 0,
                     "filename": "hex_tracker.js",
                     "id": "obj-2",
                     "maxclass": "v8ui",
@@ -21295,6 +21322,7 @@
             },
             {
                 "box": {
+                    "embed": 0,
                     "filename": "zen_tracker_seq_ui_E.js",
                     "id": "obj-1",
                     "maxclass": "v8ui",
@@ -21325,8 +21353,8 @@
                         "fileversion": 1,
                         "appversion": {
                             "major": 9,
-                            "minor": 1,
-                            "revision": 5,
+                            "minor": 2,
+                            "revision": 0,
                             "architecture": "x64",
                             "modernui": 1
                         },
@@ -21687,6 +21715,13 @@
             },
             {
                 "patchline": {
+                    "destination": [ "obj-2", 0 ],
+                    "hidden": 1,
+                    "source": [ "obj-49", 0 ]
+                }
+            },
+            {
+                "patchline": {
                     "destination": [ "obj-52", 1 ],
                     "hidden": 1,
                     "source": [ "obj-50", 1 ]
@@ -21697,6 +21732,13 @@
                     "destination": [ "obj-52", 0 ],
                     "hidden": 1,
                     "source": [ "obj-50", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-49", 0 ],
+                    "hidden": 1,
+                    "source": [ "obj-54", 0 ]
                 }
             },
             {

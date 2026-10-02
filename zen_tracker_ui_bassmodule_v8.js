@@ -89,6 +89,7 @@ class Tracker  {
         this.g_limited_scrolling = 1;
         this.pattern_row_shift = 0;
         this.num_visible_rows = 0;
+        this.dot_bars = true;
 
         this.jitblock_name = "";
         this.current_patcher = options.current_patcher;
@@ -118,6 +119,8 @@ class Tracker  {
         this.update_v8_boxsize(this.cols, this.rows);
 
     }
+
+    set_dot_bars(on) { this.dot_bars = !!on; this.mgraphics.redraw(); }
 
     make_lexical_track_from_descriptors(descriptors){
         var param_track = [];
@@ -1578,7 +1581,18 @@ class Tracker  {
 
             // data
             gfx.set_source_rgba(...this.theme_colors.data_color);
-            gfx.show_text(pattern_row);
+            if (this.dot_bars) {
+                gfx.show_text(pattern_row.replaceAll(".", " "));
+                gfx.set_source_rgba(cR, cG, cB, 0.25);
+                const x0 = this.start_x + tick_row.length * this.charwidth;
+                const by = this.start_y + idx * this.settings_font_size - this.settings_font_size * 0.3;
+                for (let i = 0; i < pattern_row.length; i++) {
+                    if (pattern_row[i] === ".") gfx.rectangle(x0 + i * this.charwidth + 1, by, this.charwidth - 2, 1.5);
+                }
+                gfx.fill();
+            } else {
+                gfx.show_text(pattern_row);
+            }
 
             // 000 marker.
             if (idxx === 0){

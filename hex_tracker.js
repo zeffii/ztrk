@@ -95,6 +95,7 @@ msg_int = my_tracker.msg_int.bind(my_tracker);
 clear = my_tracker.clear.bind(my_tracker);
 refresh = my_tracker.refresh.bind(my_tracker);
 keys = my_tracker.keys.bind(my_tracker);
+set_dot_bars = my_tracker.set_dot_bars.bind(my_tracker);
 
 /*
 you could also use this....instead of that ugly list above .
