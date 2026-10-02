@@ -1327,8 +1327,9 @@ function draw_current_tick(){
     var tick_distance = charheight / 16;
     var lineh = (global_tick * tick_distance) - charheight + 3.5;
     set_rgb({r:0.95 ,g: 0.44, b: 0.4}, 0.9);
+    const indicator_width = trk_width * (cols + 1) + side_width;
     mgraphics.move_to(0, lineh);
-    mgraphics.line_to(500, lineh);
+    mgraphics.line_to(indicator_width, lineh);
     mgraphics.stroke();
 }
 
@@ -1432,10 +1433,11 @@ function draw_horizontal_time_markers(charheight){
     var sdim = 0.34;
     var tm = theme_colors.time_markers;
     mgraphics.set_source_rgba(tm[0]*sdim, tm[1]*sdim, tm[2]*sdim, 1);
+    const indicator_width = trk_width * (cols + 1) + side_width;
     for (var i = 0; i < 20; i++){
         var lineh = -10.5 + ((i * 8) * charheight);
         mgraphics.move_to(0, lineh);
-        mgraphics.line_to(500, lineh);
+        mgraphics.line_to(indicator_width, lineh);
         mgraphics.stroke();
     }    
 }
