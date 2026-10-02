@@ -447,6 +447,14 @@ function paint() {
         mgraphics.stroke();
     }
 
+    // played area
+    if (playhead >= 0) {
+        var px = sampleToX(playhead, w);
+        mgraphics.set_source_rgba(0.02, 0.02, 0.02, 0.2);
+        mgraphics.rectangle(px, 0, w-px, h);
+        mgraphics.fill();
+    }
+
     // playhead
     if (playhead >= 0) {
         var px = sampleToX(playhead, w);
