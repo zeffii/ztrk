@@ -45,9 +45,9 @@ var inserting = 0;
 var insert_index = 0;
 var direction = 0;
 
-var blink_on = true;
-var blink_timer = null;
-var BLINK_MS = 600; 
+//var blink_on = true;
+//var blink_timer = null;
+//var BLINK_MS = 127; 
 
 function max_scroll(){
     return Math.max(0, output_list.length - num_items_to_display);
@@ -63,25 +63,25 @@ function set_scrollbar_side(num){
     }
     mgraphics.redraw();
 }
-function start_blink(){
-    // i may ditch the blinking if it shows evidence of bleeding into other interface.
-    if (blink_timer !== null) return;
-    blink_on = true;
-    blink_timer = setInterval(() => {
-        // only redraw if the console is focused, otherwise we're
-        // burning CPU blinking a cursor nobody can see
-        if (!active_input) return;
-        blink_on = !blink_on;
-        mgraphics.redraw();
-    }, BLINK_MS);
-}
-function stop_blink(){
-    if (blink_timer === null) return;
-    clearInterval(blink_timer);
-    blink_timer = null;
-    blink_on = true;      // leave it visible while unfocused
-    mgraphics.redraw();
-}
+// function start_blink(){
+//     // i may ditch the blinking if it shows evidence of bleeding into other interface redraws.
+//     if (blink_timer !== null) return;
+//     blink_on = true;
+//     blink_timer = setInterval(() => {
+//         // only redraw if the console is focused, otherwise we're
+//         // burning CPU blinking a cursor nobody can see
+//         if (!active_input) return;
+//         blink_on = !blink_on;
+//         mgraphics.redraw();
+//     }, BLINK_MS);
+// }
+// function stop_blink(){
+//     if (blink_timer === null) return;
+//     clearInterval(blink_timer);
+//     blink_timer = null;
+//     blink_on = true;      // leave it visible while unfocused
+//     mgraphics.redraw();
+// }
 
 var log_color = {
     warning: [0.9, 0.2, 0.2, 1.0],
@@ -143,8 +143,9 @@ function draw_lines(gfx){
     var end = output_list.length - scroll_offset;
     var start = Math.max(0, end - num_items_to_display);
     var recent_list = output_list.slice(start, end);
-    var insert = (blink_on && inserting) ? "|" : "";
-    var term = (blink_on && !inserting) ? "|" : "";
+    
+    var insert = "|";  //(blink_on && inserting) ? "|" : "";
+    var term = "|";   //(blink_on && !inserting) ? "|" : "";
 
     // history
     for (const [idx, line] of recent_list.reverse().entries()){
@@ -336,7 +337,7 @@ function onkeydown(keycode, textcharacter, updown, mod1, shift, caps, opt, mod2)
 function onclick(x, y, but, cmd, shift, capslock, option, ctrl){
 
     active_input = 1;
-    start_blink();
+    //start_blink();
     var [w, h] = mgraphics.size;
     var hit = (scrollbar_side === 1) ? (x >= w - scrollbar_width) : (x <= scrollbar_width);
     if (hit){
@@ -352,7 +353,7 @@ function onclick(x, y, but, cmd, shift, capslock, option, ctrl){
 
 function onidleout(x, y, button, mod1, shift, caps, opt, mod2){
     active_input = 0;
-    stop_blink();
+    // stop_blink();
     mgraphics.redraw();
 }
 

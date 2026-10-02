@@ -451,7 +451,7 @@ function find_any_pattern_under_cursor(trk, cursor, inclusive = false){
             : (cursor > pattern.start) && (cursor < pattern_end);
         if (hit) {
             found_idx = i;
-            // post('found:' , pattern.pname, found_idx);
+            post('foundP:' , pattern.pname, found_idx);   // this is checking repeatedly whether there is a pattern under the cursor.
             break;
         }
     }
@@ -471,7 +471,7 @@ function find_pattern_suspended_by_this_pattern(track_index, puid, pattern_index
         if (candidate_pattern.start > pattern_to_remove_start) { continue; }
         else if (candidate_pattern.start === pattern_to_remove_start) { continue; }  // the current pattern, no need to puid check ? :) no we do not allow overlapping /w same start.
         else if ((candidate_pattern.start < pattern_to_remove_start ) && (pattern_to_remove_start < (candidate_pattern.start + candidate_pattern.length)) ){
-            post('found:' , candidate_pattern.pname, i);
+            post('foundC:' , candidate_pattern.pname, i);
             other_pattern = {found_idx: i, pattern: candidate_pattern, track_index: track_index};
             break;
         }
@@ -869,7 +869,6 @@ function handle_patternprops_key(USER_KEY, ASCII_KEY){
     var cursor = tick_from_row(g_tcaret.row);
     var found_idx = find_any_pattern_under_cursor(trk, cursor, true);
 
-
     // in the event of the pattern being shrunk, and no longer under the cursor, this menu must close
     if (found_idx === -1) { 
         g_display_pattern_props = 0;
@@ -935,6 +934,8 @@ function handle_patternprops_key(USER_KEY, ASCII_KEY){
         case ESCAPE:
             g_display_pattern_props = 0;
             break;
+
+        default: return;
     }
     mgraphics.redraw();
 }
@@ -974,7 +975,7 @@ function key_handler(){
     // capture all kb input while displaying pattern properties.
     if (g_display_pattern_props){
         handle_patternprops_key(USER_KEY, ASCII(USER_KEY));
-        post(g_text_input_buffer);
+        //post(g_text_input_buffer);
         return;
     }
     else if (g_display_machine_menu){
