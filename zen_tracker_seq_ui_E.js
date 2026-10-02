@@ -189,6 +189,23 @@ function sequencer_init(){
     return ;
 }
 
+function add_machine_to_sequencer(){
+
+    const named_machine = g_machine_menu_selected_machine;
+    if (!(named_machine in sequencer_config.machines)) {// no instances yet in song.
+        sequencer_config.machines[named_machine] = getMachineInfo(named_machine);
+    }
+    cols += 1;
+    const trk_idx = sequencer_config.tracks.length; // next available track.
+    const trk_kind = MKindMap[named_machine];
+    const new_trk = {trk: trk_idx, trk_name: `m${trk_idx}`,  machine: named_machine, trk_symbol: "#", kind: trk_kind, patterns: []}
+    sequencer_config.tracks.push(new_trk);
+    sequencer_config.patterns.push({trk: trk_idx, patterns: []});
+    _postInfo(`adding `)
+    mgraphics.redraw();
+
+}
+
 // - one liner utils.
 
 const ASCII = (key) => String.fromCharCode(key).toUpperCase();
@@ -434,7 +451,7 @@ function find_any_pattern_under_cursor(trk, cursor, inclusive = false){
             : (cursor > pattern.start) && (cursor < pattern_end);
         if (hit) {
             found_idx = i;
-            post('found:' , pattern.pname, found_idx);
+            // post('found:' , pattern.pname, found_idx);
             break;
         }
     }
@@ -837,6 +854,10 @@ function handle_machinemenu_key(USER_KEY, ASCII_KEY){
         case ESCAPE:
             g_display_machine_menu = 0;
             break;
+        case ENTER:
+            add_machine_to_sequencer(selected_machine_idx_in_menu);
+            g_display_machine_menu = 0;
+            break;
     }
     mgraphics.redraw();
 }
@@ -959,7 +980,7 @@ function key_handler(){
     else if (g_display_machine_menu){
         handle_machinemenu_key(USER_KEY, ASCII(USER_KEY));
         // post(g_text_input_buffer);
-        _postMessage(selected_machine_idx_in_menu);
+        //_postMessage(selected_machine_idx_in_menu);
         return;
     }
 
@@ -1658,6 +1679,11 @@ function draw_machine_menu(gfx, w, h){
 
                 var display_machine = ` ${main_branch}${prefix(machines, machine_idx)} ${machine.machine_name}`;
                 machine_name_line(px_location + xpad, py_location + ypad + (pos_y_idx * charheight), display_machine, visual_machine_index);
+
+                // this is probably clunkier than it needs to be .
+                if (visual_machine_index === selected_machine_idx_in_menu){
+                    g_machine_menu_selected_machine = machine.machine_name;
+                }
 
                 machine_idx +=1
                 visual_machine_index += 1;

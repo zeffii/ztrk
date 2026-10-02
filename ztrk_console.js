@@ -64,6 +64,7 @@ function set_scrollbar_side(num){
     mgraphics.redraw();
 }
 function start_blink(){
+    // i may ditch the blinking if it shows evidence of bleeding into other interface.
     if (blink_timer !== null) return;
     blink_on = true;
     blink_timer = setInterval(() => {
@@ -262,6 +263,8 @@ function onkeydown(keycode, textcharacter, updown, mod1, shift, caps, opt, mod2)
     // that handles repeat keys no problem!
     const ASCII = (key) => String.fromCharCode(key);
     // set_msg('info', [JSON.stringify([keycode, textcharacter, updown, shift, ASCII(textcharacter)])]);
+
+    if (!active_input) return;
     
     const [SPACE, BACKSPACE, TAB, INSERT, HOME, DEL, ENTER, END] = [-2, -7, -5, -8, -15, -6, -4, -16];
     const [LEFT, RIGHT, UP, DOWN] = [-11, -12, -9, -10];
