@@ -524,7 +524,7 @@ function toggle_pattern_properties_visibility(){
     //     g_editing_prop_field = null;
     // }
     g_editing_prop_field = g_display_pattern_props ? "length" : null;
-
+    if (!g_display_pattern_props) g_text_input_buffer = "";
     mgraphics.redraw();
 }
 
@@ -880,8 +880,11 @@ function handle_patternprops_key(USER_KEY, ASCII_KEY){
         mgraphics.redraw();
         return;
     }
+    function set_track_name(new_name){
+        sequencer_config.tracks[trk].trk_name = new_name;
+    }
 
-    let NUM_PROP_FIELDS = 3; // 0: Length, 1: Name, 2: Color
+    let NUM_PROP_FIELDS = 4; // 0: Length, 1: Name, 2: Color
     var pref = sequencer_config.tracks[trk].patterns[found_idx];
     if (g_editing_prop_field !== null){
         // currently inside a field's own text-capture mode
@@ -896,7 +899,9 @@ function handle_patternprops_key(USER_KEY, ASCII_KEY){
             if (!result.cancelled){
                 if (g_editing_prop_field === "name"){
                     pref.pname = result.value;
-                }
+                } else if (g_editing_prop_field === "trk_name"){
+                    set_track_name(result.value);
+                }                
                 if (g_editing_prop_field === "length"){
                     var newLen = parseInt(result.value, 10);
                     if (!isNaN(newLen) && newLen > 0 && newLen <= 512){ pref.length = newLen; }
@@ -909,6 +914,7 @@ function handle_patternprops_key(USER_KEY, ASCII_KEY){
                 }
             }
             g_editing_prop_field = null;
+            g_text_input_buffer = "";
         }
         mgraphics.redraw();
         return;
@@ -926,16 +932,18 @@ function handle_patternprops_key(USER_KEY, ASCII_KEY){
             break;
 
         case ENTER:
-            g_editing_prop_field = ["length", "name", "color"][selected_prop_field];
+            g_editing_prop_field = ["length", "name", "color", "trk_name"][selected_prop_field];
             let initial;
             if (g_editing_prop_field === "length"){ initial = String(pref.length); }
             else if (g_editing_prop_field === "name"){ initial = pref.pname; }
+            else if (g_editing_prop_field === "trk_name"){ initial = sequencer_config.tracks[trk].trk_name; }
             else { initial = pref.color.join(" "); }
             start_text_field_input(initial);
             break;
 
         case ESCAPE:
             g_display_pattern_props = 0;
+            g_text_input_buffer = "";
             break;
 
         default: return;
@@ -1567,6 +1575,8 @@ function draw_patternprops_menu(gfx, w, h){
         var lengthDisplay = (pfield === "length") ? (g_text_input_buffer + endCaret) : String(pref.length);
         var nameDisplay = (pfield === "name") ? (g_text_input_buffer + endCaret) : pref.pname;
         var colorDisplay = (pfield === "color") ? (g_text_input_buffer + endCaret) : pref.color.join(" ");
+        // var trkNameDisplay = sequencer_config.tracks[trk].trk_name;
+        var trkNameDisplay = (pfield === "trk_name") ? (g_text_input_buffer + endCaret) : sequencer_config.tracks[trk].trk_name;
 
         var parameters = [
             "Pattern Properties              ",
@@ -1576,9 +1586,13 @@ function draw_patternprops_menu(gfx, w, h){
             `Color:  ${colorDisplay}`,
             `uid:    ${pref.puid} (immutable)`,
             " ",
+            "Track Properties              ",
+            " ",
+            `Name:   ${trkNameDisplay}`,
+            " ",
             "          Esc to close          "
         ];
-        var field_line_map = { 2: 0, 3: 1, 4: 2 }; // Length, Name, Color
+        var field_line_map = { 2: 0, 3: 1, 4: 2, 9: 3}; // Length, Name, Color, trackname
     }
 
     var num_chars = Math.max(...parameters.map(s => s.length)) + 2;

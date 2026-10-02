@@ -1717,6 +1717,8 @@ class Tracker  {
         // I didn't intend this code to be so terse, but it worked first time and i 
         // havent been able to break it.
         var gfx = this.mgraphics;
+        var [w, h] = gfx.size;
+
         gfx.set_source_rgba(this.theme_colors.divider_gfx_color);
         gfx.move_to(this.start_x, this.start_y + (-1 * this.settings_font_size));
 
@@ -1764,10 +1766,15 @@ class Tracker  {
 
         // draw a faint track splitter
         gfx.set_source_rgba(...this.theme_colors.divider_gfx_color2);
+
+        // either the pattern is smaller than the available window height, in that case draw a line-length relative to the pattern length
+        // if the patternlength(px) exceeds window length, then draw to statusbar.
+        const line_length = Math.min(h - this.charheight, (this.pattern_markup.length + 2) * this.charheight);
+
         for (const [idx, count] of splitter_start_xlist.entries()){
             let splitstart = count + 6;
             gfx.move_to(splitstart * this.charwidth, this.start_y + (-1 * this.settings_font_size));
-            gfx.line_to(splitstart * this.charwidth, (this.pattern_markup.length + 2) * this.charheight);
+            gfx.line_to(splitstart * this.charwidth, line_length);
             gfx.stroke();
         }
     }
