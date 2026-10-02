@@ -1065,6 +1065,7 @@ function key_handler(){
     var ENTER = 13;
     var ESCAPE = 27;
     var SPACE = 32;
+    var F8  = 16;
     
     var CTRL_ALT_S = 223;   // these have different USER_KEYS when combined with the two modifiers.
     var CTRL_ALT_O = 243;
@@ -1097,6 +1098,11 @@ function key_handler(){
             set_2hex_menu_input(new_char);
     }
     */
+    if (USER_KEY === F8){
+        _postMessage("PAUSE UNPAUSE");
+        _sendAdvanced("TimeInfo::SEQUENCER_ACTIVE toggle");
+        return;
+    }
 
     // space toggles edit mode
     if (USER_KEY === SPACE){

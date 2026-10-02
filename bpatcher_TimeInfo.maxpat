@@ -3,8 +3,8 @@
         "fileversion": 1,
         "appversion": {
             "major": 9,
-            "minor": 1,
-            "revision": 5,
+            "minor": 2,
+            "revision": 0,
             "architecture": "x64",
             "modernui": 1
         },
@@ -22,7 +22,8 @@
                     "parameter_enable": 0,
                     "patching_rect": [ 801.0, 30.0, 24.0, 24.0 ],
                     "presentation": 1,
-                    "presentation_rect": [ 568.0, 5.0, 24.0, 24.0 ]
+                    "presentation_rect": [ 568.0, 5.0, 24.0, 24.0 ],
+                    "varname": "SEQUENCER_ACTIVE"
                 }
             },
             {
@@ -194,8 +195,8 @@
                         "fileversion": 1,
                         "appversion": {
                             "major": 9,
-                            "minor": 1,
-                            "revision": 5,
+                            "minor": 2,
+                            "revision": 0,
                             "architecture": "x64",
                             "modernui": 1
                         },
@@ -396,8 +397,8 @@
                         "fileversion": 1,
                         "appversion": {
                             "major": 9,
-                            "minor": 1,
-                            "revision": 5,
+                            "minor": 2,
+                            "revision": 0,
                             "architecture": "x64",
                             "modernui": 1
                         },
