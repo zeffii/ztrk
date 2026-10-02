@@ -199,9 +199,12 @@ function add_machine_to_sequencer(){
     const trk_idx = sequencer_config.tracks.length; // next available track.
     const trk_kind = MKindMap[named_machine];
     const new_trk = {trk: trk_idx, trk_name: `m${trk_idx}`,  machine: named_machine, trk_symbol: "#", kind: trk_kind, patterns: []}
+    _postLow(`adding a track and patterns`);
     sequencer_config.tracks.push(new_trk);
     sequencer_config.patterns.push({trk: trk_idx, patterns: []});
-    _postInfo(`adding `)
+    const current_track_count = trk_idx + 1;
+    _postLow(`adding a buffer`);
+    init_track_buffers(this.patcher, current_track_count);
     mgraphics.redraw();
 
 }
