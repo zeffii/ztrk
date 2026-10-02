@@ -271,6 +271,14 @@ class Tracker  {
 
     /*  ------- Local Util Functions ------------- */
 
+    get_fx_columns(){
+        const key = this.pattern_markup.lexical_track;
+        if (this._fx_key !== key){
+            this._fx_key = key;
+            this._fx_columns = find_regexed_indices(key, /\bffxxyy\b/g);
+        }
+        return this._fx_columns;
+    }
 
     set_rgb(color, dimming){
         this.mgraphics.set_source_rgba(color.r / dimming, color.g / dimming, color.b / dimming, 1);
@@ -1485,16 +1493,17 @@ class Tracker  {
         */
         var cw = this.charwidth;  //alias
 
-        var param_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bffxxyy\b/g);
+        // var param_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bffxxyy\b/g);
+        const param_indices = this.get_fx_columns(); // cached version :)
         var xx_start = this.start_x + (4 * cw); // where to start from
         var rect_length = this.charheight * this.pattern_markup.length;
         var rect_y_start = (this.start_y - (0.9 * this.charheight));
-        // post(this.faux_pattern.length);
+
+        this.mgraphics.set_source_rgba(...this.theme_colors.fx_bg_color);
         for (const idx in param_indices){
-            this.mgraphics.set_source_rgba(...this.theme_colors.fx_bg_color);
             this.mgraphics.rectangle(xx_start + (param_indices[idx] * cw), rect_y_start, (cw * 2), rect_length);
-            this.mgraphics.fill();
         }
+        this.mgraphics.fill();
     }
 
     draw_command_overlay(){
@@ -1502,14 +1511,16 @@ class Tracker  {
         if the ff column of the ffxxyy track has a value other than two dots (..) 
         this draws the cmd value using a different colour for UI contrast. 
         */
-        var param_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bffxxyy\b/g);
+        // var param_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bffxxyy\b/g);
+        const param_indices = this.get_fx_columns();
         var xx_start = this.start_x + (4 * this.charwidth); // where to start from
         for (const idx in param_indices){
 
             var start_idx = param_indices[idx];
             this.mgraphics.set_source_rgba(...this.theme_colors.fx_fg_color);
+            const tx = xx_start + (start_idx * this.charwidth);
             for (var pidx = 0; pidx < this.pattern_markup.length; pidx++){
-                var tx = xx_start + (start_idx * this.charwidth);
+                // var tx = xx_start + (start_idx * this.charwidth);
 
                 // this makes it possible to enter data when the pattern is row-shifted.
                 var shifted_pidx = getRotatedIndex(this, pidx);

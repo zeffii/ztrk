@@ -126,7 +126,8 @@ var default_config = {
         {trk: 3, trk_name: "MIX.01",  machine: "Mixer 12", trk_symbol: "φ", kind: "fx", patterns: []},
         {trk: 4, trk_name: "Snare",  machine: "SDR", trk_symbol: "Λ", kind: "gen", patterns: []},
         {trk: 5, trk_name: "KSYN",  machine: "SYNDRUM", trk_symbol: "Λ", kind: "gen", patterns: []},
-        {trk: 6, trk_name: "Hat",  machine: "HTX2", trk_symbol: "Λ", kind: "gen", patterns: []}
+        {trk: 6, trk_name: "Hat",  machine: "HTX2", trk_symbol: "Λ", kind: "gen", patterns: []},
+        {trk: 7, trk_name: "FX",  machine: "FX2+", trk_symbol: "#", kind: "fx", patterns: []}
     ],
     patterns: [   /*  This is the pool of patterns to pick from for each machine / trk */
         {trk: 0, patterns: [
@@ -146,7 +147,8 @@ var default_config = {
             {pname: "07", puid: uid_07, length: 32, color: [0.2, 0.4, 0.5], data: []}
         ]},
         {trk: 5, patterns: []},
-        {trk: 6, patterns: []}
+        {trk: 6, patterns: []},
+        {trk: 7, patterns: []},
     ],
     machines: {
         "notes4+": getMachineInfo("notes4+"),
@@ -1942,5 +1944,6 @@ function loadbang(){
     sequencer_init();
     db_machine_count = machineCount();
     sendTo("zconsole", ["print_logo"]);
+    cols = sequencer_config.tracks.length;
 }
 
