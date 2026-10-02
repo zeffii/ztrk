@@ -1,4 +1,4 @@
-// const {ZKEYMAP} = require("ztrk_general_utils.js");
+include("ztrk_general_utils.js");
 
 autowatch = 1;
 outlets = 2;
@@ -13,10 +13,13 @@ if (!g_font_dict.contains("fontFamily")) g_font_dict.set("fontFamily", ["Consola
 if (!g_font_dict.contains("fontSize"))   g_font_dict.set("fontSize", 12);
 const ztrk_get_font_family = () => g_font_dict.get("fontFamily");
 const ztrk_get_font_size   = () => g_font_dict.get("fontSize");
+const clamped = (value, min, max) => Math.min(max, Math.max(min, value));
 
 var active_input = 0;
 var line_idx = 0;
 var output_list = [];
+var command_history_index = 0; // most recent.
+var command_history = [];
 var settings_font_size = ztrk_get_font_size(); // 12;
 var charwidth = 6.60;   // this gets updated at runtime. see this.get_text_width_and_height();
 var charheight = settings_font_size;
@@ -42,13 +45,16 @@ var inserting = 0;
 var insert_index = 0;
 var direction = 0;
 
+var blink_on = true;
+var blink_timer = null;
+var BLINK_MS = 600; 
+
 function max_scroll(){
     return Math.max(0, output_list.length - num_items_to_display);
 }
 function clamp_scroll(){
     scroll_offset = Math.max(0, Math.min(scroll_offset, max_scroll()));
 }
-
 function set_scrollbar_side(num){
     switch(num){
         case 0: scrollbar_side = 0; break;
@@ -57,7 +63,24 @@ function set_scrollbar_side(num){
     }
     mgraphics.redraw();
 }
-
+function start_blink(){
+    if (blink_timer !== null) return;
+    blink_on = true;
+    blink_timer = setInterval(() => {
+        // only redraw if the console is focused, otherwise we're
+        // burning CPU blinking a cursor nobody can see
+        if (!active_input) return;
+        blink_on = !blink_on;
+        mgraphics.redraw();
+    }, BLINK_MS);
+}
+function stop_blink(){
+    if (blink_timer === null) return;
+    clearInterval(blink_timer);
+    blink_timer = null;
+    blink_on = true;      // leave it visible while unfocused
+    mgraphics.redraw();
+}
 
 var log_color = {
     warning: [0.9, 0.2, 0.2, 1.0],
@@ -119,7 +142,8 @@ function draw_lines(gfx){
     var end = output_list.length - scroll_offset;
     var start = Math.max(0, end - num_items_to_display);
     var recent_list = output_list.slice(start, end);
-    var insert = "|";
+    var insert = (blink_on && inserting) ? "|" : "";
+    var term = (blink_on && !inserting) ? "|" : "";
 
     // history
     for (const [idx, line] of recent_list.reverse().entries()){
@@ -134,7 +158,7 @@ function draw_lines(gfx){
         gfx.move_to(10, h - padding - charheight);
         gfx.show_text(`$ ${terminal_text}`);
         gfx.set_source_rgba(...log_color.special);
-        gfx.show_text("⁃");
+        gfx.show_text(term);
     } else {
         gfx.set_source_rgba(...log_color.low);
         gfx.move_to(10, h - padding - charheight);
@@ -153,7 +177,7 @@ function draw_lines(gfx){
             gfx.show_text(char);
         }
         gfx.set_source_rgba(...log_color.special);
-        gfx.show_text("⁃");
+        gfx.show_text(term);
     }
 
     if (inserting) {
@@ -221,7 +245,13 @@ function set_msg(...args){
 
 function dispatch(){
     set_msg('low', terminal_text);
-    // insert into typed history? up/down might rotate through old entires?
+    command_history.unshift(terminal_text);
+    try {
+        const msg = sendTo;
+        eval(terminal_text);
+    } catch (e) {
+        post("error: " + e + "\n");
+    }
     terminal_text = "";
 
 }
@@ -231,12 +261,11 @@ function dispatch(){
 function onkeydown(keycode, textcharacter, updown, mod1, shift, caps, opt, mod2){
     // that handles repeat keys no problem!
     const ASCII = (key) => String.fromCharCode(key);
-    set_msg('info', [JSON.stringify([keycode, textcharacter, updown, shift, ASCII(textcharacter)])]);
+    // set_msg('info', [JSON.stringify([keycode, textcharacter, updown, shift, ASCII(textcharacter)])]);
     
-    const [SPACE, BACKSPACE, TAB, INSERT, HOME, DEL, ENTER] = [-2, -7, -5, -8, -15, -6, -4];
+    const [SPACE, BACKSPACE, TAB, INSERT, HOME, DEL, ENTER, END] = [-2, -7, -5, -8, -15, -6, -4, -16];
     const [LEFT, RIGHT, UP, DOWN] = [-11, -12, -9, -10];
 
-    function insert_char(){ terminal_text += ASCII(textcharacter) };
     function perform_backspace() { terminal_text = terminal_text.slice(0, -1); }
     function move_cursorLR(keycode){
         if (inserting){
@@ -266,8 +295,16 @@ function onkeydown(keycode, textcharacter, updown, mod1, shift, caps, opt, mod2)
             }
         case LEFT: case RIGHT: 
             move_cursorLR(keycode); break;
-        case UP: case DOWN: 
-            set_msg('info', "NAVIGATION U/D"); break;
+        case UP: case DOWN: {
+
+            direction = (keycode === UP) ? 1 : -1;
+            command_history_index += direction
+            command_history_index = clamped(command_history_index, 0, command_history.length - 1);
+            terminal_text = command_history[command_history_index];
+            mgraphics.redraw();
+            break;
+            //set_msg('info', "NAVIGATION U/D"); break;
+        }
         case INSERT:
             inserting = !inserting; 
             if (inserting) {
@@ -278,6 +315,9 @@ function onkeydown(keycode, textcharacter, updown, mod1, shift, caps, opt, mod2)
         case ENTER:
             // also implement a ctrl+Enter route.
             dispatch(); break;
+        case END:
+            insert_index = terminal_text.length;
+            inserting = false;
         default: 
             let ch = ASCII(textcharacter);
             if (inserting){
@@ -293,6 +333,7 @@ function onkeydown(keycode, textcharacter, updown, mod1, shift, caps, opt, mod2)
 function onclick(x, y, but, cmd, shift, capslock, option, ctrl){
 
     active_input = 1;
+    start_blink();
     var [w, h] = mgraphics.size;
     var hit = (scrollbar_side === 1) ? (x >= w - scrollbar_width) : (x <= scrollbar_width);
     if (hit){
@@ -308,6 +349,7 @@ function onclick(x, y, but, cmd, shift, capslock, option, ctrl){
 
 function onidleout(x, y, button, mod1, shift, caps, opt, mod2){
     active_input = 0;
+    stop_blink();
     mgraphics.redraw();
 }
 

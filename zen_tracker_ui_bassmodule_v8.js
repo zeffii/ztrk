@@ -30,16 +30,11 @@ if (!g_font_dict.contains("fontSize"))   g_font_dict.set("fontSize", 12);
 const ztrk_get_font_family = () => g_font_dict.get("fontFamily");
 const ztrk_get_font_size   = () => g_font_dict.get("fontSize");
 
-// const __logging = (obj, kind, msg) => {   // see ztrk console.js for usage.
-//     var msg_real = msg.split(' ');
-//     msg_real.unshift(kind);
-//     obj.message("set_msg", msg_real); 
-// }
 
 class Tracker  {
 
     /*
-        See it is a minimal viable product. Getting sound and other cool stuff out of this will encourage me
+        See it as a minimal viable product. Getting sound and other cool stuff out of this will encourage me
         to revisit this backend, if, upon reflection, it can be done in a less head-wrecking manner :)
     */
 
@@ -161,11 +156,7 @@ class Tracker  {
 
     bang(){
         this.send(0, this.g_pattern_playhead);
-        // if (this.faux_pattern){
-        //      this.send(1, this.faux_pattern[this.g_pattern_playhead]);
-        // }
         this.mgraphics.redraw();
-        //post('latest', this.g_pattern_playhead);
     }
 
     msg_int(tick){
@@ -423,12 +414,9 @@ class Tracker  {
     }
 
     pass_column_info_to_outlet2(){
-        // var outputDict = new Dict('pattern_col_dict');
         var idx = this.wheres_the_caret();
         var current_descriptor = this.pattern_markup.descriptors.track[idx[1]][1];
         var [descriptor_head, descriptor_tail] = splitAtFirstPipe(current_descriptor);
-        // outputDict.parse(JSON.stringify({track: idx[1], head: descriptor_head, tail: descriptor_tail || "<no info, lazy?>"}));
-        // this.send(2, "dictionary", outputDict.name);
         _postLow(`PE: ${idx[1]}, ${descriptor_head}, ${descriptor_tail || "<no info, lazy?>"}`);
     }
 
@@ -1525,8 +1513,8 @@ class Tracker  {
 
                 var command = this.faux_pattern[shifted_pidx].slice(start_idx, start_idx+2);
                 if (command !== '..'){
-                    mgraphics.move_to(tx, this.start_y + (pidx * this.settings_font_size));
-                    mgraphics.show_text(command);
+                    this.mgraphics.move_to(tx, this.start_y + (pidx * this.settings_font_size));
+                    this.mgraphics.show_text(command);
                 }
             }
         }
@@ -1550,7 +1538,6 @@ class Tracker  {
 
         var gfx = this.mgraphics;
 
-        // _postMessage(this.pattern_starts_at_ticks);
         var tick_idx = this.g_pattern_playhead;
         tick_idx = findLargestBeforeX(tick_idx, this.pattern_starts_at_ticks, this.pattern_markup.length);
         /* 
@@ -1776,13 +1763,12 @@ class Tracker  {
 
         // var conditions = [
         //    {path: "M20,0 L20, 60", stroke: "red", stroke_width: "7", fill: "none"},
-        //    {path: "M30,0 L30, 60", stroke: "green", stroke_width: "5", fill: "none"},
-        //    {path: "M50,0 L50, 60", stroke: "blue", stroke_width: "4", fill: "none"},
         //    {path: "M80,0 L80, 60", stroke: "white", stroke_width: "3", fill: "none", translate: "translate(0,120)"},
         // ];
         // var mstr = generate_svg(conditions);
         // gfx.svg_render(mstr);
 
+        // central message
         this.set_rgb(this.asRGB(...this.theme_colors.data_color), 1.3);
         var load_message = "ZTRK loaded: Waiting for patterns..";
         var load_width = gfx.text_measure(load_message)[0];
