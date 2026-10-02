@@ -46,10 +46,11 @@ Some milestones i will need to tackle, in no particular order
 Step 3:
 
 - [x] add pattern from list 
-      - [ ] (using 2hex keys)
+     - [ ] (using 2hex keys)
 - [x] set pattern length (has sideeffects)
 - [x] add user define-able machines (prelim!)
-- [ ] add tracks (select machine to add)
+- [x] add tracks (select machine to add)
+- [ ] shift machine lanes (shift `[`/ `]` )
 - [ ] add basic set of sampler/effects/synth (call these machines)
      - [ ] drummachine
      - [x] sampler simple
