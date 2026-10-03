@@ -84,15 +84,29 @@ function create_machine_subpatcher(that, muid, trk_index, pname){
     msg_box.size = [155, 22];
 
     // 4 & 5. send~ for L and R channels, named by track index
-    var sendL = sp.newdefault(20, 110, "s~", `ch_L_${trk_index}`);
+    // max will not update the send visually when we .set('name': "ch_L_<index>"),
+    // therefore i am giving them generic names. AND
+    // setting their new name to the correct name immediately.
+    var sendL = sp.newdefault(20, 110, "s~", "SendLeft");   
     sendL.varname = "sendL";
-    var sendR = sp.newdefault(20, 140, "s~", `ch_R_${trk_index}`);
+    sendL.message("set", `ch_L_${trk_index}`)
+    var sendR = sp.newdefault(20, 140, "s~", "SendRight");
     sendR.varname = "sendR";
+    sendR.message("set", `ch_R_${trk_index}`)
 
     // 6 add the control script that checks the global namespace for thus muid, and which track its in.
     var rebind_rx = sp.newdefault(20, 190, "r", "rebind");
     var binder = sp.newdefault(20, 220, "v8", "ztrk_buffer_binder.js", muid);
     sp.connect(rebind_rx, 0, binder, 0);
+
+    // This is purely for optical reinforcement so we have something that easily displays the name.
+    var msgL = sp.newdefault(130, 110, "message");
+    msgL.message("set", `ch_L_${trk_index}`);
+    msgL.varname = "dispL";
+
+    var msgR = sp.newdefault(130, 140, "message");
+    msgR.message("set", `ch_R_${trk_index}`);
+    msgR.varname = "dispR";
 
     return sub;
 }
