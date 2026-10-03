@@ -1,0 +1,33 @@
+// general buffer to action converter
+Buffer buf;
+Param kind(0, min=0, max=5);
+Param chIndex(0, min=0, max=128);   // really? you need more?  0-based
+pindex = in1;
+
+out1 = out2 = 0.0;
+
+//0=pass, 1=trigger, 2=2hex, 3=note, 4=4hex, 5=pass, 6=2hex+4hex (this is two channels combined)
+
+if (kind == 1){
+	trigger = peek(buf, pindex, chIndex);
+	out1 = (trigger == 1.0) ? 1.0 : -1.0 
+} 
+else if (kind == 3){	
+	note = peek(buf, pindex, chIndex);
+	out1 = (note >= 0.0) ? round(note * 127.0) : note;
+} 
+else if (kind == 2){
+	two_hex = peek(buf, pindex, chIndex);
+	out1 = (two_hex == -1.0) ? -1.0 : round(two_hex * 255);
+}
+else if (kind == 4){
+	four_hex = peek(buf, pindex, chIndex);
+	out1 = (four_hex == -1.0) ? -1.0 : round(four_hex * 65535);
+} 
+else if (kind == 6){
+	two_hex = peek(buf, pindex, chIndex);
+	four_hex = peek(buf, pindex, chIndex+1);
+	out1 = (two_hex == -1.0) ? -1.0 : round(two_hex * 255);
+    out2 = (four_hex == -1.0) ? -1.0 : round(four_hex * 65535);
+}
+else if (kind == 0 || kind == 5) { out1, out2 = 0.0, 0.0;} 	
