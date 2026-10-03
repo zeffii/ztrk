@@ -57,3 +57,38 @@ function _sendAdvanced(control_msg) {
     }
     return false;
 }
+
+
+function create_machine_subpatcher(that, muid, trk_index, pname){
+
+    // pname is the name of the subpatcher we are goin goin to add the machine into.
+    // not sure how great this is.. we'll see.
+
+    if (!that || !that.patcher) { _postWarning("create_machine_subpatcher: no patcher"); return null; }
+
+    // Create the subpatcher box in the parent patcher, give it a varname.
+    var sub = that.patcher.newdefault(20 + (50 * trk_index), 1000, "p", "MACH_" + pname);
+    sub.varname = "machine_" + muid;
+
+    var sp = sub.subpatcher();
+
+    // 1. receive for tick signal
+    sp.newdefault(20, 20, "r~", "tick_signal");
+
+    // 2. receive for trigger signal
+    sp.newdefault(20, 50, "r~", "trig_signal");
+
+    // 3. message box containing the muid
+    var msg_box = sp.newdefault(20, 80, "message");
+    msg_box.message("set", muid);
+    msg_box.size = [155, 22];
+
+    // 4 & 5. send~ for L and R channels, named by track index
+    sp.newdefault(20, 110, "s~", `ch_L_${trk_index}`);
+    sp.newdefault(20, 140, "s~", `ch_R_${trk_index}`);
+
+    // 6 add the control script that checks the global namespace for thus muid, and which track its in.
+    sp.newdefault(20, 220, "v8", "ztrk_buffer_binder.js", muid);
+
+    return sub;
+}

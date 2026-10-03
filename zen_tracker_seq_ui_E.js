@@ -96,8 +96,14 @@ var selected_pattern_in_menu = 0;
 var selected_machine_idx_in_menu = 1;
 var g_selected_pattern_idx = -1;
 var g_next_pname_counter = 8; // bump this whenever a clone/slice creates a new pattern
+
+// unique identifiers for patterns and machine instances ( ie. tracks )
 var g_uid_tiebreak = 0;
 const next_pattern_uid = () => `${Date.now()}_${g_uid_tiebreak++}`;
+
+var g_muid_tiebreak = 0;
+const next_machine_uid = () => `mu_${Date.now()}_${g_muid_tiebreak++}`;
+const muid = next_machine_uid;
 
 // a pending selection *rectangle*, in caret index-space (row/col), not px.
 // Shift commences it (anchor = current caret), then plain arrow presses
@@ -121,17 +127,28 @@ var uid_03 = next_pattern_uid();
 var uid_06 = next_pattern_uid();
 
 var default_config = {
+    /*
+
+    1. tracks[i].patterns (list) will contain references with a puid (see add_pattern)
+       like:  {pname: "01", puid: "1789336785399_0", start: 0, length: 32, color: [0.1, 0.4, 0.61] }
+
+    2. tracks[i].kind can be looked up using MKindMap[machine_name], kind is a loose term.
+
+    */
     tracks: [
-        {trk: 0, trk_name: "gen.00", machine: "SmpDemo", trk_symbol: "Λ", kind: "ctrl", patterns: []},    // will just contain references with a puid (see add_pattern)
-        {trk: 1, trk_name: "key.01", machine: "NVDP5", trk_symbol: "K", kind: "ctrl", patterns: []},      // like:  {pname: "01", puid: "1789336785399_0", start: 0, length: 32, color: [0.1, 0.4, 0.61] }
-        {trk: 2, trk_name: "Juno",  machine: "JUNO6", trk_symbol: "Λ", kind: "gen", patterns: []},        // kind can be looked up using MKindMap[machine_name], kind is a loose term.
-        {trk: 3, trk_name: "MIX.01",  machine: "Mixer 12", trk_symbol: "φ", kind: "fx", patterns: []},
-        {trk: 4, trk_name: "Snare",  machine: "SDR", trk_symbol: "Λ", kind: "gen", patterns: []},
-        {trk: 5, trk_name: "KSYN",  machine: "SYNDRUM", trk_symbol: "Λ", kind: "gen", patterns: []},
-        {trk: 6, trk_name: "Hat",  machine: "HTX2", trk_symbol: "Λ", kind: "gen", patterns: []},
-        {trk: 7, trk_name: "FX",  machine: "FX2+", trk_symbol: "#", kind: "fx", patterns: []}
+        {trk: 0, muid: muid(), trk_name: "gen.00", machine: "SmpDemo", trk_symbol: "Λ", kind: "ctrl", patterns: []},
+        {trk: 1, muid: muid(), trk_name: "key.01", machine: "NVDP5", trk_symbol: "K", kind: "ctrl", patterns: []},
+        {trk: 2, muid: muid(), trk_name: "Juno",  machine: "JUNO6", trk_symbol: "Λ", kind: "gen", patterns: []},
+        {trk: 3, muid: muid(), trk_name: "MIX.01",  machine: "Mixer 12", trk_symbol: "φ", kind: "fx", patterns: []},
+        {trk: 4, muid: muid(), trk_name: "Snare",  machine: "SDR", trk_symbol: "Λ", kind: "gen", patterns: []},
+        {trk: 5, muid: muid(), trk_name: "KSYN",  machine: "SYNDRUM", trk_symbol: "Λ", kind: "gen", patterns: []},
+        {trk: 6, muid: muid(), trk_name: "Hat",  machine: "HTX2", trk_symbol: "Λ", kind: "gen", patterns: []},
+        {trk: 7, muid: muid(), trk_name: "FX",  machine: "FX2+", trk_symbol: "#", kind: "fx", patterns: []}
     ],
-    patterns: [   /*  This is the pool of patterns to pick from for each machine / trk */
+    /*  
+    This is the pool of patterns to pick from for each machine / trk 
+    */
+    patterns: [
         {trk: 0, patterns: [
             {pname: "01", puid: uid_01, length: 32, color: RGBA_2_RGB(theme_colors.def_ctrl_color), data: []},
             {pname: "04", puid: uid_04, length: 64, color: RGBA_2_RGB(theme_colors.def_ctrl_color), data: []}
@@ -180,6 +197,15 @@ add_pattern(1, 192, uid_05);
 add_pattern(3, 64,  uid_03);
 add_pattern(3, 256, uid_06);
 
+function update_muid_map(){
+    var map = new Dict("ztrk_muid_map");
+    map.clear();
+    for (const track of sequencer_config.tracks){
+        map.set(track.muid, {trk: track.trk, machine: track.machine, name: track.trk_name});
+    }
+    sendTo("rebind", "bang");  // or ping the specific machines
+}
+
 function sequencer_init(){
     var num_tracks = sequencer_config.tracks.length;
     var patcher = this.patcher;
@@ -189,6 +215,14 @@ function sequencer_init(){
     debug_empty_buffers();
     outlet(0, "refresh", "buffer_viz");
     return ;
+}
+
+function next_machine_instance_name(machine_name){
+    let count = 0;
+    for (const track of sequencer_config.tracks){
+        if (track.machine === machine_name) count++;
+    }
+    return machine_name + "_" + (count + 1);
 }
 
 function add_machine_to_sequencer(){
@@ -201,15 +235,38 @@ function add_machine_to_sequencer(){
     const trk_idx = sequencer_config.tracks.length; // next available track.
     const trk_kind = MKindMap[named_machine];
     const new_procedural_name = initial_name_creation(trk_idx, named_machine)
-    const new_trk = {trk: trk_idx, trk_name: new_procedural_name,  machine: named_machine, trk_symbol: "#", kind: trk_kind, patterns: []}
+    const _muid = muid();
+    const new_trk = {
+        trk: trk_idx, 
+        muid: _muid, 
+        trk_name: new_procedural_name, 
+        machine: named_machine, 
+        trk_symbol: "#", 
+        kind: trk_kind, 
+        patterns: []
+    }
+
     _postLow(`adding a track and patterns`);
     sequencer_config.tracks.push(new_trk);
     sequencer_config.patterns.push({trk: trk_idx, patterns: []});
     const current_track_count = trk_idx + 1;
+
     _postLow(`adding a buffer`);
     init_track_buffers(this.patcher, current_track_count);
     mgraphics.redraw();
 
+    update_muid_map();
+
+    var new_patcher_name = next_machine_instance_name(named_machine)
+    var sub = create_machine_subpatcher(this, _muid, trk_idx, new_patcher_name);
+    if (sub){
+        try {
+            var sp = sub.subpatcher();
+            sp.newdefault(200, 100, "p", named_machine);
+        } catch (e) {
+            post("error: " + e + "\n");
+        }
+    }
 }
 
 function swap_track_buffers(a, b){
@@ -245,7 +302,10 @@ function move_machine_lane(trk_idx, direction){
     // 3. swap pattern pools (and their .trk field)
     swap_config_entries(sequencer_config.patterns, trk_idx, other, "trk");
     
-    // 4. move caret, refresh, tell buffer viz to redraw too.
+    // 4. broadcast the new muid->buffer map
+    update_muid_map()
+
+    // 5. move caret, refresh, tell buffer viz to redraw too.
     g_tcaret.col += direction;
     outlet(0, "refresh", "buffer_viz");
     mgraphics.redraw();
@@ -1678,6 +1738,7 @@ function draw_patternprops_menu(gfx, w, h){
         var colorDisplay = (pfield === "color") ? (g_text_input_buffer + endCaret) : pref.color.join(" ");
         // var trkNameDisplay = sequencer_config.tracks[trk].trk_name;
         var trkNameDisplay = (pfield === "trk_name") ? (g_text_input_buffer + endCaret) : sequencer_config.tracks[trk].trk_name;
+        var tmuid = sequencer_config.tracks[trk].muid || "";
 
         var parameters = [
             "Pattern Properties              ",
@@ -1685,11 +1746,12 @@ function draw_patternprops_menu(gfx, w, h){
             `Length: ${lengthDisplay} (512 max)`,
             `Name:   ${nameDisplay}`,
             `Color:  ${colorDisplay}`,
-            `uid:    ${pref.puid} (immutable)`,
+            `p uid:  ${pref.puid} (immutable)`,
             " ",
             "Track Properties              ",
             " ",
             `Name:   ${trkNameDisplay}`,
+            `m uid:  ${tmuid} (immutable)`,
             " ",
             "          Esc to close          "
         ];
@@ -1715,7 +1777,7 @@ function draw_patternprops_menu(gfx, w, h){
         var is_selected_line = (field_line_map[idx] === selected_prop_field);
         var draw_color = is_selected_line ? highlight_color : menu_text_color;
 
-        if (item.startsWith("uid:")){
+        if (item.startsWith("p uid:") || item.startsWith("m uid:")){
             gfx.set_source_rgba(0.6, 0.6, 0.6, 1.0);
             gfx.move_to(px_location + charwidth, py_location + charheight + (idx * charheight));
             gfx.show_text(item);
@@ -2088,6 +2150,7 @@ function loadbang(){
     if (_ztrk_initialized) return;
     _ztrk_initialized = true;
     // post(`ztrk loadbang: patcher =${this.patcher.getattr("varname")}, boxes =${this.patcher.count}\m `);
+    update_muid_map();
     sequencer_init();
     db_machine_count = machineCount();
     sendTo("zconsole", ["print_logo"]);
