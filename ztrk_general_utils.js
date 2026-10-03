@@ -84,11 +84,15 @@ function create_machine_subpatcher(that, muid, trk_index, pname){
     msg_box.size = [155, 22];
 
     // 4 & 5. send~ for L and R channels, named by track index
-    sp.newdefault(20, 110, "s~", `ch_L_${trk_index}`);
-    sp.newdefault(20, 140, "s~", `ch_R_${trk_index}`);
+    var sendL = sp.newdefault(20, 110, "s~", `ch_L_${trk_index}`);
+    sendL.varname = "sendL";
+    var sendR = sp.newdefault(20, 140, "s~", `ch_R_${trk_index}`);
+    sendR.varname = "sendR";
 
     // 6 add the control script that checks the global namespace for thus muid, and which track its in.
-    sp.newdefault(20, 220, "v8", "ztrk_buffer_binder.js", muid);
+    var rebind_rx = sp.newdefault(20, 190, "r", "rebind");
+    var binder = sp.newdefault(20, 220, "v8", "ztrk_buffer_binder.js", muid);
+    sp.connect(rebind_rx, 0, binder, 0);
 
     return sub;
 }

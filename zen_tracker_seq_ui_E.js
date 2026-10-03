@@ -203,7 +203,8 @@ function update_muid_map(){
     for (const track of sequencer_config.tracks){
         map.set(track.muid, {trk: track.trk, machine: track.machine, name: track.trk_name});
     }
-    sendTo("rebind", "bang");  // or ping the specific machines
+    messnamed("rebind", "bang");  // or ping the specific machines
+
 }
 
 function sequencer_init(){
