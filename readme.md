@@ -84,4 +84,4 @@ What i'm attempting here is a cross between sunvox/buzz/st3/impulsetracker/tetra
 
 ## Implementation details
 
-The one main requirement I have is that the triggering is tight, therefore I'm basing the entire mechanicm on signal based triggering. Pattern Data is written to buffers, and i will provide many buffer decoders so that we can trigger sounds from buffers by going through them sample by sample (as ticks) using a phasor and clicks.
+The one main requirement I have is that the triggering is tight, therefore I'm basing the entire mechanism on signal based triggering. Pattern Data is written to buffers, and i will provide many buffer decoders so that we can trigger sounds from buffers by going through them sample by sample (as ticks) using a phasor and clicks.
