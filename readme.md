@@ -80,7 +80,7 @@ Step 3:
 -----------------
 
 
-What i'm attempting here is a cross between sunvox/buzz/st3/impulsetracker/tetramed. I want to have high control via keyboard like oldschool trackers, while also being able to use synths/samplers that i design and can edit at runtime. ..And why not also allow myself to also trigger visuals too?! max/msp and puredata have always been on my todo list of things to learn. I also wish to be able to implement a trigger grammar
+What i'm attempting here is a cross between sunvox/buzz/st3/impulsetracker/tetramed. I want to have high control via keyboard like oldschool trackers, while also being able to use synths/samplers that i design and can edit at runtime. It can also trigger visuals/JIT but this has not been my focus yet.
 
 ## Implementation details
 
