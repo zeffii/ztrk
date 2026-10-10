@@ -81,3 +81,7 @@ Step 3:
 
 
 What i'm attempting here is a cross between sunvox/buzz/st3/impulsetracker/tetramed. I want to have high control via keyboard like oldschool trackers, while also being able to use synths/samplers that i design and can edit at runtime. ..And why not also allow myself to also trigger visuals too?! max/msp and puredata have always been on my todo list of things to learn. I also wish to be able to implement a trigger grammar
+
+## Implementation details
+
+The one main requirement I have is that the triggering is tight, therefore I'm basing the entire mechanicm on signal based triggering. Pattern Data is written to buffers, and i will provide many buffer decoders so that we can trigger sounds from buffers by going through them sample by sample (as ticks) using a phasor and clicks.
