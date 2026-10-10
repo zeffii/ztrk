@@ -1,11 +1,13 @@
 ![Image](https://github.com/user-attachments/assets/a5cdccc3-71f2-4412-882d-ccae7fc68bfa)
 
-I decided to get a max/msp license because of gen~ and jsui/v8ui/rnbo. The goal is to make a tracker interface that will turn max/msp into a playground where i can make and trigger synths exactly the way i want, and hook them up in a modular way to effects. Rather than moaning about the things that i perceive as limitations in other tools/trackers. My main issue is that i want to be able to control the creative part entirely via a keyboard, or via a scripting interface, if i want to. 
+Zen Tracker (ztrk) is a neo-classic IT/Buzz style music tracker/sequencer. My goal is to make a tracker interface that will turn max/msp into a playground where i can make and trigger synths exactly the way i want, and hook them up in a modular way to effects. Rather than moaning about the things that i perceive as limitations in other tools/trackers. My main issue is that i want to be able to control the creative part entirely via a keyboard, or via a scripting interface, if i want to. 
 
 See https://github.com/zeffii/ztrk/issues/13 for the current active TODO list.
 Current MaxPat to load: https://github.com/zeffii/ztrk/blob/master/max/sequencer_dev4.maxpat
 
 Some milestones i will need to tackle, in no particular order
+
+<details>
 
 - [x] handleing keyboard qwerty input
 - [x] loading existing patterns
@@ -51,7 +53,7 @@ Step 3:
 - [x] set pattern length (has sideeffects)
 - [x] add user define-able machines (prelim!)
 - [x] add tracks (select machine to add)
-- [ ] shift machine lanes (shift `[`/ `]` )
+- [x] shift machine lanes (shift `[`/ `]` )
 - [ ] add basic set of sampler/effects/synth (call these machines)
      - [ ] drummachine
      - [x] sampler simple
@@ -73,6 +75,7 @@ Step 3:
      - [ ] chorus
 - [ ] keyrepeats, need a tidier solution (has been through several iteration, not satisfying yet)
 
+</details>
 
 -----------------
 
