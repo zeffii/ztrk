@@ -245,11 +245,14 @@ function set_msg(...args){
     mgraphics.redraw();
 }
 
+var [temp, temp2, temp3, temp4] = ["", "", "", ""];
+
 function dispatch(){
     set_msg('low', terminal_text);
     command_history.unshift(terminal_text);
+    const msg = sendTo;
+    
     try {
-        const msg = sendTo;
         eval(terminal_text);
     } catch (e) {
         post("error: " + e + "\n");
@@ -380,6 +383,7 @@ function onresize(w, h){
 }
 
 function print_logo(){
+    /*
     var line1 = "           dP                              dP                        "; 
     var line2 = "           88                              88                        "; 
     var line3 = "d888888b d8888P 88d888b. .d8888b. .d8888b. 88  .dP  .d8888b. 88d888b."; 
@@ -387,7 +391,8 @@ function print_logo(){
     var line5 = " .Y8P      88   88       88.  .88 88.  ... 88  `8b. 88.  ... 88      ";
     var line6 = "d888888P   dP   dP       `88888P8 `88888P' dP   `YP `88888P' dP      v.009";
     var lines = [line1, line2, line3, line4, line5, line6];
-
+    */
+    var lines = ["zen tracker v.009"];
     for (const line in lines){
         set_msg('low', lines[line]);
     }

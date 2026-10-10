@@ -245,3 +245,29 @@ function attach_attrui_to_gen(machine_subpatcher, machine_name){
     build_param_ui(machine_subpatcher, `${machine_name}_gen`, params);
 }
 
+function read_maxpat_as_json(maxpat_path){
+    /*
+    Reads a .maxpat file and returns its parsed JSON object.
+    Returns null if the file can't be opened or isn't valid JSON.
+    */
+    var f = new File(maxpat_path, "read");
+    if (!f.isopen){
+        post("read_maxpat_as_json: couldn't open", maxpat_path, "err:", f.error, "\n");
+        return null;
+    }
+
+    var text = "";
+    var remaining = f.eof;
+    while (remaining > 0){
+        var to_read = Math.min(16000, remaining);
+        text += f.readstring(to_read);
+        remaining -= to_read;
+    }
+    f.close();
+
+    try { return JSON.parse(text); }
+    catch(e){
+        post("read_maxpat_as_json: bad json —", e, "\n");
+        return null;
+    }
+}

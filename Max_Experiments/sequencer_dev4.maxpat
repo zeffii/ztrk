@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 391.0, 118.0, 2127.0, 1228.0 ],
+        "rect": [ 33.0, 85.0, 2128.0, 1228.0 ],
         "boxes": [
             {
                 "box": {
@@ -55,7 +55,7 @@
                     "numoutlets": 1,
                     "outlettype": [ "" ],
                     "patching_rect": [ 759.0, 767.0, 50.0, 22.0 ],
-                    "text": "72"
+                    "text": "68"
                 }
             },
             {
@@ -397,7 +397,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                                    "text": "127",
+                                                    "text": "55",
                                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                                 }
                                             },
@@ -486,7 +486,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                                    "text": "117",
+                                                    "text": "26",
                                                     "varname": "input_keys[3]"
                                                 }
                                             },
@@ -531,7 +531,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                                    "text": "keys 127 117 0 -6",
+                                                    "text": "keys 55 26 1024 55",
                                                     "varname": "input_keys[1]"
                                                 }
                                             },
@@ -2531,7 +2531,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 330.0, 325.0, 56.0, 25.0 ],
-                                                    "text": "127",
+                                                    "text": "55",
                                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                                 }
                                             },
@@ -2609,7 +2609,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 138.0, 187.0, 154.0, 22.0 ],
-                                                    "text": "117",
+                                                    "text": "26",
                                                     "varname": "input_keys[3]"
                                                 }
                                             },
@@ -2643,7 +2643,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 138.0, 373.0, 154.0, 22.0 ],
-                                                    "text": "keys 127 117 0 -6",
+                                                    "text": "keys 55 26 1024 55",
                                                     "varname": "input_keys[1]"
                                                 }
                                             },
@@ -3143,7 +3143,65 @@
                         },
                         "classnamespace": "box",
                         "rect": [ 1240.0, 150.0, 1129.0, 1120.0 ],
+                        "visible": 1,
                         "boxes": [
+                            {
+                                "box": {
+                                    "id": "obj-51",
+                                    "maxclass": "newobj",
+                                    "numinlets": 2,
+                                    "numoutlets": 1,
+                                    "outlettype": [ "int" ],
+                                    "patching_rect": [ 929.0, 103.0, 29.5, 22.0 ],
+                                    "text": "+ 1"
+                                }
+                            },
+                            {
+                                "box": {
+                                    "id": "obj-50",
+                                    "maxclass": "toggle",
+                                    "numinlets": 1,
+                                    "numoutlets": 1,
+                                    "outlettype": [ "int" ],
+                                    "parameter_enable": 0,
+                                    "patching_rect": [ 906.0, 40.0, 24.0, 24.0 ]
+                                }
+                            },
+                            {
+                                "box": {
+                                    "id": "obj-30",
+                                    "maxclass": "preset",
+                                    "numinlets": 1,
+                                    "numoutlets": 5,
+                                    "outlettype": [ "preset", "int", "preset", "int", "" ],
+                                    "patching_rect": [ 994.0, 109.0, 100.0, 40.0 ],
+                                    "preset_data": [
+                                        {
+                                            "number": 1,
+                                            "data": [ 5, "obj-20", "attrui", "attr", "strokeMaterial", 5, "obj-20", "attrui", "float", 3.2500000000000004, 5, "obj-19", "attrui", "attr", "strokeLinger", 5, "obj-19", "attrui", "float", 0.3620000000000001, 5, "obj-18", "attrui", "attr", "strokeIntensity", 5, "obj-18", "attrui", "float", 1.1300000000000003, 5, "obj-17", "attrui", "attr", "membraneDamp", 5, "obj-17", "attrui", "float", 0.09000000000000002, 5, "obj-16", "attrui", "attr", "inflection", 5, "obj-16", "attrui", "float", 0.6300000000000001, 5, "obj-15", "attrui", "attr", "tightnessEnv", 5, "obj-15", "attrui", "float", 0.4800000000000001, 5, "obj-14", "attrui", "attr", "tightness", 5, "obj-14", "attrui", "float", 3.2560000000000007, 5, "obj-24", "attrui", "attr", "loudness", 5, "obj-24", "attrui", "float", 0.03300000000000001, 5, "obj-23", "attrui", "attr", "coupling", 5, "obj-23", "attrui", "float", 0.16800000000000004, 5, "obj-22", "attrui", "attr", "cavityDamp", 5, "obj-22", "attrui", "float", 0.6890000000000002, 5, "obj-21", "attrui", "attr", "beaterSize", 5, "obj-21", "attrui", "float", 0.5100000000000001, 5, "obj-9", "attrui", "attr", "vellumThickness", 5, "obj-9", "attrui", "float", 0.22000000000000003, 5, "obj-8", "attrui", "attr", "hitRadius", 5, "obj-8", "attrui", "float", 0.5000000000000001, 5, "obj-7", "attrui", "attr", "drumDepth", 5, "obj-7", "attrui", "float", 1.7430000000000003, 5, "obj-6", "attrui", "attr", "drumRadius", 5, "obj-6", "attrui", "float", 0.09000000000000002 ]
+                                        },
+                                        {
+                                            "number": 2,
+                                            "data": [ 5, "obj-20", "attrui", "attr", "strokeMaterial", 5, "obj-20", "attrui", "float", 3.2500000000000004, 5, "obj-19", "attrui", "attr", "strokeLinger", 5, "obj-19", "attrui", "float", 0.3620000000000001, 5, "obj-18", "attrui", "attr", "strokeIntensity", 5, "obj-18", "attrui", "float", 1.1300000000000003, 5, "obj-17", "attrui", "attr", "membraneDamp", 5, "obj-17", "attrui", "float", 0.09000000000000002, 5, "obj-16", "attrui", "attr", "inflection", 5, "obj-16", "attrui", "float", 0.6300000000000001, 5, "obj-15", "attrui", "attr", "tightnessEnv", 5, "obj-15", "attrui", "float", 0.4800000000000001, 5, "obj-14", "attrui", "attr", "tightness", 5, "obj-14", "attrui", "float", 3.2560000000000007, 5, "obj-24", "attrui", "attr", "loudness", 5, "obj-24", "attrui", "float", 0.03300000000000001, 5, "obj-23", "attrui", "attr", "coupling", 5, "obj-23", "attrui", "float", 0.16800000000000004, 5, "obj-22", "attrui", "attr", "cavityDamp", 5, "obj-22", "attrui", "float", 0.6890000000000002, 5, "obj-21", "attrui", "attr", "beaterSize", 5, "obj-21", "attrui", "float", 0.5100000000000001, 5, "obj-9", "attrui", "attr", "vellumThickness", 5, "obj-9", "attrui", "float", 0.22000000000000003, 5, "obj-8", "attrui", "attr", "hitRadius", 5, "obj-8", "attrui", "float", 0.5000000000000001, 5, "obj-7", "attrui", "attr", "drumDepth", 5, "obj-7", "attrui", "float", 1.7430000000000003, 5, "obj-6", "attrui", "attr", "drumRadius", 5, "obj-6", "attrui", "float", 0.4000000000000001 ]
+                                        },
+                                        {
+                                            "number": 3,
+                                            "data": [ 5, "obj-20", "attrui", "attr", "strokeMaterial", 5, "obj-20", "attrui", "float", 2.2200000000000006, 5, "obj-19", "attrui", "attr", "strokeLinger", 5, "obj-19", "attrui", "float", 0.4330000000000001, 5, "obj-18", "attrui", "attr", "strokeIntensity", 5, "obj-18", "attrui", "float", 0.06600000000000002, 5, "obj-17", "attrui", "attr", "membraneDamp", 5, "obj-17", "attrui", "float", 0.007000000000000002, 5, "obj-16", "attrui", "attr", "inflection", 5, "obj-16", "attrui", "float", 0.4300000000000001, 5, "obj-15", "attrui", "attr", "tightnessEnv", 5, "obj-15", "attrui", "float", 0.06100000000000001, 5, "obj-14", "attrui", "attr", "tightness", 5, "obj-14", "attrui", "float", 0.3400000000000001, 5, "obj-24", "attrui", "attr", "loudness", 5, "obj-24", "attrui", "float", 0.03300000000000001, 5, "obj-23", "attrui", "attr", "coupling", 5, "obj-23", "attrui", "float", 0.16800000000000004, 5, "obj-22", "attrui", "attr", "cavityDamp", 5, "obj-22", "attrui", "float", 0.26000000000000006, 5, "obj-21", "attrui", "attr", "beaterSize", 5, "obj-21", "attrui", "float", 0.7810000000000001, 5, "obj-9", "attrui", "attr", "vellumThickness", 5, "obj-9", "attrui", "float", 0.2740000000000001, 5, "obj-8", "attrui", "attr", "hitRadius", 5, "obj-8", "attrui", "float", 0.7940000000000002, 5, "obj-7", "attrui", "attr", "drumDepth", 5, "obj-7", "attrui", "float", 1.8900000000000003, 5, "obj-6", "attrui", "attr", "drumRadius", 5, "obj-6", "attrui", "float", 0.09600000000000003 ]
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "box": {
+                                    "id": "obj-26",
+                                    "maxclass": "button",
+                                    "numinlets": 1,
+                                    "numoutlets": 1,
+                                    "outlettype": [ "bang" ],
+                                    "parameter_enable": 0,
+                                    "patching_rect": [ 408.0, 504.0, 24.0, 24.0 ]
+                                }
+                            },
                             {
                                 "box": {
                                     "fontface": 0,
@@ -3386,7 +3444,7 @@
                                             "modernui": 1
                                         },
                                         "classnamespace": "dsp.gen",
-                                        "rect": [ 775.0, 248.0, 1251.0, 928.0 ],
+                                        "rect": [ 109.0, 189.0, 856.0, 928.0 ],
                                         "boxes": [
                                             {
                                                 "box": {
@@ -3540,7 +3598,7 @@
                                             },
                                             {
                                                 "box": {
-                                                    "code": "Buffer buf;\nParam chIndex(0, min=0, max=36);\n\nHistory _GATEPREV(0);\nHistory _RADIUS(0.18);\nHistory _DEPTH(0.15);\nHistory _HITRAD(0.09);\nHistory _VELLUM(1.0);\nHistory _TIGHT(0.6);\nHistory _TIGHTENV(0.15);\nHistory _INFLECT(0.5);\nHistory _MEMDAMP(0.35);\nHistory _STROKEINT(0.8);\nHistory _STROKELING(0.12);\nHistory _STROKEMAT(0.5);\nHistory _BEATER(0.3);\nHistory _CAVDAMP(0.5);\nHistory _COUPLING(0.3);\nHistory _LOUDNESS(0.7);\n\npindex = in1;\ntrig = (in2 > 0.0);\nedge = trig && !_GATEPREV;\n_GATEPREV = trig;\n\n// 0 Trigger (b) — one-sample pulse, no History\nraw = peek(buf, pindex, chIndex+0);\nout1 = (edge && raw > 0.5) ? 1.0 : 0.0;\n\n// 1 Drum Radius  (scale=[0.05,0.4])\nraw = peek(buf, pindex, chIndex+1);\n_RADIUS = (edge && raw >= 0.0) ? (0.05 + raw * (0.4 - 0.05)) : _RADIUS;\nout2 = _RADIUS;\r\n\r\n// 2 Drum Depth  (scale=[0.03,2.0])\nraw = peek(buf, pindex, chIndex+2);\n_DEPTH = (edge && raw >= 0.0) ? (0.03 + raw * (2.0 - 0.03)) : _DEPTH;\nout3 = _DEPTH;\r\n\r\n// 3 Hit Radius  (scale=[0,0.4])\nraw = peek(buf, pindex, chIndex+3);\n_HITRAD = (edge && raw >= 0.0) ? (raw * 0.4) : _HITRAD;\nout4 = _HITRAD;\r\n\r\n// 4 Vellum Thickness  (scale=[0.2,2.0])\nraw = peek(buf, pindex, chIndex+4);\n_VELLUM = (edge && raw >= 0.0) ? (0.2 + raw * (2.0 - 0.2)) : _VELLUM;\nout5 = _VELLUM;\r\n\r\n// 5 Tightness\r\nraw = peek(buf, pindex, chIndex+5);\r\n_TIGHT = (edge && raw >= 0.0) ? raw : _TIGHT;\r\nout6 = _TIGHT;\r\n\r\n// 6 Tightness Env\r\nraw = peek(buf, pindex, chIndex+6);\r\n_TIGHTENV = (edge && raw >= 0.0) ? raw : _TIGHTENV;\r\nout7 = _TIGHTENV;\r\n\r\n// 7 Inflection\r\nraw = peek(buf, pindex, chIndex+7);\r\n_INFLECT = (edge && raw >= 0.0) ? raw : _INFLECT;\r\nout8 = _INFLECT;\r\n\r\n// 8 Membrane Damp\r\nraw = peek(buf, pindex, chIndex+8);\r\n_MEMDAMP = (edge && raw >= 0.0) ? raw : _MEMDAMP;\r\nout9 = _MEMDAMP;\r\n\r\n// 9 Stroke Intensity\r\nraw = peek(buf, pindex, chIndex+9);\r\n_STROKEINT = (edge && raw >= 0.0) ? raw : _STROKEINT;\r\nout10 = _STROKEINT;\r\n\r\n// 10 Stroke Linger\r\nraw = peek(buf, pindex, chIndex+10);\r\n_STROKELING = (edge && raw >= 0.0) ? raw : _STROKELING;\r\nout11 = _STROKELING;\r\n\r\n// 11 Stroke Material\r\nraw = peek(buf, pindex, chIndex+11);\r\n_STROKEMAT = (edge && raw >= 0.0) ? raw : _STROKEMAT;\r\nout12 = _STROKEMAT;\r\n\r\n// 12 Beater Size\r\nraw = peek(buf, pindex, chIndex+12);\r\n_BEATER = (edge && raw >= 0.0) ? raw : _BEATER;\r\nout13 = _BEATER;\r\n\r\n// 13 Cavity Damp\r\nraw = peek(buf, pindex, chIndex+13);\r\n_CAVDAMP = (edge && raw >= 0.0) ? raw : _CAVDAMP;\r\nout14 = _CAVDAMP;\r\n\r\n// 14 Coupling\r\nraw = peek(buf, pindex, chIndex+14);\r\n_COUPLING = (edge && raw >= 0.0) ? raw : _COUPLING;\r\nout15 = _COUPLING;\r\n\r\n// 15 Loudness\r\nraw = peek(buf, pindex, chIndex+15);\r\n_LOUDNESS = (edge && raw >= 0.0) ? raw : _LOUDNESS;\r\nout16 = _LOUDNESS;",
+                                                    "code": "Buffer buf;\nParam chIndex(0, min=0, max=36);\n\nHistory _GATEPREV(0);\nHistory _RADIUS(0.18);\nHistory _DEPTH(0.15);\nHistory _HITRAD(0.09);\nHistory _VELLUM(1.0);\nHistory _TIGHT(0.6);\nHistory _TIGHTENV(0.15);\nHistory _INFLECT(0.5);\nHistory _MEMDAMP(0.35);\nHistory _STROKEINT(0.8);\nHistory _STROKELING(0.12);\nHistory _STROKEMAT(0.5);\nHistory _BEATER(0.3);\nHistory _CAVDAMP(0.5);\nHistory _COUPLING(0.3);\nHistory _LOUDNESS(0.7);\n\npindex = in1;\ntrig = (in2 > 0.0);\nedge = trig && !_GATEPREV;\n_GATEPREV = trig;\n\n// 0 Trigger (b) — one-sample pulse, no History\nraw = peek(buf, pindex, chIndex+0);\nout1 = (edge && raw > 0.5) ? 1.0 : 0.0;\n\n// 1 Drum Radius  (scale=[0.05,0.4])\nraw = peek(buf, pindex, chIndex+1);\n_RADIUS = (edge && raw >= 0.0) ? (0.05 + raw * (0.4 - 0.05)) : _RADIUS;\nout2 = _RADIUS;\r\n\r\n// 2 Drum Depth  (scale=[0.03,2.0])\nraw = peek(buf, pindex, chIndex+2);\n_DEPTH = (edge && raw >= 0.0) ? (0.03 + raw * (2.0 - 0.03)) : _DEPTH;\nout3 = _DEPTH;\r\n\r\n// 3 Hit Radius  (scale=[0,1.9])\nraw = peek(buf, pindex, chIndex+3);\n_HITRAD = (edge && raw >= 0.0) ? (raw * 1.9) : _HITRAD;\nout4 = _HITRAD;\r\n\r\n// 4 Vellum Thickness  (scale=[0.2,2.0])\nraw = peek(buf, pindex, chIndex+4);\n_VELLUM = (edge && raw >= 0.0) ? (0.2 + raw * (2.0 - 0.2)) : _VELLUM;\nout5 = _VELLUM;\r\n\r\n// 5 Tightness\r\nraw = peek(buf, pindex, chIndex+5);\r\n_TIGHT = (edge && raw >= 0.0) ? raw : _TIGHT;\r\nout6 = _TIGHT;\r\n\r\n// 6 Tightness Env\r\nraw = peek(buf, pindex, chIndex+6);\r\n_TIGHTENV = (edge && raw >= 0.0) ? raw : _TIGHTENV;\r\nout7 = _TIGHTENV;\r\n\r\n// 7 Inflection\r\nraw = peek(buf, pindex, chIndex+7);\r\n_INFLECT = (edge && raw >= 0.0) ? raw : _INFLECT;\r\nout8 = _INFLECT;\r\n\r\n// 8 Membrane Damp\r\nraw = peek(buf, pindex, chIndex+8);\r\n_MEMDAMP = (edge && raw >= 0.0) ? raw : _MEMDAMP;\r\nout9 = _MEMDAMP;\r\n\r\n// 9 Stroke Intensity\r\nraw = peek(buf, pindex, chIndex+9);\r\n_STROKEINT = (edge && raw >= 0.0) ? raw : _STROKEINT;\r\nout10 = _STROKEINT;\r\n\r\n// 10 Stroke Linger\r\nraw = peek(buf, pindex, chIndex+10);\r\n_STROKELING = (edge && raw >= 0.0) ? raw : _STROKELING;\r\nout11 = _STROKELING;\r\n\r\n// 11 Stroke Material\r\nraw = peek(buf, pindex, chIndex+11);\r\n_STROKEMAT = (edge && raw >= 0.0) ? raw : _STROKEMAT;\r\nout12 = _STROKEMAT;\r\n\r\n// 12 Beater Size\r\nraw = peek(buf, pindex, chIndex+12);\r\n_BEATER = (edge && raw >= 0.0) ? raw : _BEATER;\r\nout13 = _BEATER;\r\n\r\n// 13 Cavity Damp\r\nraw = peek(buf, pindex, chIndex+13);\r\n_CAVDAMP = (edge && raw >= 0.0) ? raw : _CAVDAMP;\r\nout14 = _CAVDAMP;\r\n\r\n// 14 Coupling\r\nraw = peek(buf, pindex, chIndex+14);\r\n_COUPLING = (edge && raw >= 0.0) ? raw : _COUPLING;\r\nout15 = _COUPLING;\r\n\r\n// 15 Loudness\r\nraw = peek(buf, pindex, chIndex+15);\r\n_LOUDNESS = (edge && raw >= 0.0) ? raw : _LOUDNESS;\r\nout16 = _LOUDNESS;",
                                                     "fontface": 0,
                                                     "fontname": "<Monospaced>",
                                                     "fontsize": 12.0,
@@ -3742,7 +3800,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 301.0, 629.0, 50.0, 22.0 ],
-                                    "text": "0.578"
+                                    "text": "0.34"
                                 }
                             },
                             {
@@ -3809,7 +3867,7 @@
                                             },
                                             {
                                                 "box": {
-                                                    "code": "// YO\r\n// genexpr physical model of a struck membrane drum\r\n// (modal/Bessel-ratio membrane bank + coupled cavity resonator)\r\n\r\n\r\n// ---- Geometry ----\r\nParam drumRadius(0.18, 0.05, 0.4);     // m\r\nParam drumDepth(0.15, 0.03, 0.5);      // m\r\nParam hitRadius(0.09, 0, 0.4);         // m, clamped to drumRadius internally\r\n\r\n// ---- Vellum ----\r\nParam vellumThickness(1.0, 0.2, 2.0);\r\nParam tightness(0.6, 0, 1);\r\nParam tightnessEnv(0.15, 0, 1);\r\nParam inflection(0.5, 0, 1);\r\nParam membraneDamp(0.35, 0, 1);\r\n\r\n// ---- Stroke ----\r\n// Param strike(0, 0, 1);                 // unit impulse in, sample-accurate (e.g. from click~/edge~)\r\nParam strokeIntensity(0.8, 0, 1);\r\nParam strokeLinger(0.12, 0, 1);\r\nParam strokeMaterial(0.5, 0, 1);\r\nParam beaterSize(0.3, 0, 1);\r\n\r\n// ---- Cavity ----\r\nParam cavityDamp(0.5, 0, 1);\r\nParam coupling(0.3, 0, 1);\r\n\r\n// ---- Global ----\r\nParam loudness(0.7, 0, 1);\r\n\r\n// ---- state ----\r\nData modeY1(1, 8);   // 1 sample, 8 channels — first history per mode\r\nData modeY2(1, 8);   // 1 sample, 8 channels — second history per mode\r\nHistory cY1;\r\nHistory cY2;\r\nHistory envH;\r\n\r\nsr = samplerate;\r\n\r\n// strike envelope: jumps on impulse, decays over strokeLinger (contact time)\r\nlingerT60 = 0.01 + strokeLinger * 0.4;             // 10ms .. 410ms\r\nlingerCoef = exp(-6.9078 / (lingerT60 * sr));\r\nenvIn = in1 * strokeIntensity;\r\nenv = max(envIn, envH * lingerCoef);\r\nenvH = env;\r\n\r\n// tension: S-curve shaping around 'inflection', plus transient bump from the strike envelope\r\nk = 9;\r\nlo = 1 / (1 + exp(k * inflection));\r\nhi = 1 / (1 + exp(-k * (1 - inflection)));\r\nraw = 1 / (1 + exp(-k * (tightness - inflection)));\r\ntensionShaped = (raw - lo) / (hi - lo);\r\ntension = clamp(tensionShaped + tightnessEnv * env * 0.5, 0.01, 1.5);\r\n\r\n// fundamental frequency from geometry + tension + mass (thickness)\r\nK0 = 28;   // wave-speed calibration constant\r\nf0 = K0 * sqrt(tension / vellumThickness) / max(drumRadius, 0.02);\r\n\r\n// strike position, normalized 0..1\r\nposNorm = clamp(hitRadius / max(drumRadius, 0.001), 0, 1);\r\n\r\n// strike spectral brightness: harder/smaller beater = brighter\r\nbrightness = clamp(strokeMaterial * (1 - 0.5 * beaterSize), 0.05, 1);\r\n\r\n// damping calibration\r\nt60base = 2 - membraneDamp * 1.95;    // 2.0s .. 0.05s\r\n\r\nmembraneOut = 0;\r\n\r\nfor (i = 0; i < 8; i += 1) {\r\n\r\n\t// ideal circular-membrane mode table: freq ratio, angular order m, radial order n\r\n\tratio, m, n = 1.0000, 0, 1;\r\n\tif (i == 1) { ratio, m, n = 1.5933, 1, 1; }\r\n\tif (i == 2) { ratio, m, n = 2.1355, 2, 1; }\r\n\tif (i == 3) { ratio, m, n = 2.2954, 0, 2; }\r\n\tif (i == 4) { ratio, m, n = 2.6531, 3, 1; }\r\n\tif (i == 5) { ratio, m, n = 2.9173, 1, 2; }\r\n\tif (i == 6) { ratio, m, n = 3.1558, 4, 1; }\r\n\tif (i == 7) { ratio, m, n = 3.5001, 2, 2; }\r\n\r\n\t// approximate radial mode shape -> excitation weight at strike position\r\n\t// (r^m near center, forced to zero at the clamped rim, cos term ~ internal nodes)\r\n\tshape = pow(posNorm, m) * (1 - posNorm) * cos((n - 1) * pi * posNorm);\r\n\tposWeight = abs(shape);\r\n\tposWeight = posWeight + (0.5 - posWeight) * (beaterSize * 0.5); // big beater blurs position selectivity\r\n\r\n\tspecGain = pow(brightness, ratio - 1);\r\n\tmodeGain = strokeIntensity * posWeight * specGain;\r\n\r\n\t// frequency + damping for this mode\r\n\tfreq = min(f0 * ratio, sr * 0.45);\r\n\tt60 = t60base / pow(ratio, 1.5);\r\n\tr = exp(-6.9078 / (t60 * sr));\r\n\tr = r * (1 - env * strokeLinger * 0.15);   // slight extra damping while beater is in contact\r\n\tr = clamp(r, 0, 0.9999);\r\n\r\n\ttheta = 2 * pi * freq / sr;\r\n\ty1 = peek(modeY1, 0, i);\r\n\ty2 = peek(modeY2, 0, i);\r\n    y = 2 * r * cos(theta) * y1 - r * r * y2 + modeGain * in1;\r\n\r\n\tpoke(modeY2, y1, 0, i);\r\n\tpoke(modeY1, y,  0, i);\r\n\r\n\tmembraneOut = membraneOut + y;\r\n}\r\n\r\nmembraneOut = membraneOut * 0.35;   // trim for 8-mode sum\r\n\r\n// ---- cavity resonator (shell air resonance), coupled from membrane ----\r\ncavFreq = min(343 / (4 * max(drumDepth, 0.02)), sr * 0.45);\r\ncavT60 = 1.5 - cavityDamp * 1.45;\r\ncavR = clamp(exp(-6.9078 / (cavT60 * sr)), 0, 0.9999);\r\ncavTheta = 2 * pi * cavFreq / sr;\r\n\r\ncy1 = cY1;\r\ncy2 = cY2;\r\ncy = 2 * cavR * cos(cavTheta) * cy1 - cavR * cavR * cy2 + coupling * membraneOut;\r\ncY2 = cy1;\r\ncY1 = cy;\r\n\r\n// ---- mix + output ----\r\ndry = membraneOut * (1 - coupling * 0.5);\r\nwet = cy * coupling;\r\nout1 = tanh((dry + wet) * loudness * 2);\r\nout2 = out1;",
+                                                    "code": "// YO\r\n// genexpr physical model of a struck membrane drum\r\n// (modal/Bessel-ratio membrane bank + coupled cavity resonator)\r\n\r\n\r\n// ---- Geometry ----\r\nParam drumRadius(0.18, 0.05, 0.4);     // m\r\nParam drumDepth(0.15, 0.03, 0.5);      // m\r\nParam hitRadius(0.09, 0, 1.9);         // m, clamped to drumRadius internally\r\n\r\n// ---- Vellum ----\r\nParam vellumThickness(1.0, 0.2, 2.0);\r\nParam tightness(0.6, 0, 1);\r\nParam tightnessEnv(0.15, 0, 1);\r\nParam inflection(0.5, 0, 1);\r\nParam membraneDamp(0.35, 0, 1);\r\n\r\n// ---- Stroke ----\r\n// Param strike(0, 0, 1);                 // unit impulse in, sample-accurate (e.g. from click~/edge~)\r\nParam strokeIntensity(0.8, 0, 1);\r\nParam strokeLinger(0.12, 0, 1);\r\nParam strokeMaterial(0.5, 0, 1);\r\nParam beaterSize(0.3, 0, 1);\r\n\r\n// ---- Cavity ----\r\nParam cavityDamp(0.5, 0, 1);\r\nParam coupling(0.3, 0, 1);\r\n\r\n// ---- Global ----\r\nParam loudness(0.7, 0, 1);\r\n\r\n// ---- state ----\r\nData modeY1(1, 8);   // 1 sample, 8 channels — first history per mode\r\nData modeY2(1, 8);   // 1 sample, 8 channels — second history per mode\r\nHistory cY1;\r\nHistory cY2;\r\nHistory envH;\r\n\r\nsr = samplerate;\r\n\r\n// strike envelope: jumps on impulse, decays over strokeLinger (contact time)\r\nlingerT60 = 0.01 + strokeLinger * 0.4;             // 10ms .. 410ms\r\nlingerCoef = exp(-6.9078 / (lingerT60 * sr));\r\nenvIn = in1 * strokeIntensity;\r\nenv = max(envIn, envH * lingerCoef);\r\nenvH = env;\r\n\r\n// tension: S-curve shaping around 'inflection', plus transient bump from the strike envelope\r\nk = 9;\r\nlo = 1 / (1 + exp(k * inflection));\r\nhi = 1 / (1 + exp(-k * (1 - inflection)));\r\nraw = 1 / (1 + exp(-k * (tightness - inflection)));\r\ntensionShaped = (raw - lo) / (hi - lo);\r\ntension = clamp(tensionShaped + tightnessEnv * env * 0.5, 0.01, 1.5);\r\n\r\n// fundamental frequency from geometry + tension + mass (thickness)\r\nK0 = 28;   // wave-speed calibration constant\r\nf0 = K0 * sqrt(tension / vellumThickness) / max(drumRadius, 0.02);\r\n\r\n// strike position, normalized 0..1\r\nposNorm = clamp(hitRadius / max(drumRadius, 0.001), 0, 1);\r\n\r\n// strike spectral brightness: harder/smaller beater = brighter\r\nbrightness = clamp(strokeMaterial * (1 - 0.5 * beaterSize), 0.05, 1);\r\n\r\n// damping calibration\r\nt60base = 2 - membraneDamp * 1.95;    // 2.0s .. 0.05s\r\n\r\nmembraneOut = 0;\r\n\r\nfor (i = 0; i < 8; i += 1) {\r\n\r\n\t// ideal circular-membrane mode table: freq ratio, angular order m, radial order n\r\n\tratio, m, n = 1.0000, 0, 1;\r\n\tif (i == 1) { ratio, m, n = 1.5933, 1, 1; }\r\n\tif (i == 2) { ratio, m, n = 2.1355, 2, 1; }\r\n\tif (i == 3) { ratio, m, n = 2.2954, 0, 2; }\r\n\tif (i == 4) { ratio, m, n = 2.6531, 3, 1; }\r\n\tif (i == 5) { ratio, m, n = 2.9173, 1, 2; }\r\n\tif (i == 6) { ratio, m, n = 3.1558, 4, 1; }\r\n\tif (i == 7) { ratio, m, n = 3.5001, 2, 2; }\r\n\r\n\t// approximate radial mode shape -> excitation weight at strike position\r\n\t// (r^m near center, forced to zero at the clamped rim, cos term ~ internal nodes)\r\n\tshape = pow(posNorm, m) * (1 - posNorm) * cos((n - 1) * pi * posNorm);\r\n\tposWeight = abs(shape);\r\n\tposWeight = posWeight + (0.5 - posWeight) * (beaterSize * 0.5); // big beater blurs position selectivity\r\n\r\n\tspecGain = pow(brightness, ratio - 1);\r\n\tmodeGain = strokeIntensity * posWeight * specGain;\r\n\r\n\t// frequency + damping for this mode\r\n\tfreq = min(f0 * ratio, sr * 0.45);\r\n\tt60 = t60base / pow(ratio, 1.5);\r\n\tr = exp(-6.9078 / (t60 * sr));\r\n\tr = r * (1 - env * strokeLinger * 0.15);   // slight extra damping while beater is in contact\r\n\tr = clamp(r, 0, 0.9999);\r\n\r\n\ttheta = 2 * pi * freq / sr;\r\n\ty1 = peek(modeY1, 0, i);\r\n\ty2 = peek(modeY2, 0, i);\r\n    y = 2 * r * cos(theta) * y1 - r * r * y2 + modeGain * in1;\r\n\r\n\tpoke(modeY2, y1, 0, i);\r\n\tpoke(modeY1, y,  0, i);\r\n\r\n\tmembraneOut = membraneOut + y;\r\n}\r\n\r\nmembraneOut = membraneOut * 0.35;   // trim for 8-mode sum\r\n\r\n// ---- cavity resonator (shell air resonance), coupled from membrane ----\r\ncavFreq = min(343 / (4 * max(drumDepth, 0.02)), sr * 0.45);\r\ncavT60 = 1.5 - cavityDamp * 1.45;\r\ncavR = clamp(exp(-6.9078 / (cavT60 * sr)), 0, 0.9999);\r\ncavTheta = 2 * pi * cavFreq / sr;\r\n\r\ncy1 = cY1;\r\ncy2 = cY2;\r\ncy = 2 * cavR * cos(cavTheta) * cy1 - cavR * cavR * cy2 + coupling * membraneOut;\r\ncY2 = cy1;\r\ncY1 = cy;\r\n\r\n// ---- mix + output ----\r\ndry = membraneOut * (1 - coupling * 0.5);\r\nwet = cy * coupling;\r\nout1 = tanh((dry + wet) * loudness * 2);\r\nout2 = out1;",
                                                     "fontface": 0,
                                                     "fontname": "<Monospaced>",
                                                     "fontsize": 12.0,
@@ -3972,7 +4030,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "parameter_enable": 0,
-                                    "patching_rect": [ 944.0, 297.35714285714283, 150.0, 22.0 ]
+                                    "patching_rect": [ 944.0, 297.3571428571429, 150.0, 22.0 ]
                                 }
                             },
                             {
@@ -4285,7 +4343,218 @@
                                 "patchline": {
                                     "color": [ 0.0, 1.0, 0.15294117647058825, 1.0 ],
                                     "destination": [ "obj-6", 0 ],
+                                    "disabled": 1,
                                     "source": [ "obj-25", 1 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-14", 0 ],
+                                    "order": 6,
+                                    "source": [ "obj-26", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-15", 0 ],
+                                    "order": 5,
+                                    "source": [ "obj-26", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-16", 0 ],
+                                    "order": 4,
+                                    "source": [ "obj-26", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-17", 0 ],
+                                    "order": 3,
+                                    "source": [ "obj-26", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-18", 0 ],
+                                    "order": 2,
+                                    "source": [ "obj-26", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-19", 0 ],
+                                    "order": 1,
+                                    "source": [ "obj-26", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-20", 0 ],
+                                    "order": 0,
+                                    "source": [ "obj-26", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-21", 0 ],
+                                    "order": 10,
+                                    "source": [ "obj-26", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-22", 0 ],
+                                    "order": 9,
+                                    "source": [ "obj-26", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-23", 0 ],
+                                    "order": 8,
+                                    "source": [ "obj-26", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-24", 0 ],
+                                    "order": 7,
+                                    "source": [ "obj-26", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-6", 0 ],
+                                    "order": 14,
+                                    "source": [ "obj-26", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-7", 0 ],
+                                    "order": 13,
+                                    "source": [ "obj-26", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-8", 0 ],
+                                    "order": 12,
+                                    "source": [ "obj-26", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-9", 0 ],
+                                    "order": 11,
+                                    "source": [ "obj-26", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-14", 0 ],
+                                    "order": 6,
+                                    "source": [ "obj-30", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-15", 0 ],
+                                    "order": 5,
+                                    "source": [ "obj-30", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-16", 0 ],
+                                    "order": 4,
+                                    "source": [ "obj-30", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-17", 0 ],
+                                    "order": 3,
+                                    "source": [ "obj-30", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-18", 0 ],
+                                    "order": 2,
+                                    "source": [ "obj-30", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-19", 0 ],
+                                    "order": 1,
+                                    "source": [ "obj-30", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-20", 0 ],
+                                    "order": 0,
+                                    "source": [ "obj-30", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-21", 0 ],
+                                    "order": 10,
+                                    "source": [ "obj-30", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-22", 0 ],
+                                    "order": 9,
+                                    "source": [ "obj-30", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-23", 0 ],
+                                    "order": 8,
+                                    "source": [ "obj-30", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-24", 0 ],
+                                    "order": 7,
+                                    "source": [ "obj-30", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-6", 0 ],
+                                    "order": 14,
+                                    "source": [ "obj-30", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-7", 0 ],
+                                    "order": 13,
+                                    "source": [ "obj-30", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-8", 0 ],
+                                    "order": 12,
+                                    "source": [ "obj-30", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-9", 0 ],
+                                    "order": 11,
+                                    "source": [ "obj-30", 0 ]
                                 }
                             },
                             {
@@ -4304,6 +4573,7 @@
                                 "patchline": {
                                     "color": [ 0.0, 1.0, 0.15294117647058825, 1.0 ],
                                     "destination": [ "obj-7", 0 ],
+                                    "disabled": 1,
                                     "source": [ "obj-34", 1 ]
                                 }
                             },
@@ -4311,6 +4581,7 @@
                                 "patchline": {
                                     "color": [ 0.0, 1.0, 0.15294117647058825, 1.0 ],
                                     "destination": [ "obj-8", 0 ],
+                                    "disabled": 1,
                                     "source": [ "obj-35", 1 ]
                                 }
                             },
@@ -4429,6 +4700,7 @@
                                 "patchline": {
                                     "color": [ 0.0, 1.0, 0.15294117647058825, 1.0 ],
                                     "destination": [ "obj-9", 0 ],
+                                    "disabled": 1,
                                     "source": [ "obj-37", 1 ]
                                 }
                             },
@@ -4436,6 +4708,7 @@
                                 "patchline": {
                                     "color": [ 0.0, 1.0, 0.15294117647058825, 1.0 ],
                                     "destination": [ "obj-14", 0 ],
+                                    "disabled": 1,
                                     "source": [ "obj-38", 1 ]
                                 }
                             },
@@ -4443,6 +4716,7 @@
                                 "patchline": {
                                     "color": [ 0.0, 1.0, 0.15294117647058825, 1.0 ],
                                     "destination": [ "obj-15", 0 ],
+                                    "disabled": 1,
                                     "source": [ "obj-39", 1 ]
                                 }
                             },
@@ -4462,6 +4736,7 @@
                                 "patchline": {
                                     "color": [ 0.0, 1.0, 0.15294117647058825, 1.0 ],
                                     "destination": [ "obj-16", 0 ],
+                                    "disabled": 1,
                                     "source": [ "obj-40", 1 ]
                                 }
                             },
@@ -4469,6 +4744,7 @@
                                 "patchline": {
                                     "color": [ 0.0, 1.0, 0.15294117647058825, 1.0 ],
                                     "destination": [ "obj-17", 0 ],
+                                    "disabled": 1,
                                     "source": [ "obj-41", 1 ]
                                 }
                             },
@@ -4476,6 +4752,7 @@
                                 "patchline": {
                                     "color": [ 0.0, 1.0, 0.15294117647058825, 1.0 ],
                                     "destination": [ "obj-18", 0 ],
+                                    "disabled": 1,
                                     "source": [ "obj-42", 1 ]
                                 }
                             },
@@ -4483,6 +4760,7 @@
                                 "patchline": {
                                     "color": [ 0.0, 1.0, 0.15294117647058825, 1.0 ],
                                     "destination": [ "obj-19", 0 ],
+                                    "disabled": 1,
                                     "source": [ "obj-43", 1 ]
                                 }
                             },
@@ -4490,6 +4768,7 @@
                                 "patchline": {
                                     "color": [ 0.0, 1.0, 0.15294117647058825, 1.0 ],
                                     "destination": [ "obj-20", 0 ],
+                                    "disabled": 1,
                                     "source": [ "obj-44", 1 ]
                                 }
                             },
@@ -4497,6 +4776,7 @@
                                 "patchline": {
                                     "color": [ 0.0, 1.0, 0.15294117647058825, 1.0 ],
                                     "destination": [ "obj-21", 0 ],
+                                    "disabled": 1,
                                     "source": [ "obj-45", 1 ]
                                 }
                             },
@@ -4504,6 +4784,7 @@
                                 "patchline": {
                                     "color": [ 0.0, 1.0, 0.15294117647058825, 1.0 ],
                                     "destination": [ "obj-22", 0 ],
+                                    "disabled": 1,
                                     "source": [ "obj-46", 1 ]
                                 }
                             },
@@ -4511,6 +4792,7 @@
                                 "patchline": {
                                     "color": [ 0.0, 1.0, 0.15294117647058825, 1.0 ],
                                     "destination": [ "obj-23", 0 ],
+                                    "disabled": 1,
                                     "source": [ "obj-47", 1 ]
                                 }
                             },
@@ -4518,7 +4800,20 @@
                                 "patchline": {
                                     "color": [ 0.0, 1.0, 0.15294117647058825, 1.0 ],
                                     "destination": [ "obj-24", 0 ],
+                                    "disabled": 1,
                                     "source": [ "obj-48", 1 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-51", 0 ],
+                                    "source": [ "obj-50", 0 ]
+                                }
+                            },
+                            {
+                                "patchline": {
+                                    "destination": [ "obj-30", 0 ],
+                                    "source": [ "obj-51", 0 ]
                                 }
                             },
                             {
@@ -4568,7 +4863,8 @@
                         ]
                     },
                     "patching_rect": [ 1550.0, 421.0, 102.0, 22.0 ],
-                    "text": "p KDRUM_PHYS"
+                    "text": "p KDRUM_PHYS",
+                    "varname": "KDRUM_PHYS"
                 }
             },
             {
@@ -5137,8 +5433,6 @@
                                     "saved_object_attributes": {
                                         "autostart": 0,
                                         "defer": 0,
-                                        "node_bin_path": "",
-                                        "npm_bin_path": "",
                                         "watch": 1
                                     },
                                     "text": "node.script ztrk_wave_dispatch_for_node.js",
@@ -5757,7 +6051,7 @@
                     "numoutlets": 1,
                     "offset": [ 0.0, 0.0 ],
                     "outlettype": [ "" ],
-                    "patching_rect": [ 7.971014559268951, 97.82608777284622, 605.4578540325165, 34.0 ],
+                    "patching_rect": [ 7.971014559268951, 105.0, 605.4578540325165, 34.0 ],
                     "varname": "TimeInfo",
                     "viewvisibility": 1
                 }
@@ -6462,8 +6756,6 @@
                                     "saved_object_attributes": {
                                         "autostart": 1,
                                         "defer": 0,
-                                        "node_bin_path": "",
-                                        "npm_bin_path": "",
                                         "watch": 1
                                     },
                                     "text": "node.script ztrk_gendsp_linter_for_node.js",
@@ -6556,7 +6848,7 @@
                     "numoutlets": 2,
                     "offset": [ 0.0, 0.0 ],
                     "outlettype": [ "", "" ],
-                    "patching_rect": [ 1.2048193216323853, 30.12048304080963, 546.0, 66.0 ],
+                    "patching_rect": [ 1.2048193216323853, 45.0, 546.0, 66.0 ],
                     "viewvisibility": 1
                 }
             },
@@ -15609,6 +15901,7 @@
                         },
                         "classnamespace": "box",
                         "rect": [ 134.0, 134.0, 1000.0, 915.0 ],
+                        "visible": 1,
                         "boxes": [
                             {
                                 "box": {
@@ -20833,7 +21126,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "127",
+                                    "text": "55",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -20911,7 +21204,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "117",
+                                    "text": "26",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -20945,7 +21238,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 127 117 0 -6",
+                                    "text": "keys 55 26 1024 55",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -21314,7 +21607,7 @@
                     "numoutlets": 3,
                     "outlettype": [ "", "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 718.0, 13.0, 525.0, 428.0 ],
+                    "patching_rect": [ 718.0, 13.0, 518.2265625, 812.0 ],
                     "textfile": {
                         "filename": "hex_tracker.js",
                         "flags": 0,
@@ -21595,7 +21888,7 @@
                     "color": [ 0.6352941176470588, 0.2784313725490196, 0.2784313725490196, 1.0 ],
                     "destination": [ "obj-1", 0 ],
                     "hidden": 1,
-                    "midpoints": [ 980.5, 851.0, 636.0, 851.0, 636.0, 123.0, 15.0, 123.0, 15.0, 150.0, 10.5, 150.0 ],
+                    "midpoints": [ 977.11328125, 851.0, 636.0, 851.0, 636.0, 123.0, 15.0, 123.0, 15.0, 150.0, 10.5, 150.0 ],
                     "order": 1,
                     "source": [ "obj-2", 1 ]
                 }
