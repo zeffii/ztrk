@@ -9,7 +9,7 @@
             "modernui": 1
         },
         "classnamespace": "box",
-        "rect": [ 33.0, 85.0, 2128.0, 1228.0 ],
+        "rect": [ 34.0, 77.0, 1852.0, 921.0 ],
         "boxes": [
             {
                 "box": {
@@ -55,7 +55,7 @@
                     "numoutlets": 1,
                     "outlettype": [ "" ],
                     "patching_rect": [ 759.0, 767.0, 50.0, 22.0 ],
-                    "text": "68"
+                    "text": "79"
                 }
             },
             {
@@ -397,7 +397,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                                    "text": "55",
+                                                    "text": "30",
                                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                                 }
                                             },
@@ -486,7 +486,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                                    "text": "26",
+                                                    "text": "126",
                                                     "varname": "input_keys[3]"
                                                 }
                                             },
@@ -531,7 +531,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                                    "text": "keys 55 26 1024 55",
+                                                    "text": "keys 30 126 0 -9",
                                                     "varname": "input_keys[1]"
                                                 }
                                             },
@@ -2319,7 +2319,7 @@
                             "modernui": 1
                         },
                         "classnamespace": "box",
-                        "rect": [ 328.0, 240.0, 1592.0, 923.0 ],
+                        "rect": [ 165.0, 251.0, 1592.0, 923.0 ],
                         "boxes": [
                             {
                                 "box": {
@@ -2531,7 +2531,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 330.0, 325.0, 56.0, 25.0 ],
-                                                    "text": "55",
+                                                    "text": "30",
                                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                                 }
                                             },
@@ -2609,7 +2609,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 138.0, 187.0, 154.0, 22.0 ],
-                                                    "text": "26",
+                                                    "text": "126",
                                                     "varname": "input_keys[3]"
                                                 }
                                             },
@@ -2643,7 +2643,7 @@
                                                     "numoutlets": 1,
                                                     "outlettype": [ "" ],
                                                     "patching_rect": [ 138.0, 373.0, 154.0, 22.0 ],
-                                                    "text": "keys 55 26 1024 55",
+                                                    "text": "keys 30 126 0 -9",
                                                     "varname": "input_keys[1]"
                                                 }
                                             },
@@ -4883,7 +4883,7 @@
                             "modernui": 1
                         },
                         "classnamespace": "box",
-                        "rect": [ 225.0, 239.0, 1983.0, 935.0 ],
+                        "rect": [ 34.0, 77.0, 1852.0, 921.0 ],
                         "boxes": [
                             {
                                 "box": {
@@ -5000,7 +5000,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 149.75, 571.0, 50.0, 22.0 ],
-                                    "text": "1"
+                                    "text": "2"
                                 }
                             },
                             {
@@ -5273,13 +5273,12 @@
                             {
                                 "box": {
                                     "id": "obj-40",
-                                    "linecount": 2,
                                     "maxclass": "message",
                                     "numinlets": 2,
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
-                                    "patching_rect": [ 701.0, 146.0, 530.0, 36.0 ],
-                                    "text": "\"C:/Users/zeffi/Downloads/samples_junglefrenzy_1/Zero-G - Creative Essentials Vol. 13 -- Jungle Frenzy Vol. 1/WAV/TRACK_23/13_23_11.WAV\""
+                                    "patching_rect": [ 701.0, 146.0, 530.0, 22.0 ],
+                                    "text": "C:/Users/zeffi/GITWORX/AbletonMaxLive/ztrk/max/Samples/stereo_bb.wav"
                                 }
                             },
                             {
@@ -5433,6 +5432,8 @@
                                     "saved_object_attributes": {
                                         "autostart": 0,
                                         "defer": 0,
+                                        "node_bin_path": "",
+                                        "npm_bin_path": "",
                                         "watch": 1
                                     },
                                     "text": "node.script ztrk_wave_dispatch_for_node.js",
@@ -6756,6 +6757,8 @@
                                     "saved_object_attributes": {
                                         "autostart": 1,
                                         "defer": 0,
+                                        "node_bin_path": "",
+                                        "npm_bin_path": "",
                                         "watch": 1
                                     },
                                     "text": "node.script ztrk_gendsp_linter_for_node.js",
@@ -16120,7 +16123,7 @@
                             "modernui": 1
                         },
                         "classnamespace": "box",
-                        "rect": [ 134.0, 134.0, 2156.0, 783.0 ],
+                        "rect": [ -652.0, 203.0, 2156.0, 783.0 ],
                         "boxes": [
                             {
                                 "box": {
@@ -21126,7 +21129,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 336.0, 334.92308807373047, 56.0, 25.0 ],
-                                    "text": "55",
+                                    "text": "30",
                                     "textcolor": [ 0.10980392156862745, 0.10196078431372549, 0.10196078431372549, 1.0 ]
                                 }
                             },
@@ -21204,7 +21207,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 149.23077392578125, 154.0, 22.0 ],
-                                    "text": "26",
+                                    "text": "126",
                                     "varname": "input_keys[3]"
                                 }
                             },
@@ -21238,7 +21241,7 @@
                                     "numoutlets": 1,
                                     "outlettype": [ "" ],
                                     "patching_rect": [ 137.69231605529785, 334.92308807373047, 154.0, 22.0 ],
-                                    "text": "keys 55 26 1024 55",
+                                    "text": "keys 30 126 0 -9",
                                     "varname": "input_keys[1]"
                                 }
                             },
@@ -21607,7 +21610,7 @@
                     "numoutlets": 3,
                     "outlettype": [ "", "", "" ],
                     "parameter_enable": 0,
-                    "patching_rect": [ 718.0, 13.0, 518.2265625, 812.0 ],
+                    "patching_rect": [ 718.0, 13.0, 491.8359375, 620.0 ],
                     "textfile": {
                         "filename": "hex_tracker.js",
                         "flags": 0,
@@ -21888,7 +21891,7 @@
                     "color": [ 0.6352941176470588, 0.2784313725490196, 0.2784313725490196, 1.0 ],
                     "destination": [ "obj-1", 0 ],
                     "hidden": 1,
-                    "midpoints": [ 977.11328125, 851.0, 636.0, 851.0, 636.0, 123.0, 15.0, 123.0, 15.0, 150.0, 10.5, 150.0 ],
+                    "midpoints": [ 963.91796875, 851.0, 636.0, 851.0, 636.0, 123.0, 15.0, 123.0, 15.0, 150.0, 10.5, 150.0 ],
                     "order": 1,
                     "source": [ "obj-2", 1 ]
                 }
