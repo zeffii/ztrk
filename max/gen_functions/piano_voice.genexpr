@@ -1,0 +1,121 @@
+// piano voice: 3 detuned strings + felt hammer + damper/pedal + soundboard modes
+// one gen~ per note (use in poly~).  Params set per note: freq, vel, pedal, gate via in1
+// in1: gate (0/1)   in2: bridge signal from OTHER voices (sympathetic resonance)
+// out1: audio       out2: this voice's bridge signal (sum it into a bus for in2 of the others)
+
+Param freq(261.63, min=20, max=4500);
+Param vel(0.7, min=0, max=1);
+Param pedal(0, min=0, max=1);
+Param t60(8, min=0.2, max=40);        // free-string decay time (s) of the fundamental
+Param dark(0.3, min=0, max=1);        // loop lowpass amount (higher = darker, faster HF decay)
+Param detune(0.7, min=0, max=4);      // unison detune in cents
+Param binh(0.0002, min=0, max=0.005); // inharmonicity at middle C (scales with pitch)
+Param strikepos(0.125, min=0.05, max=0.5);
+Param hardness(1, min=0, max=3);      // felt exponent = 2 + hardness
+Param cpl(0.05, min=0, max=0.3);      // string-to-string coupling via bridge
+Param bloss(0.05, min=0, max=0.5);    // energy the bridge radiates away (two-stage decay)
+Param sympa(0.02, min=0, max=0.2);    // how much other voices' bridge drives these strings
+Param board(0.5, min=0, max=1);       // dry bridge <-> soundboard resonances
+Param level(1, min=0, max=4);
+
+Delay d1(8192, interp="cubic");
+Delay d2(8192, interp="cubic");
+Delay d3(8192, interp="cubic");
+Delay dh(8192, interp="cubic");
+Data mst(8, 2);   // soundboard mode state (y1, y2)
+Data mco(8, 3);   // soundboard mode coeffs (a1, a2, gain)
+
+History gprev(0);
+History hact(0);
+History xh(0);
+History vh(0);
+History dmp(1);
+History bprev(0);
+History l1(0);
+History l2(0);
+History l3(0);
+History z1a(0);
+History z1b(0);
+History z2a(0);
+History z2b(0);
+History z3a(0);
+History z3b(0);
+
+// soundboard modes, built once
+if (elapsed < 1) {
+	for (k = 0; k < 8; k += 1) {
+		fk = 95 * pow(1.62, k);
+		r = exp(-pi * fk / (25 * samplerate));
+		th = twopi * fk / samplerate;
+		poke(mco, 2 * r * cos(th), k, 0);
+		poke(mco, -r * r, k, 1);
+		poke(mco, (1 - r) * 2 * sin(th) / sqrt(k + 1), k, 2);
+	}
+}
+
+gate, ext = in1, in2;
+rise = gate > 0 && gprev <= 0;
+gprev = gate;
+period = samplerate / freq;
+
+// dispersion allpass (inharmonicity), capped so its delay fits inside the period
+B = binh * freq / 261.63;
+half = 0.2 * period;
+a = -min(max(0, (half - 1) / (half + 1)), sqrt(B) * 20);
+
+// damper: closes when key is up and pedal is up, snaps open on note-on
+if (rise) { dmp = 0; }
+dmp = mix(dmp, (gate <= 0 && pedal < 0.5) ? 1 : 0, 0.002);
+g = mix(pow(0.001, 1 / (t60 * freq)), pow(0.001, 1 / (0.12 * freq)), dmp);
+c = clamp(dark * 261.63 / freq * 0.5, 0, 0.9);
+cc = mix(c, 0.6, dmp);
+
+// tuning compensation for the filters inside the loop
+comp = 1 + cc / (1 - cc) + 2 * (1 - a) / (1 + a);
+r2, r3 = pow(2, detune / 1200), pow(2, -detune / 1200);
+w2, w3 = freq > 70, freq > 250;       // 1 string bass, 2 tenor, 3 treble
+n = 1 / (1 + w2 + w3);
+rt1, rt2, rt3 = max(2, period - comp), max(2, period / r2 - comp), max(2, period / r3 - comp);
+
+// hammer: mass on a nonlinear felt spring, force injected at the strike point (comb)
+if (rise) { hact = 1; xh = 0; vh = 0.001 + 0.05 * vel * vel; }
+ch = xh - bprev;
+F = hact * pow(max(ch, 0), 2 + hardness);
+vh -= F * 0.002;
+xh += vh;
+if (ch <= 0 && vh < 0) { hact = 0; }
+dh.write(F);
+inj = 0.005 * (F - dh.read(strikepos * period));
+
+// strings: read -> loop lowpass+loss -> two allpass stages
+u1 = g * (l1 = (1 - cc) * d1.read(rt1) + cc * l1);
+u2 = w2 * g * (l2 = (1 - cc) * d2.read(rt2) + cc * l2);
+u3 = w3 * g * (l3 = (1 - cc) * d3.read(rt3) + cc * l3);
+
+v1 = a * u1 + z1a;  z1a = u1 - a * v1;  o1 = a * v1 + z1b;  z1b = v1 - a * o1;
+v2 = a * u2 + z2a;  z2a = u2 - a * v2;  o2 = a * v2 + z2b;  z2b = v2 - a * o2;
+v3 = a * u3 + z3a;  z3a = u3 - a * v3;  o3 = a * v3 + z3b;  z3b = v3 - a * o3;
+
+// bridge coupling (energy-conserving mix toward the shared, lossy bridge) + sympathetic input
+bsum = (o1 + o2 + o3) * n;
+ubar = bsum * (1 - bloss);
+drv = inj + sympa * ext;
+d1.write(mix(o1, ubar, cpl) + drv);
+d2.write(w2 * (mix(o2, ubar, cpl) + drv));
+d3.write(w3 * (mix(o3, ubar, cpl) + drv));
+bprev = bsum;
+
+// soundboard: bank of 8 resonators driven by the bridge
+bd = dcblock(bsum);
+m = 0;
+for (k = 0; k < 8; k += 1) {
+	y1 = peek(mst, k, 0);
+	y2 = peek(mst, k, 1);
+	y = peek(mco, k, 2) * bd + peek(mco, k, 0) * y1 + peek(mco, k, 1) * y2;
+	poke(mst, y, k, 0);
+	poke(mst, y1, k, 1);
+	m += y;
+}
+
+out1 = level * mix(bd, m, board);
+out2 = bsum;

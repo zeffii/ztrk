@@ -1,0 +1,18 @@
+// paste into a gen~ codebox (2 inlets, 6 outlets)
+// also create a [buffer~ patchparams 1 512] in the patcher and put 0.5 in sample 0
+
+require("testlib");
+
+Data tbl(512);
+Buffer pbuf("patchparams");
+
+if (elapsed < 1) { poke(tbl, 0.25, 7); }
+
+a = onepole(in1, 0.9);
+b = onepole(in1, 0.99);
+c = readp(tbl, 7);
+d = writep(tbl, 3, in2);
+e = peek(tbl, 3);
+f = readp(pbuf, 0);
+
+out1, out2, out3, out4, out5, out6 = a, b, c, d, e, f;

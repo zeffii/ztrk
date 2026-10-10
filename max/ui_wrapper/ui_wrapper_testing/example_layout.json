@@ -1,0 +1,46 @@
+{
+  "size": [260, 496],
+  "theme": {
+    "acronyms": ["lfo"],
+    "dial": { "thickness": 3 }
+  },
+  "widgets": [
+    { "type": "panel", "title": "Osc", "x": 8, "y": 8, "w": 244, "h": 100,
+      "children": [
+        { "type": "dial", "bind": "osc_gain", "x": 10, "y": 18, "w": 56, "h": 64,
+          "min": 0, "max": 1, "default": 0.7, "hex": 4 },
+        { "type": "dial", "bind": "detune", "x": 74, "y": 18, "w": 56, "h": 64,
+          "min": -50, "max": 50, "bipolar": true, "unit": "ct", "hover": "Fine tuning in cents" },
+        { "type": "dial", "bind": "lfo_rate", "x": 138, "y": 18, "w": 56, "h": 64,
+          "min": 0.1, "max": 20, "default": 2, "unit": "Hz", "accent": "#5fd0c8" },
+        { "type": "dial", "bind": "voices", "x": 194, "y": 18, "w": 46, "h": 64,
+          "min": 1, "max": 8, "int": true, "default": 4 }
+      ] },
+    { "type": "panel", "title": "Filter", "x": 8, "y": 116, "w": 244, "h": 124,
+      "children": [
+        { "type": "slider", "bind": "filter_cutoff", "x": 10, "y": 20, "w": 170, "h": 16,
+          "min": 20, "max": 18000, "default": 1000, "unit": "Hz" },
+        { "type": "slider", "bind": "pan", "x": 10, "y": 42, "w": 170, "h": 16,
+          "min": -1, "max": 1, "bipolar": true, "hex": 2 },
+        { "type": "toggle", "bind": "sync", "x": 10, "y": 68, "w": 50, "h": 18 },
+        { "type": "menu", "bind": "waveform", "x": 66, "y": 68, "w": 114, "h": 18,
+          "items": ["Sine", "Saw", "Square", "Triangle"], "default": 1 },
+        { "type": "slider", "bind": "env_amount", "orient": "v", "x": 196, "y": 20, "w": 36, "h": 90,
+          "min": 0, "max": 1, "hex": 2 }
+      ] },
+    { "type": "panel", "title": "Amp Env", "x": 8, "y": 248, "w": 244, "h": 116,
+      "children": [
+        { "type": "envelope", "x": 8, "y": 18, "w": 228, "h": 90,
+          "bind": { "attack": "amp_attack", "decay": "amp_decay",
+                    "sustain": "amp_sustain", "release": "amp_release" },
+          "ranges": { "attack": [1, 5000], "decay": [1, 5000], "sustain": [0, 1], "release": [1, 8000] },
+          "defaults": { "attack": 20, "decay": 300, "sustain": 0.6, "release": 400 } }
+      ] },
+    { "type": "panel", "title": "Mod Env", "x": 8, "y": 372, "w": 244, "h": 116,
+      "children": [
+        { "type": "breakpoints", "bind": "mod_points", "x": 8, "y": 18, "w": 228, "h": 90,
+          "xRange": [0, 2000], "xUnit": "ms", "yRange": [0, 1], "xPower": 2,
+          "points": [[0, 0], [100, 1], [600, 0.4], [2000, 0]] }
+      ] }
+  ]
+}

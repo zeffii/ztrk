@@ -1,0 +1,326 @@
+{
+  "machine": "subtractor",
+  "size": [
+    620,
+    386
+  ],
+  "theme": {},
+  "widgets": [
+    {
+      "type": "panel",
+      "title": "DCO",
+      "x": 8,
+      "y": 8,
+      "w": 452,
+      "h": 152,
+      "children": [
+        {
+          "type": "dial",
+          "bind": "saw",
+          "x": 10,
+          "y": 18,
+          "w": 72,
+          "h": 64,
+          "min": 0,
+          "max": 1,
+          "default": 0.7,
+          "hex": 2
+        },
+        {
+          "type": "dial",
+          "bind": "pulse",
+          "x": 82,
+          "y": 18,
+          "w": 72,
+          "h": 64,
+          "min": 0,
+          "max": 1,
+          "default": 0,
+          "hex": 2
+        },
+        {
+          "type": "dial",
+          "bind": "sub",
+          "x": 154,
+          "y": 18,
+          "w": 72,
+          "h": 64,
+          "min": 0,
+          "max": 1,
+          "default": 0.3,
+          "hex": 2
+        },
+        {
+          "type": "dial",
+          "bind": "noiseLvl",
+          "x": 226,
+          "y": 18,
+          "w": 72,
+          "h": 64,
+          "min": 0,
+          "max": 1,
+          "default": 0,
+          "hex": 2
+        },
+        {
+          "type": "dial",
+          "bind": "pwm",
+          "x": 298,
+          "y": 18,
+          "w": 72,
+          "h": 64,
+          "min": 0,
+          "max": 1,
+          "default": 0.5,
+          "hex": 2
+        },
+        {
+          "type": "dial",
+          "bind": "pwmLfoDepth",
+          "x": 370,
+          "y": 18,
+          "w": 72,
+          "h": 64,
+          "min": 0,
+          "max": 1,
+          "default": 0,
+          "hex": 2
+        },
+        {
+          "type": "dial",
+          "bind": "range",
+          "x": 10,
+          "y": 82,
+          "w": 72,
+          "h": 64,
+          "min": -24,
+          "max": 24,
+          "default": 0,
+          "bipolar": true,
+          "int": true,
+          "unit": "st",
+          "hex": 2
+        }
+      ]
+    },
+    {
+      "type": "panel",
+      "title": "HPF",
+      "x": 468,
+      "y": 8,
+      "w": 92,
+      "h": 88,
+      "children": [
+        {
+          "type": "dial",
+          "bind": "hpfCutoff",
+          "x": 10,
+          "y": 18,
+          "w": 72,
+          "h": 64,
+          "min": 20,
+          "max": 2000,
+          "default": 40,
+          "log": true,
+          "unit": "Hz",
+          "hex": 4
+        }
+      ]
+    },
+    {
+      "type": "panel",
+      "title": "VCF",
+      "x": 8,
+      "y": 168,
+      "w": 380,
+      "h": 88,
+      "children": [
+        {
+          "type": "dial",
+          "bind": "cutoff",
+          "x": 10,
+          "y": 18,
+          "w": 72,
+          "h": 64,
+          "min": 40,
+          "max": 10000,
+          "default": 1200,
+          "log": true,
+          "unit": "Hz",
+          "hex": 4
+        },
+        {
+          "type": "dial",
+          "bind": "resonance",
+          "x": 82,
+          "y": 18,
+          "w": 72,
+          "h": 64,
+          "min": 0,
+          "max": 1,
+          "default": 0.3,
+          "hex": 2
+        },
+        {
+          "type": "dial",
+          "bind": "envAmount",
+          "x": 154,
+          "y": 18,
+          "w": 72,
+          "h": 64,
+          "min": -1,
+          "max": 1,
+          "default": 0,
+          "bipolar": true,
+          "hex": 2
+        },
+        {
+          "type": "dial",
+          "bind": "lfoDepth",
+          "x": 226,
+          "y": 18,
+          "w": 72,
+          "h": 64,
+          "min": 0,
+          "max": 1,
+          "default": 0,
+          "hex": 2
+        },
+        {
+          "type": "dial",
+          "bind": "keyTrack",
+          "x": 298,
+          "y": 18,
+          "w": 72,
+          "h": 64,
+          "min": 0,
+          "max": 1,
+          "default": 0.3,
+          "hex": 2
+        }
+      ]
+    },
+    {
+      "type": "panel",
+      "title": "ENV",
+      "x": 8,
+      "y": 264,
+      "w": 260,
+      "h": 114,
+      "children": [
+        {
+          "type": "envelope",
+          "x": 10,
+          "y": 18,
+          "w": 240,
+          "h": 90,
+          "bind": {
+            "attack": "attack",
+            "decay": "decayT",
+            "sustain": "sustain",
+            "release": "release"
+          },
+          "ranges": {
+            "attack": [
+              0.001,
+              4
+            ],
+            "decay": [
+              0.001,
+              8
+            ],
+            "sustain": [
+              0,
+              1
+            ],
+            "release": [
+              0.001,
+              8
+            ]
+          },
+          "logs": {
+            "attack": true,
+            "decay": true,
+            "release": true
+          },
+          "defaults": {
+            "attack": 0.005,
+            "decay": 0.3,
+            "sustain": 0.6,
+            "release": 0.3
+          },
+          "timeUnit": "s"
+        }
+      ]
+    },
+    {
+      "type": "panel",
+      "title": "VCA",
+      "x": 276,
+      "y": 264,
+      "w": 164,
+      "h": 88,
+      "children": [
+        {
+          "type": "dial",
+          "bind": "level",
+          "x": 10,
+          "y": 18,
+          "w": 72,
+          "h": 64,
+          "min": 0,
+          "max": 1,
+          "default": 0.8,
+          "hex": 2
+        },
+        {
+          "type": "toggle",
+          "bind": "envMode",
+          "x": 85,
+          "y": 32,
+          "w": 66,
+          "h": 18,
+          "default": 1
+        }
+      ]
+    },
+    {
+      "type": "panel",
+      "title": "LFO",
+      "x": 448,
+      "y": 264,
+      "w": 164,
+      "h": 88,
+      "children": [
+        {
+          "type": "dial",
+          "bind": "lfoRate",
+          "x": 10,
+          "y": 18,
+          "w": 72,
+          "h": 64,
+          "min": 0.05,
+          "max": 20,
+          "default": 5,
+          "log": true,
+          "unit": "Hz",
+          "hex": 4
+        },
+        {
+          "type": "dial",
+          "bind": "lfoDelay",
+          "x": 82,
+          "y": 18,
+          "w": 72,
+          "h": 64,
+          "min": 0,
+          "max": 4,
+          "default": 0,
+          "log": true,
+          "unit": "s",
+          "hex": 2
+        }
+      ]
+    }
+  ]
+}

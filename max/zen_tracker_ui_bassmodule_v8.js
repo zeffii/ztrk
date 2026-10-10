@@ -1,0 +1,1894 @@
+/*
+
+You will always move in the direction of your strongest thought -- so make it a good one.
+what remains after fear, is my true form.
+
+special thanks to:
+- federico foderaro (jsui / v8ui)
+- Philip Meyer ( signal based sequencing, and inspiration Sir!)
+- axers fall (gen, codebox)
+- Wellenfront Max Lab (mc)
+- starakajian
+- Andrew Robinson
+- matt wright
+- toneparticle (gen, codebox)
+- claud, grok, chatgpt, qwen, deepseek.
+
+without these folks, this tracker would have taken much longer to make.
+*/
+
+include("ztrk_pattern_utils.js");
+include("ztrk_general_utils.js");  // for zconsole _postInfo/Warning/Error/Low ..etc
+
+var g_ui_state = new Dict("ztrk_ui_state");
+const get_active_view = () => g_ui_state.get("active_view");
+const set_active_view = (view_name) => { g_ui_state.set("active_view", view_name) };
+
+const g_font_dict = new Dict("ztrk_font_settings");
+if (!g_font_dict.contains("fontFamily")) g_font_dict.set("fontFamily", ["Consolas", "normal", "normal"]);
+if (!g_font_dict.contains("fontSize"))   g_font_dict.set("fontSize", 12);
+const ztrk_get_font_family = () => g_font_dict.get("fontFamily");
+const ztrk_get_font_size   = () => g_font_dict.get("fontSize");
+
+
+class Tracker  {
+
+    /*
+        See it as a minimal viable product. Getting sound and other cool stuff out of this will encourage me
+        to revisit this backend, if, upon reflection, it can be done in a less head-wrecking manner :)
+    */
+
+    #AbletonMode = true;
+    // #MatrixMode = false;
+    #ztrk_clipboard = {};
+    #received_first_pattern = false;
+    
+    #g_Mouse = [-1, -1];
+    #g_in_edit_mode = false;
+    #g_key_codes = [];
+    #g_mouse_on_rect = false;
+    
+    #started_selection_mode = false;
+    #g_updating_selection = true;
+    
+    #caret = { row: 0, col: 0};
+    
+    #anchor = null;
+    #g_pattern_octave = 4;           // [ todo, implement current octave for input ]
+    #g_tracker_version = "ztrk v.009";
+    #g_keyrepeat = 0;
+    
+    constructor(pattern_markup, mgraphics, options = {} ){
+        
+        this.send = options.send || function() { post("No send function provided"); };
+        this.write_buffers = options.write_buffers || function() { post("No buffer function provided"); };
+
+        // make local params
+        this.mgraphics = mgraphics;
+        this.pattern_markup = pattern_markup;
+        this.faux_pattern = this.make_empty_pattern(this.pattern_markup);
+        this.pattern_markup.data = this.faux_pattern;
+        this.pattern_starts_at_ticks = null;
+        this.pattern_global_tick_ranges = null;
+
+        // set states of local params
+        this.g_pattern_playhead = 8;
+        this.mgraphics.relative_coords = 0;
+        this.mgraphics.autofill = 0;
+
+        this.rows = this.pattern_markup.length;
+        this.cols = this.pattern_markup.lexical_track.length;
+        this.settings_font_size = ztrk_get_font_size(); // 12;
+        this.charwidth = 6.60;   // this gets updated at runtime. see this.get_text_width_and_height();
+        this.charheight = this.settings_font_size; 
+        this.text_w = 1;         // this gets updated at runtime. see this.get_text_width_and_height();
+        this.text_h = this.settings_font_size;
+        this.start_x = 30;
+        this.start_y = 30;
+        
+        this.g_limited_scrolling = 1;
+        this.pattern_row_shift = 0;
+        this.num_visible_rows = 0;
+        this.dot_bars = true;
+
+        this.jitblock_name = "";
+        this.current_patcher = options.current_patcher;
+        this.BufferMode = 0;
+        
+        this.default_theme_colors = {
+            caret_color: [0.7, 0.2, 0.4, 1],
+            selection_rect_color: [0.7, 0.7, 0.9, 1],
+            row_highlight_color: [0.1, 0.2, 0.4, 1],
+            row_highlight_color2: [0.06, 0.16, 0.34, 1],
+            edit_indicator_color: [0.9, 0.5, 0.5, 1.0],
+            fx_bg_color: [0.1, 0.1, 0.3, 0.42],
+            fx_fg_color: [0.1, 0.5, 0.8, 1.0],
+            tick_index_color: [0.1, 0.1, 0.1, 1],
+            data_color: [0.4, 0.9, 1.0, 1],
+            ui_bg_color: [0.1, 0.2, 0.4, 1],
+            pattern_info_bg_color: [0.05, 0.12, 0.24, 1],
+            status_bg_color: [0.2, 0.3, 0.2, 1.0],
+            status_text_color: [0.9, 0.9, 0.7, 1.0],
+            scrollbar_bg_color: [0.2, 0.2, 0.2, 1.0],
+            scrollbar_fg_color: [0.1, 0.1, 0.1, 1.0],
+            divider_gfx_color: [0.8, 0.2, 0.2, 1.0],
+            divider_gfx_color2: [0.4, 0.9, 1.0, 0.3]
+        };
+        this.theme_colors = {...this.default_theme_colors};
+
+        this.update_v8_boxsize(this.cols, this.rows);
+
+    }
+
+    set_dot_bars(on) { this.dot_bars = !!on; this.mgraphics.redraw(); }
+
+    make_lexical_track_from_descriptors(descriptors){
+        var param_track = [];
+        for (var i=0; i < Object.keys(descriptors.track).length; i++){
+            param_track.push(descriptors.track[i][0]);
+        }
+        var lexical_track = param_track.join(' ');
+        return lexical_track;
+    }
+
+    make_empty_pattern(markup){
+
+        /*
+        lexical_track: "nnn hh ss hh hhhh hh hhhh"
+        nnn    = note
+        hh     = 2hex
+        hhhh   = 4hex
+        b      = bang/trigger  ( 1 or .)
+        FFXXYY = COMMAND+ARG
+        ss     = short (ints 0..80)   NOT IMPLEMENTED
+        ggg    = signed (-20 .. +20)  NOT IMPLEMENTED
+        */
+
+        markup.lexical_track = this.make_lexical_track_from_descriptors(markup.descriptors);
+        const empty_row = markup.lexical_track.replace(/\S/g, ".");
+        
+        var pattern = [];
+        for (var i = 0; i < markup.length; i++) {
+            pattern.push(empty_row);
+        }
+        return pattern;
+
+    }
+
+    /* -------------- Cord Input Handling ---------------------- */
+
+    bang(){
+        this.send(0, this.g_pattern_playhead);
+        this.mgraphics.redraw();
+    }
+
+    msg_int(tick){
+        this.g_pattern_playhead = tick;
+    }
+
+    clear(){
+        this.faux_pattern = this.make_empty_pattern(this.pattern_markup);
+        this.pattern_markup.data = this.faux_pattern;    
+        this.mgraphics.redraw();
+        var ch1 = new Buffer("ch1");   // should maybe not do this here.  // THIS IS INVALID NOW> TODO
+        clearBuffer(ch1);
+    }
+
+    refresh(){
+        this.mgraphics.redraw();
+    }
+
+    dictionary(dictName) {
+        // this is called when a dictionary is passed into the object, it should probably do some update?
+        // expect error here.
+        var d = new Dict(dictName);
+        var payload = JSON.parse(d.stringify());
+        d.freepeer();  // free now that we own our own copy of thet passed dict
+
+        const isEmpty = (obj) => Object.keys(obj).length === 0;
+
+        if (isEmpty(payload)){
+            post('malformed pattern object, or empty..probably empty');
+            return;
+        }
+
+        if ("editing_puid" in payload) {
+            post('sent to editing puid')
+            this.handle_received_pattern(payload);
+            return;
+        }
+        if (("mode" in payload) && payload.mode === "wipe"){
+            this.#received_first_pattern = false // reset! 
+            // would be nice to set a width of the trackerview here, so the empty message can be read.
+            // [ ] TODO
+            box.size(500, 250);
+            this.mgraphics.redraw();
+            return
+        }
+        
+        post("You sent a dictionary that the tracker doesn't understand, so i'm going to just error a bit. thanks.")
+        // here some default behaviour
+        this.pattern_markup = payload;
+        this.faux_pattern = this.pattern_markup.data;
+        this.gfx_refresh_and_write_buffers_and_dispatch({send_back: false, origin: "dictionary function"})
+    }
+
+    gfx_refresh_and_write_buffers_and_dispatch(command){
+        this.mgraphics.redraw();
+        if (command.write_buffers){
+            this.write_buffers(this);
+        }
+        if (command.send_back) {
+            if ('origin' in command){
+                // post(`send back to sequencer with update. from: ${command.origin}`);
+            } else {
+                // post("send back to sequencer with update. ---untracked");
+            }
+            var outputDict = new Dict('pattern_markup_dict');
+            outputDict.parse(JSON.stringify({edit_request: this.pattern_markup.puid, payload: this.pattern_markup}));
+            this.send(1, "dictionary", outputDict.name);  // only patterns received from sequencer will contain a puid.
+        }
+    }
+
+    update_v8_boxsize(num_characters, num_rows){
+        var gfx = this.mgraphics;
+        var [w, h] = gfx.size;
+        var new_width = (this.charwidth * (num_characters + 6)) + this.start_x;
+        box.size(new_width, h);
+        if (num_rows !== null){
+            box.size(new_width, (num_rows + 2) * this.charheight+20);
+        }
+    }
+
+    handle_received_pattern(payload){
+
+        this.pattern_row_shift = 0;
+        this.#caret = { row: 0, col: 0};
+
+        this.pattern_markup = payload;
+
+        if (payload.data.length === 0){
+            this.faux_pattern = this.make_empty_pattern(payload);
+            this.pattern_markup.data = this.faux_pattern;
+        } else {
+            this.faux_pattern = payload.data;
+            this.pattern_markup.data = payload.data;
+            this.pattern_markup.lexical_track = this.make_lexical_track_from_descriptors(payload.descriptors);
+        }
+
+        this.cols = this.pattern_markup.lexical_track.length;
+        this.rows = this.pattern_markup.length;
+        this.pattern_starts_at_ticks = this.pattern_markup?.pstarts ?? null;  // copilot :)
+        // this.pattern_global_tick_ranges = this.pattern_markup?.pranges ?? null;  // copilot :)
+
+        var row_count = (this.rows >= 64) ? 64 : this.rows;
+        this.update_v8_boxsize(this.cols, row_count);
+
+        this.#received_first_pattern = true;
+        this.#g_in_edit_mode = true;
+        this.gfx_refresh_and_write_buffers_and_dispatch({send_back: false, origin: "handle_received_pattern function"})
+    }
+
+    /*  ------- Local Util Functions ------------- */
+
+    get_fx_columns(){
+        const key = this.pattern_markup.lexical_track;
+        if (this._fx_key !== key){
+            this._fx_key = key;
+            this._fx_columns = find_regexed_indices(key, /\bffxxyy\b/g);
+        }
+        return this._fx_columns;
+    }
+
+    set_rgb(color, dimming){
+        this.mgraphics.set_source_rgba(color.r / dimming, color.g / dimming, color.b / dimming, 1);
+    }
+
+    asRGB(r, g, b, a){ return {r:r, g:g, b:b}};
+
+    moveCaret(dr, dc) {
+        this.#caret.row = clamp(this.#caret.row + dr, 0, this.rows - 1);
+        this.#caret.col = clamp(this.#caret.col + dc, 0, this.cols - 1);
+        this.pass_column_info_to_outlet2();
+    }
+
+    getSelectionRect() {
+        if (!this.#anchor) return null;
+        return {
+            top:    Math.min(this.#anchor.row, this.#caret.row),
+            left:   Math.min(this.#anchor.col, this.#caret.col),
+            bottom: Math.max(this.#anchor.row, this.#caret.row),
+            right:  Math.max(this.#anchor.col, this.#caret.col)
+        };
+    }
+
+    caret_to_location(){
+        var caret_x = this.start_x + ((4 + this.#caret.col) * this.charwidth);
+        var caret_y = this.start_y + (this.#caret.row * this.charheight);
+        return [caret_x, caret_y];
+    }
+
+    corner_to_location(x, y){
+        var _x = this.start_x + ((4 + x) * this.charwidth);
+        var _y = this.start_y + (y * this.charheight);
+        return [_x, _y];   
+    }
+
+    get_adjusted_selection_rect(){
+
+        var selection = this.getSelectionRect();
+        var selected_num_rows = (selection.bottom - selection.top) + 1;
+        var selection_start = selection.left;
+        var selection_length = (selection.right - selection.left) + 1;
+
+        // extend selection left + right if some parameters are not fully selected.
+        var xx_first_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection_start);
+        var xx_last_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection.right);
+        if (xx_first_param !== null){ selection_start = xx_first_param.start; }
+        if (xx_last_param !== null){ selection_length = (xx_last_param.end - xx_first_param.start) + 1; }
+
+        return {
+            'start_index': selection_start,
+            'selection_length': selection_length,
+            'top': selection.top,
+            'bottom': selection.bottom,
+            'num_rows': selected_num_rows
+        }
+    }
+
+    wheres_the_caret(){
+        // dont do this frequently
+        var indices = find_idx_after_space(this.pattern_markup.lexical_track);
+        for (var idx = indices.length - 1; idx >= 0; idx--) {
+            if (this.#caret.col >= indices[idx]) {
+                return [indices[idx], idx];
+            }
+        }
+        return [-1, -1];
+    }
+
+    get_channel_at_caret(){
+        // We store data in a multi-channel buffer, the channel is fixed with respect to the parameter. 
+        // for patching it is useful to know at a glance which channel to read data out of. The channel is 1-based.
+        // we could cache this as channel dict in the pattern_markup? and refresh whenever the pattern descriptor changes.
+        // For now we will calculate it on the fly - it's fast anyway.
+        const data = this.pattern_markup.data[0];
+        const pattern_row_data = data.split(' ');
+        
+        var channel_dict = {};
+        var channel_idx = 1;
+        var caret_idx = 0;
+        
+        // caret should never appear between parameters, so we dont track it there.
+        for (const param_idx in pattern_row_data){
+            var cell_data = pattern_row_data[param_idx];
+            if (cell_data.length < 6){
+                for (var i=0; i < cell_data.length; i++){
+                    channel_dict[caret_idx] = channel_idx;
+                    caret_idx += 1;
+                }
+
+            } else if (cell_data.length === 6){
+                channel_dict[caret_idx] = channel_idx;
+                channel_dict[caret_idx+1] = channel_idx;
+                channel_dict[caret_idx+2] = channel_idx+1;
+                channel_dict[caret_idx+3] = channel_idx+1;
+                channel_dict[caret_idx+4] = channel_idx+1;
+                channel_dict[caret_idx+5] = channel_idx+1;
+                caret_idx += 6;
+                channel_idx += 1;
+            }
+
+            // covers white space. column between params.
+            caret_idx += 1;
+            channel_idx += 1;
+        }
+        
+        //for (const [k, v] of Object.entries(channel_dict)) {
+        //    post(`${k.padStart(5)} : ${v.toFixed(2).padStart(10)}`);
+        //}
+
+        if (channel_dict.hasOwnProperty(this.#caret.col)) { 
+            return channel_dict[this.#caret.col];
+        }
+        else { return ".."; }
+    }
+
+    /* ----------- Pattern Data Handlers --------------- */
+
+    push_to_live(){
+        // better name needed as this will be the update handler for external data passing.
+        if (this.#AbletonMode === 1){ MakeSimpleNoteDictFromArrays(this.pattern_markup); }
+
+        // to use this you would send a message 'command jitblock_<cellblock.scriptname>'
+        // but i may abandon it as passing data to buffers might be a more efficient way.
+        if (this.jitblock_name && this.current_patcher){
+            post('setting jitblock, >>', this.jitblock_name);
+
+            var jit_cellblock = this.current_patcher.getnamed(this.jitblock_name);
+            var celldata_array = pattern_data_to_2d_array(this.pattern_markup.data);
+
+            // pprint(celldata_array);
+            for (var row = 0; row < celldata_array.length; row++){
+                var num_cols = celldata_array[row].length;
+                for (var col = 0; col < num_cols; col++){
+                    var proposed_cell_data = celldata_array[row][col];
+
+                    if (isOnlyDots(proposed_cell_data)){
+                        jit_cellblock.message('clear', row+1, col);
+                    } else {
+                        jit_cellblock.set(row+1, col, proposed_cell_data);
+                    }
+                }
+            }
+        }
+    }
+
+    pass_column_info_to_outlet2(){
+        var idx = this.wheres_the_caret();
+        var current_descriptor = this.pattern_markup.descriptors.track[idx[1]][1];
+        var [descriptor_head, descriptor_tail] = splitAtFirstPipe(current_descriptor);
+        _postLow(`PE: ${idx[1]}, ${descriptor_head}, ${descriptor_tail || "<no info, lazy?>"}`);
+    }
+
+    // remove this function.
+    push_to_buffers(){
+        if (this.BufferMode === 1){
+            post('entered push to buffers function');
+            this.write_buffers(this);
+        }
+    }
+
+    change_octave(offset){
+        // this affects new input, not existing pattern data
+        this.#g_pattern_octave = clamp(this.#g_pattern_octave + offset, 0, 7);
+
+    }
+
+    handle_delete_selection(pattern){
+
+        //[x]  handles shifted rows
+
+        if (this.#started_selection_mode){
+            this.handle_copy_selection(pattern);
+            var selection = this.getSelectionRect();
+            // this implementation will operate all selected parameters, even if a parameter is only partially
+            // in the selection. This is unlike interpolation, where there is a case to make for partial interpolats.
+            var selection_start = selection.left;
+            var selection_length = (selection.right - selection.left) + 1;
+
+            // First establish if the selection contains partials. extend if needed.
+            // is selection.left at index0 of the param?
+            // is selection right at indexN of the param?
+            var xx_first_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection_start);
+            var xx_last_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection.right);
+
+            if (xx_first_param !== null){ 
+                selection_start = xx_first_param.start;
+            }
+            if (xx_last_param !== null){
+                selection_length = (xx_last_param.end - xx_first_param.start) + 1;
+            }
+
+            for (var row = selection.top; row <= selection.bottom; row++){
+                var row_idx = getRotatedIndex(this, row);
+                var row_substr = pattern[row_idx].substr(selection_start, selection_length);
+                row_substr = row_substr.replace(/[^ ]/g, '.');
+                pattern[row_idx] = replaceAt(pattern[row_idx], selection_start, row_substr, selection_length);
+            }
+
+            this.push_to_live();
+            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: true});
+            return true;
+        }
+        return false;
+
+    }
+
+
+    handle_interpolate_selection(pattern){
+
+        // [x]  handles shifted rows
+
+        if (this.#started_selection_mode){
+            /*
+                - which parameters of the selection have values at the start and end of the selection (in rows);
+                - only operate on those parameters.
+                - collect start and end value for each such parameter, create a linear interpolation for now.
+                - i can add a console command to do `> itpl 1`  (linear)  `> itpl 0.3` (accelerating ramp)  1.5 decel
+            */
+            // post('Interpolating:\n');
+            var selection = this.getSelectionRect();
+            var selected_num_rows = (selection.bottom - selection.top) + 1;
+            if (selected_num_rows < 3){
+                return true;
+            }
+
+            var selection_start = selection.left;
+            var selection_length = (selection.right - selection.left) + 1;
+
+            // extend selection left + right if some parameters are not fully selected.
+            var xx_first_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection_start);
+            var xx_last_param = getParameterTypeAtPosition(this.pattern_markup.lexical_track, selection.right);
+            if (xx_first_param !== null){ selection_start = xx_first_param.start; }
+            if (xx_last_param !== null){ selection_length = (xx_last_param.end - xx_first_param.start) + 1; }
+
+            /* 
+            1. how to handle CCXXYY columns?
+                the current bug presents itself when the start row of the section some some thing like 
+
+                AA.... 
+
+                and the last row 
+                BB3000
+                and maybe the ..isOnlyDots() just isn't good enough when the left-extent of the selection contains CC....
+            */
+
+            // this takes shifted pattern row view into account.
+            var selection_top = getRotatedIndex(this, selection.top);
+            var selection_bottom = getRotatedIndex(this, selection.bottom);
+
+            // get content of the first and last selected row, to prepare interpolation attempt
+            var substr_start = pattern[selection_top].substr(selection_start, selection_length);
+            var substr_end = pattern[selection_bottom].substr(selection_start, selection_length);
+            var start_list = substr_start.split(' ');
+            var end_list = substr_end.split(' ');
+
+            post(`woop   [${start_list}]`);
+
+            var interpolation_dict = {};
+            // we will only interpolate a parameter if it is in the first and last row of the selection
+            // we skip trigger interpolations. so.. 2hex and 2hex and notes only..for now.
+            for (var param_col = 0; param_col < start_list.length; param_col++){
+                var param_length = start_list[param_col].length;
+                if (param_length > 1){
+                    if ( !isOnlyDots(start_list[param_col]) && !isOnlyDots(end_list[param_col]) ){
+                        interpolation_dict[param_col] = interpolate(start_list[param_col], end_list[param_col], selected_num_rows);
+                    }
+                }
+            }
+
+            // we could (and probably should) skip the first and last row as they should be the same.
+            for (var row = selection.top; row <= selection.bottom; row++){
+
+                var shifted_row = getRotatedIndex(this, row)
+                var row_repr = pattern[shifted_row].substr(selection_start, selection_length);
+                var splitted_row = row_repr.split(' ');
+                var rebuilt_list_of_strings = []
+
+                for (var param_idx = 0; param_idx < splitted_row.length; param_idx++){
+                    if (interpolation_dict.hasOwnProperty(param_idx)){
+                        if (splitted_row[param_idx].length === 6){
+                            // this needs to inject the existing command back into the interpolation parameter
+                            var argmnt = interpolation_dict[param_idx].shift();
+                            var command = splitted_row[param_idx].slice(0, 2);
+                            var new_parameter = command + argmnt;
+                            rebuilt_list_of_strings.push(new_parameter);
+                        } else {
+                            rebuilt_list_of_strings.push(interpolation_dict[param_idx].shift());
+                        }
+
+                    } else {
+                        rebuilt_list_of_strings.push(splitted_row[param_idx]);
+                    }
+                }
+                var replacement_part = rebuilt_list_of_strings.join(' ');
+                pattern[shifted_row] = replaceAt(pattern[shifted_row], selection_start, replacement_part, selection_length);
+            }
+
+            this.push_to_live();
+            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: true});
+            return true;
+        }
+        return false;
+
+    }
+
+
+    handle_shift_selection(pattern, direction){
+
+        //[x]  handles shifted rows
+
+        if (this.#started_selection_mode){
+            var remap_main = {30: 'UP', 31: 'DOWN'};
+
+            // post('----> initiating shift function', remap_main[direction], '\n');
+            var sel_rect = this.get_adjusted_selection_rect();
+            //  selection_info: {start_index: 7  selection_length: 29  top: 2  bottom: 8  num_rows: 7}
+            //  selection_data: [rows,....]
+            this.#ztrk_clipboard = {
+                'selection_info': sel_rect,
+                'selection_data': []
+            }
+            for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
+                
+                // handle shifted scenario (ie, the pattern is displayed not from 0 to end, but 0-n to end-n)
+                var shifted_row = getRotatedIndex(this, row);
+                var this_row_data = pattern[shifted_row].substr(sel_rect.start_index, sel_rect.selection_length);
+                this.#ztrk_clipboard.selection_data.push(this_row_data);
+            }
+
+            if (remap_main[direction] === 'UP'){
+                var first_element = this.#ztrk_clipboard.selection_data.shift();
+                this.#ztrk_clipboard.selection_data.push(first_element);
+            }
+            else if (remap_main[direction] === 'DOWN'){
+                var last_element = this.#ztrk_clipboard.selection_data.pop();
+                this.#ztrk_clipboard.selection_data.unshift(last_element);
+            }
+
+            var idx = getRotatedIndex(this, sel_rect.top);
+
+            for (const paste_row_idx in this.#ztrk_clipboard.selection_data){
+
+                var replacement_part = this.#ztrk_clipboard.selection_data[paste_row_idx];
+                pattern[idx] = replaceAt(pattern[idx], sel_rect.start_index, replacement_part, sel_rect.selection_length);
+                idx++;
+            }
+
+            this.push_to_live();
+            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: true});
+            return true;
+        }
+        return false;
+    }
+
+    handle_transpose_selection(pattern, direction, notes_flag){
+
+        //[x]  handles shifted rows
+        post('transpose notes only: ' + notes_flag);
+
+        if (this.#started_selection_mode){
+
+            var sel_rect = this.get_adjusted_selection_rect();
+            //  selection_info: {start_index: 7  selection_length: 29  top: 2  bottom: 8  num_rows: 7}
+            //  selection_data: [rows,....]
+            this.#ztrk_clipboard = {
+                'selection_info': sel_rect,
+                'selection_data': []
+            }
+            for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
+
+                var shifted_row = getRotatedIndex(this, row);
+                var this_row_data = pattern[shifted_row].substr(sel_rect.start_index, sel_rect.selection_length);
+                var row_data = this_row_data.split(' ');
+                var new_row_data = [];
+                for (const param_idx in row_data){
+                    let NOTE = (row_data[param_idx].length === 3);
+
+                    if (notes_flag && !NOTE) {
+                        new_row_data.push(row_data[param_idx]);
+                    } else {
+                        new_row_data.push(transpose_value(row_data[param_idx], direction));
+                    }
+                }
+                var replacement_part = new_row_data.join(' ');
+                pattern[shifted_row] = replaceAt(pattern[shifted_row], sel_rect.start_index, replacement_part, sel_rect.selection_length);
+            }
+
+            this.push_to_live();
+            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: true});
+            return true;
+        }
+        return false;
+    }
+
+    handle_copy_selection(pattern){
+
+        //[x]  handles shifted rows
+
+        var sel_rect = this.get_adjusted_selection_rect();
+        //  selection_info: {start_index: 7  selection_length: 29  top: 2  bottom: 8  num_rows: 7}
+        //  selection_data: [rows,....]
+        this.#ztrk_clipboard = {
+            'selection_info': sel_rect,
+            'selection_data': []
+        }
+        for (var row = sel_rect.top; row <= sel_rect.bottom; row++){
+            var shifted_row = getRotatedIndex(this, row);
+            var this_row_data = pattern[shifted_row].substr(sel_rect.start_index, sel_rect.selection_length);
+            this.#ztrk_clipboard.selection_data.push(this_row_data);
+        }
+    }
+
+    handle_paste_selection(pattern){
+
+        //[x]  handles shifted rows
+
+        post('initiating paste function\n');
+        /*  
+            a few thoughts here.
+            - how complex do i want to this be, will i allow mixing selection origins. 
+                (ie do i allow pasting as long as the destination is compatible with the current clipboard data)
+            - mix paste/overwrite/inject is a different function
+            
+            for now i will force a start_index to override the cursor location, only row index of caret
+            will be used. It's just a choice.
+        */
+        if (this.#ztrk_clipboard.selection_info && this.#ztrk_clipboard.selection_data.length){
+            // post('\n --------selection start----------\n');
+            // for (row_idx in ztrk_clipboard.selection_data){
+            //     post(ztrk_clipboard.selection_data[row_idx] + '\n');
+            // }
+            // post(' --------selection end----------\n');
+
+            var selection_start = this.#ztrk_clipboard.selection_info.start_index; // in X axis, column
+            var selection_length = this.#ztrk_clipboard.selection_info.selection_length;
+            var idx = this.#caret.row;
+
+            for (const paste_row_idx in this.#ztrk_clipboard.selection_data){
+
+                var replacement_part = this.#ztrk_clipboard.selection_data[paste_row_idx];
+                var shifted_row = getRotatedIndex(this, idx);
+                pattern[shifted_row] = replaceAt(pattern[shifted_row], selection_start, replacement_part, selection_length);
+                idx++;
+
+                if (idx >= pattern.length){
+                    break;
+                }
+            }
+
+            this.push_to_live();
+            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: true});
+        }
+    }
+
+    handle_paste_row(options){
+        if ('kind' in options){
+
+            let row_values = utils_get_defaults_for_markup(this.pattern_markup.descriptors.track);
+            if (row_values === null) {
+                post('invalid defaults', row_values);
+                return;
+            }
+
+            let shifted_row = getRotatedIndex(this, this.#caret.row);
+            let pattern = this.faux_pattern;
+
+            pattern[shifted_row] = replaceAt(pattern[shifted_row], 0, row_values, row_values.length);
+            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: true});
+        }
+    }
+
+    handle_paste_default_cell_value(){
+        // you can think of this as a subset of rowpaste.
+        let idx = this.wheres_the_caret();
+        let row_value = utils_get_defaults_for_markup([this.pattern_markup.descriptors.track[idx[1]]]);
+        if (row_value) {  
+            const param_at_position = getParameterTypeAtPosition(this.pattern_markup.lexical_track, this.#caret.col);
+            if (param_at_position){  // avoids mouse placing a caret inbetween columns.
+                post(param_at_position.start, param_at_position.end);
+                const shifted_row = getRotatedIndex(this, this.#caret.row);
+                
+                let pattern = this.faux_pattern;
+                pattern[shifted_row] = replaceAt(pattern[shifted_row], param_at_position.start, row_value, row_value.length);
+                this.gfx_refresh_and_write_buffers_and_dispatch({send_back: true, write_buffers: true});
+            }
+
+        }
+        post(row_value);
+    }
+
+    handle_paste_current_cell_value(){
+        post("yikes!.... undecided how to do this.");
+    }
+
+    /* ---------- Keyboard Input Handler ------------*/
+
+
+    handle_2hex_input(key, caret, descriptor, pattern){
+        // 4hex version of this was written after 2hex, use 4hex as inspiration if you plan to rewrite this function.
+        var mutates = false;
+        var hex_deletes = [46, 127];
+        const two_hex_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bh{2}\b/g);  // hh
+        const two_hex_index_pairs = [];
+        for (var i=0; i < two_hex_indices.length; i++){
+            two_hex_index_pairs.push([two_hex_indices[i], two_hex_indices[i] + 1]);
+        }
+
+        var two_hex_indices_found = findSublistContaining(caret.col, two_hex_index_pairs);
+        if (two_hex_indices_found !== null){
+
+            var [lower_index, higher_index] = two_hex_indices_found;
+            var charfound = String.fromCharCode(key).toUpperCase();
+            var HEXALPHNUM = '0123456789ABCDEF';
+            var listed = HEXALPHNUM.split('');
+
+            // this makes it possible to enter data when the pattern is row-shifted.
+            const caret_row = getRotatedIndex(this, caret.row);
+            
+            if (found_in(listed, charfound)){
+                var replacement_hex = '';
+
+                if (caret.col === lower_index){
+                    replacement_hex += charfound;
+                    if (pattern[caret_row][higher_index] === '.'){
+                        replacement_hex += '0';
+                    } else {
+                        replacement_hex += pattern[caret_row][higher_index];
+                    }
+                    pattern[caret_row] = replaceAt(pattern[caret_row], caret.col, replacement_hex, 2);
+                    this.push_to_buffers();
+                    mutates = true;
+                }
+                else if (caret.col === higher_index){
+                    if (pattern[caret_row][lower_index] === '.'){
+                        replacement_hex += '0';
+                    } else {
+                        replacement_hex += pattern[caret_row][lower_index];
+                    }
+                    replacement_hex += charfound;
+                    pattern[caret_row] = replaceAt(pattern[caret_row], caret.col-1, replacement_hex, 2);
+                    this.push_to_buffers();
+                    mutates = true;
+                }
+            } else if (found_in(hex_deletes, key)) {
+                pattern[caret_row] = replaceAt(pattern[caret_row], lower_index, '..', 2);
+                this.push_to_buffers();
+                mutates = true;
+            }
+        }
+        return mutates;
+    }
+
+
+    handle_trigger_input(key, caret, descriptor, pattern){
+
+        var mutates = false;
+        const trigger_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bb{1}\b/g);  // b
+        if (found_in(trigger_indices, caret.col)){
+            var keybangs = {49: "1", 46: ".", 127: "."};
+            if (key in keybangs){
+                const key_infoB = keybangs[key];
+
+                // this makes it possible to enter data when the pattern is row-shifted.
+                const shifted_row = getRotatedIndex(this, caret.row);
+                const current_rowB = pattern[shifted_row];
+
+                pattern[shifted_row] = replaceAt(current_rowB, caret.col, key_infoB, 1);
+                this.push_to_buffers();
+                mutates = true;
+            }
+        }
+        return mutates;
+    }
+
+
+    handle_ffxxyy_input(key, caret, descriptor, pattern, param_at_position){
+
+        var mutates = false;
+        var hex_deletes = [46, 127];
+        var p = param_at_position;
+
+        // post('ffxxyy ---> start:', p.start, ' end: ', p.end, 'current idx in param', p.indexInParam);
+        /*
+            important to note that ff and xxyy are two separate components of the parameter, (command vs argument)
+            where FF and XXYY are 2hex and 4hex respectively. 
+                    FF0000
+                    FFXXYY
+                    ..XXYY
+                    ..XXYY
+            if FF has a value, then XXYY must also,
+            but if XXYY has a value, FF does not automatically need to be input, traditionally this means
+            the command in this column-argument-combo is receiving parameter changes.
+
+            interpolation and transposing should be on the XXYY part only.
+        */
+        var charfound = String.fromCharCode(key).toUpperCase();
+        var HEXALPHNUM = '0123456789ABCDEF';
+        var listed = HEXALPHNUM.split('');
+
+        // this makes it possible to enter data when the pattern is row-shifted.
+        const caret_row = getRotatedIndex(this, caret.row);
+
+        if (found_in([0, 1], p.indexInParam)){
+
+            var [index_0, index_1] = [p.start, p.start + 1];
+            if (found_in(listed, charfound)){
+                var current_param_data = pattern[caret_row].substr(index_0, 2);
+                var proposed_param_data = replaceAt(current_param_data, (caret.col - index_0), charfound, 1);
+                proposed_param_data = proposed_param_data.replace(/\./g, "0");
+                pattern[caret_row] = replaceAt(pattern[caret_row], index_0, proposed_param_data, 2);
+                this.push_to_buffers();
+                mutates = true;
+            } else if (found_in(hex_deletes, key)) {
+                pattern[caret_row] = replaceAt(pattern[caret_row], index_0, '..', 2);
+                this.push_to_buffers();
+                mutates = true;
+            }
+
+        } else if (found_in([2, 3, 4, 5], p.indexInParam)){
+
+            var [index_0, index_1, index_2, index_3] = [p.start + 2, p.start + 3, p.start + 4, p.start + 5];
+            if (found_in(listed, charfound)){
+                var current_param_data = pattern[caret_row].substr(index_0, 4);
+                var proposed_param_data = replaceAt(current_param_data, (caret.col - index_0), charfound, 1);
+                proposed_param_data = proposed_param_data.replace(/\./g, "0");
+                pattern[caret_row] = replaceAt(pattern[caret_row], index_0, proposed_param_data, 4);
+                this.push_to_buffers();
+                mutates = true;
+            } else if (found_in(hex_deletes, key)) {
+                pattern[caret_row] = replaceAt(pattern[caret_row], index_0, '....', 4);
+                this.push_to_buffers();
+                mutates = true;
+            }
+        }
+        return mutates;
+    }
+
+
+    handle_4hex_input(key, caret, descriptor, pattern, param_at_position){
+
+        var mutates = false;
+        var hex_deletes = [46, 127];
+        const four_hex_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bh{4}\b/g);  // hhhh
+        const four_hex_index_pairs = [];
+        for (var i=0; i < four_hex_indices.length; i++){
+            four_hex_index_pairs.push(
+                [four_hex_indices[i], 
+                four_hex_indices[i] + 1,
+                four_hex_indices[i] + 2,
+                four_hex_indices[i] + 3]);
+        }
+
+        var four_hex_indices_found = findSublistContaining(caret.col, four_hex_index_pairs);
+        if (four_hex_indices_found !== null){
+
+            // this makes it possible to enter data when the pattern is row-shifted.
+            const caret_row = getRotatedIndex(this, caret.row);
+
+            var [index_0, index_1, index_2, index_3] = four_hex_indices_found;
+            var charfound = String.fromCharCode(key).toUpperCase();
+            var HEXALPHNUM = '0123456789ABCDEF';
+            var listed = HEXALPHNUM.split('');
+
+            if (found_in(listed, charfound)){
+                var current_param_data = pattern[caret_row].substr(index_0, 4);
+                var proposed_param_data = replaceAt(current_param_data, (caret.col - index_0), charfound, 1);
+                proposed_param_data = proposed_param_data.replace(/\./g, "0");
+                pattern[caret_row] = replaceAt(pattern[caret_row], index_0, proposed_param_data, 4);
+                this.push_to_buffers();
+                mutates = true;
+            } else if (found_in(hex_deletes, key)) {
+                pattern[caret_row] = replaceAt(pattern[caret_row], index_0, '....', 4);
+                this.push_to_buffers();
+                mutates = true;
+            }
+        }
+        return mutates;
+    };
+
+
+    handle_note_input(key, caret, descriptor, pattern){
+        /*  Note: 
+                Todo: if there is no note, 
+                            then idx1 and idx2 can not be edited
+                      if there is a note, 
+                            then idx1 can take a '-'(45) or '#'(35)
+                            then idx2 can take 0...9  (48...57)  
+
+        */
+
+        var mutates = false;
+        const NoteClearList = {46: "...", 127: "...", 96: "^^^", 49: "==="};
+
+        function non_note_cursor_input(this_origin, key, caret, pattern, caret_row, position){
+            const NoteReplacement = NoteClearList[key];
+            const current_row = pattern[caret_row];
+            pattern[caret_row] = replaceAt(current_row, caret.col + position, NoteReplacement, 3);
+            this_origin.push_to_buffers();
+            mutates = true;
+            // this.send(0, ['noteflush', 0]);   having key control over flush would be useful. implement a direct kb for this.
+        }
+
+        const note_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bn{3}\b/g);   // nnn
+        if (note_indices.length){
+
+            const note_index_pairs = [];
+            for (var i=0; i < note_indices.length; i++){
+                var index_0 = note_indices[i];
+                var index_1 = index_0 + 1;
+                var index_2 = index_0 + 2;
+                note_index_pairs.push([index_0, index_1, index_2]);
+            }
+
+            var notefield_indices_found = findSublistContaining(caret.col, note_index_pairs);
+            if (notefield_indices_found === null){
+                return false;  // caret is not in a notefield
+            }
+
+            // only allow full note input on first element of note field
+            var notefield_first_index = notefield_indices_found[0];
+            if (caret.col === notefield_first_index){
+                /*
+                            +1                   +2
+                |  C#  D#      F#  G#  A#   |  C#  D#
+                | |_2_|_3_| | |_5_|_6_|_7_| | |_9_|_0_| |
+                |_Q_|_W_|_E_|_R_|_T_|_Y_|_U_|_I_|_O_|_P_|
+                | C   D   E   F   G   A   B | C   D   E 
+
+                            +0               
+                |  C#  D#      F#  G#  A#   |
+                | |_S_|_D_| | |_G_|_H_|_J_| |
+                |_Z_|_X_|_C_|_V_|_B_|_N_|_M_|
+                | C   D   E   F   G   A   B |
+
+                deal with note data on note params
+                */
+                const g_keyjam_encoding = {
+                    122: ['C-', 0], 115: ['C#', 0], 120: ['D-', 0], 100: ['D#', 0], 99: ['E-', 0], 
+                    118: ['F-', 0], 103: ['F#', 0], 98: ['G-', 0], 104: ['G#', 0], 110: ['A-', 0], 106: ['A#', 0], 109: ['B-', 0],
+                    113: ['C-', 1], 50: ['C#', 1], 119: ['D-', 1], 51: ['D#', 1], 101: ['E-', 1], 
+                    114: ['F-', 1], 53: ['F#', 1], 116: ['G-', 1], 54: ['G#', 1], 121: ['A-', 1], 55: ['A#', 1], 117: ['B-', 1],
+                    105: ['C-', 2], 57: ['C#', 2], 111: ['D-', 2], 48: ['D#', 2], 112: ['E-', 2], 
+                }
+
+                // this makes it possible to enter data when the pattern is row-shifted.
+                const caret_row = getRotatedIndex(this, caret.row);
+
+                if (key in g_keyjam_encoding){
+
+                    const key_info = g_keyjam_encoding[key];
+                    const current_row = pattern[caret_row];
+                    const note = String(key_info[0]) + String(key_info[1] + this.#g_pattern_octave);
+                    pattern[caret_row] = replaceAt(current_row, caret.col, note, 3);
+                    this.push_to_buffers();
+                    mutates = true;
+                    // this.send(0, ['noteplay', note_to_int(note) ,50, 50]);
+                    this.send(0, ['noteplay', note_to_int(note)]);
+
+                } else if (key in NoteClearList){
+                    non_note_cursor_input(this, key, caret, pattern, caret_row, 0);
+                }
+            }
+
+            var notefield_sharp_index = notefield_indices_found[1];
+            if (caret.col === notefield_sharp_index){
+
+                // this toggles between # or -, keeps it easy to remember and press.
+                const caret_row2 = getRotatedIndex(this, caret.row);
+                if (key === 35){
+
+                    const current_row2 = pattern[caret_row2];
+                    const found_character = current_row2[caret.col];
+                    if (found_character !== "-" && found_character !== "#") {
+                        return; // dots..or === or ^^^
+                    }
+
+                    const replacement_character = found_character === "-" ? "#" : "-";
+                    pattern[caret_row2] = replaceAt(current_row2, caret.col, replacement_character, 1);
+                    this.push_to_buffers();
+                    mutates = true;
+
+                } else if (key in NoteClearList){
+                    // we are at the second index of a note field, means the rewrite will start 
+                    // to the left of the current caret.col
+                    non_note_cursor_input(this, key, caret, pattern, caret_row2, -1);  
+                }
+            }
+            
+            var notefield_octave_index = notefield_indices_found[2];
+            const octave_map = {48: 0, 49: 1, 50: 2, 51: 3, 52: 4, 53: 5, 54: 6, 55: 7, 56: 8, 57: 9};
+            if (caret.col === notefield_octave_index){
+
+                // small bug/feature here, the 1 key will not change the content to === when the note is filled, 
+                // because 1 is a valid octave. Undecided how to resolve.
+                // some improvements can be made here by looking at the current content of the notefield
+                // this is not super important, but it is inconsistent and sloppy.
+
+                const caret_row3 = getRotatedIndex(this, caret.row);
+                
+                if (key in octave_map){
+
+                    const current_row3 = pattern[caret_row3];
+                    const found_character = current_row3[caret.col];
+
+                    if (/^[0-9]$/.test(found_character)) { // it's an octave
+                        const replacement_character = octave_map[key];
+                        pattern[caret_row3] = replaceAt(current_row3, caret.col, replacement_character, 1);
+                        this.push_to_buffers();
+                        mutates = true;
+                    }
+
+                } else if (key in NoteClearList){
+                    // we are at the 3rd index of a note field, means the rewrite will start 
+                    // 2 places to the left of the current caret.col, hence -1 in position
+                    non_note_cursor_input(this, key, caret, pattern, caret_row3, -2);  
+                }
+            }
+        }
+        return mutates;
+    }
+
+
+    pattern_input_handler(key, caret, descriptor, pattern){
+
+        var mutates = false;
+        const param_at_position = getParameterTypeAtPosition(descriptor.lexical_track, caret.col);
+        if (param_at_position == null){
+            return;  // in space column
+        }
+
+        switch (param_at_position.type) {
+            case 'nnn': { mutates = this.handle_note_input(key, caret, descriptor, pattern); break; }
+            case 'hh': {  mutates = this.handle_2hex_input(key, caret, descriptor, pattern); break; }
+            case 'b': {   mutates = this.handle_trigger_input(key, caret, descriptor, pattern); break; }
+            case 'hhhh': { mutates = this.handle_4hex_input(key, caret, descriptor, pattern, param_at_position); break; }
+            case 'ffxxyy': { mutates = this.handle_ffxxyy_input(key, caret, descriptor, pattern, param_at_position); break; }
+            default:
+                return;
+        }
+        // already refreshed at this point.
+        this.gfx_refresh_and_write_buffers_and_dispatch({send_back: mutates, write_buffers: false, origin: "pattern_input_handler"});
+    }
+
+    find_cell_under_cursor(x, y){
+
+        var caret_range_x_start = this.start_x + (4 * this.charwidth);
+        var caret_range_y_start = this.start_y - this.charheight;
+        if ((x >= caret_range_x_start ) && (y >= caret_range_y_start)){
+            var cell_x = Math.floor((x - caret_range_x_start) / this.charwidth);
+            var cell_y = Math.floor((y - caret_range_y_start) / this.charheight);
+            if ((cell_x < this.pattern_markup.lexical_track.length) && (cell_y < this.pattern_markup.length)){
+                this.#caret.row = cell_y;
+                this.#caret.col = cell_x;
+            }
+        }
+    }
+
+    scroll_pattern(steps){
+        // .... i haven't yet decided how this works.
+        post('scrolling pattern', steps);
+        this.pattern_row_shift += steps;
+        this.pattern_row_shift %= this.pattern_markup.length;
+        this.pattern_row_shift = parseInt(this.pattern_row_shift);
+        post('new pattern_row_shift value', this.pattern_row_shift, '\n');
+        this.refresh();
+    }
+
+    onwheel(x, y, scrollx, scrolly, mod1, shift, caps, opt, mod2) {
+        if (shift){
+            function signToOne(value) { 
+                return value > 0 ? 1 : value < 0 ? -1 : 0; }
+            this.scroll_pattern(signToOne(scrolly));
+        }
+    }
+
+    keys(a1, a2, a3, a4) {
+        var CTRL = 4352;
+        var SPACE = 32
+
+        // Spacebar, but not Spacebar + Ctrl
+        //if (a1 === SPACE && this.#g_mouse_on_rect && a3 !== CTRL){   
+        if (a1 === SPACE && get_active_view() === "tracker" && a3 !== CTRL){
+            this.#g_in_edit_mode = !this.#g_in_edit_mode;
+            this.mgraphics.redraw();
+        }
+        this.#g_key_codes = [a1, a2, a3, a4];
+    }
+
+
+    key_handler(){
+
+        if (!this.faux_pattern){
+            return;
+        }
+
+        // if (this.#g_mouse_on_rect !== true){
+        //     // you don't want any data interaction if the mouse is not on the rectangle
+        //     return;  
+        // };
+        if (get_active_view() !== "tracker") return;
+
+        // click into tracker view should set this view as active, and sequence view not.
+        // if i have two pattern views open side by side, there will need to be tracker_view_1, tracker_view_2
+
+        if (this.#g_in_edit_mode){
+
+            // post(' inside keyhandler:  ', this.#g_keyrepeat, ", ", this.#g_key_codes);
+            // KeyJam handler to be wireless and sent from "handle_note_input"
+
+            var SHIFT = 512;
+            var ALT = 2048;
+            var CTRL = 4352;
+            var CTRL_SHIFT = 4864;
+            var ESCAPE = 27;
+            var DELETE = 127;
+            var PAGE_UP = 11;
+            var PAGE_DOWN = 12;
+            var C_KEY = 3;
+            var V_KEY = 22;
+            var X_KEY = 24;
+            var T_KEY = 116;
+            var I_KEY = 73;
+            var SPACE = 32;
+            var CTRL_AND_T = 20;
+            var [UP_KEY, DOWN_KEY] = [30, 31];
+            var [LEFT_KEY, RIGHT_KEY] = [28, 29];
+            var [L_BRACKET, R_BRACKET] = [123, 125];
+            var SELECTOR = this.#g_key_codes[2];
+            var USER_KEY = this.#g_key_codes[0];
+            var [MINUS, PLUS] = [95, 43];   // not the numkeys.     (+shift) /
+            var [MINUS1, PLUS1] = [45, 61];   // not the numkeys.            /  same keys, but diff. int depending on Selector pressed.
+
+            const ASCII = (key) => String.fromCharCode(key);  // ..duplicate. (how about a ztrk_general_functions.js for tools that are cross editor ? )
+            const userkey_in = (array) => found_in(array, USER_KEY);   // helper to avoid passing USER_KEY manually.
+
+            let isAltDown = (SELECTOR === ALT);
+            let isShiftDown = (SELECTOR === SHIFT);
+            let isCtrlDown = (SELECTOR === CTRL);
+            /*
+            -- TODO 
+            - ctrl + pgup/down scrolls the pattern, 
+            -        pgup/down jumps up/down 16 tick.
+
+            maxmsp captures some of the kb shortcuts for its own purposes:
+            - ctrl+I = inspector
+            - f5 = magnifying glass
+            - ..and a few others i'm forgetting right now.. all quite annoying.
+            This means i'm substituting occupied ones for similar but available ones. 
+            Not ideal but it does tempt me to implement some input hardware for interaction.
+
+            */
+            if (USER_KEY === ESCAPE){
+                // this should send control back to sequence editor.
+                set_active_view("sequencer");
+                this.#g_in_edit_mode = false;
+                this.mgraphics.redraw();
+            }
+
+            if (isAltDown){
+                if (found_in([UP_KEY, DOWN_KEY], USER_KEY)){
+                    if (this.handle_shift_selection(this.faux_pattern, USER_KEY)){ return; }
+                }
+            }
+
+            if (isShiftDown){
+                // _postMessage(this.#g_key_codes);
+                const NOTES_ONLY = true;
+                switch(USER_KEY){
+                    case MINUS: this.handle_transpose_selection(this.faux_pattern, 'DOWN', false); return;
+                    case PLUS: this.handle_transpose_selection(this.faux_pattern, 'UP', false); return;
+                    case L_BRACKET: this.handle_transpose_selection(this.faux_pattern, 'DOWN', NOTES_ONLY); return;
+                    case R_BRACKET: this.handle_transpose_selection(this.faux_pattern, 'UP', NOTES_ONLY); return;
+                    case I_KEY: this.handle_interpolate_selection(this.faux_pattern); return;  
+                    default: break;
+                }
+            }
+
+            if (isCtrlDown){
+                switch(USER_KEY) {
+                    case C_KEY: this.handle_copy_selection(this.faux_pattern); return;
+                    case V_KEY: this.handle_paste_selection(this.faux_pattern); return;
+                    case X_KEY: this.handle_delete_selection(this.faux_pattern); return;
+                    case CTRL_AND_T: this.handle_paste_current_cell_value(); return;
+                    case PAGE_UP: this.scroll_pattern(-16); return;
+                    case PAGE_DOWN: this.scroll_pattern(+16); return;
+                    case SPACE: this.handle_paste_row({kind: 'defaults'}); return;   // should allow named presets too
+                    default: break;
+                }
+            }
+
+            if (found_in([MINUS1, PLUS1], USER_KEY)){
+                post('changing octave', USER_KEY, '\n');
+                this.change_octave(USER_KEY === MINUS1 ? -1 : 1);
+                this.mgraphics.redraw();
+                return;
+            }
+
+            var directions = [LEFT_KEY, RIGHT_KEY, UP_KEY, DOWN_KEY];
+            var direction_input = (directions.indexOf(USER_KEY) !== -1);
+
+            const shift_or_ctrlshift = found_in([SHIFT, CTRL_SHIFT], SELECTOR);
+            if (shift_or_ctrlshift && direction_input){
+                if (this.#started_selection_mode){
+                    this.#g_keyrepeat += 1;
+                    post('modifying selection rectangle\n');
+                } else {
+                    // means the section is going to start at cursor index x, y, w, h where w and h are 1.
+                    this.#anchor = { row: this.#caret.row, col: this.#caret.col };
+                    post('starting selection mode\n');
+                    this.#started_selection_mode = true;
+                }
+
+            } else if (found_in([PAGE_UP, PAGE_DOWN], USER_KEY)){
+
+                post('using PageUP/Down\n');
+                switch(USER_KEY) {
+                    case PAGE_UP: this.moveCaret(-16, 0); break;
+                    case PAGE_DOWN: this.moveCaret(16, 0); break;
+                }
+            //} else if (userkey_in([T_KEY])){                             // cant this is a keyjaz key.
+            //    this.handle_paste_default_cell_value(); return;
+            } else {
+                this.#started_selection_mode = false;
+                this.#anchor = null;
+                this.#g_keyrepeat = 0;
+            }
+
+            if (direction_input){
+
+                if (found_in([CTRL, CTRL_SHIFT], SELECTOR)){
+
+                    var param_starts = find_idx_after_space(this.pattern_markup.lexical_track);
+                    var [left_distance, right_distance] = [-1, 1];
+                    var [low, high] = [1, 1];
+
+                    for (var i=0; i < param_starts.length; i++){
+                        if (USER_KEY === LEFT_KEY){
+                        
+                            if (this.#caret.col === 0){ 
+                                left_distance = 0;
+                                break;
+                            }
+                            if (param_starts[i] >= this.#caret.col){ break; }
+                            low = param_starts[i];
+                            left_distance = this.#caret.col - low;
+
+                        } else if (USER_KEY === RIGHT_KEY){
+
+                            if (this.#caret.col === (this.pattern_markup.lexical_track.length - 1)){
+                                right_distance = 0;
+                                break;
+                            }
+                            if (param_starts[i] > this.#caret.col){
+                                high = param_starts[i];
+                                right_distance = high - this.#caret.col;
+                                break
+                            }
+                        }
+                    }
+
+                    switch(USER_KEY) {
+                        case LEFT_KEY: this.moveCaret(0, -left_distance); break;
+                        case RIGHT_KEY: this.moveCaret(0,  right_distance); break;
+                        case UP_KEY: this.moveCaret(-2, 0); break;
+                        case DOWN_KEY: this.moveCaret(2, 0); break;
+                        default: return;
+                    }
+
+                } else {
+                    // --------------- just simple arrow driven navigation here -----------------------
+                    switch(USER_KEY) {
+                        case LEFT_KEY: 
+                            this.moveCaret(0, -1);
+                            var over_a_space = (this.pattern_markup.lexical_track.charAt(this.#caret.col) === ' ');
+                            if (over_a_space){ this.moveCaret(0, -1); } // move to the next tick
+                            break;
+                        case RIGHT_KEY: 
+                            this.moveCaret(0,  1); 
+                            var over_a_space = (this.pattern_markup.lexical_track.charAt(this.#caret.col) === ' ');
+                            if (over_a_space){ this.moveCaret(0, 1); }
+                            break;
+                        case UP_KEY: {
+
+                            if (this.g_limited_scrolling){
+                                this.moveCaret(-1, 0); 
+                            } else {
+
+                                // note to self, if scrolling by 1, then the row highlighter needs to adjust too, but here we just 4 for simplicity.
+                                // if the caret is at the top, it is at row_window 0, and i wwant this to scroll the pattern by 4. this moves the cursor too.
+                                const row_window = this.#caret.row
+                                if (row_window === 0){
+                                    this.scroll_pattern(-4);
+                                    this.moveCaret(4, 0);
+                                }else{
+                                    this.moveCaret(-1, 0); 
+                                }
+                            }    
+                            break;
+                        }
+                        case DOWN_KEY: {
+                            this.moveCaret(1, 0); 
+
+                            if (!this.g_limited_scrolling){
+                                // if the caret is beyond visible range now, also shift the pattern and deshift the caret. 
+                                const row_window = this.#caret.row
+                                if (row_window > (this.num_visible_rows - 4)){
+                                    this.scroll_pattern(4);
+                                    this.moveCaret(-4, 0); 
+                                }
+                            }
+                            break;
+                        }
+                        default: return;
+                    }
+                }
+            }
+
+            this.pattern_input_handler(USER_KEY, this.#caret, this.pattern_markup, this.faux_pattern);
+
+            // we can restrict this to redraw iff there are updates, but for now this is convenient.
+            this.gfx_refresh_and_write_buffers_and_dispatch({send_back: false, write_buffers: false, origin: "end of key_handler"}); // just refresh.
+        }
+    }
+
+    /*  ------------- UI Drawing -------------------- */
+
+
+    get_text_width_and_height(){
+        var gfx = this.mgraphics;
+        var w = gfx.size[0];
+        var h = gfx.size[1];
+
+        gfx.set_font_size(ztrk_get_font_size());   //this.settings_font_size);
+        gfx.select_font_face(...ztrk_get_font_family());  //"Consolas", "normal", "normal");
+        this.charwidth = gfx.text_measure('_')[0];
+        
+        var tx_wh = gfx.text_measure('000 ' + this.pattern_markup.lexical_track);  // returns width and height
+        this.text_w = tx_wh[0];
+        this.text_h = tx_wh[1];
+    }
+
+
+    draw_caret(){
+
+        const [offset_x, offset_y] = this.caret_to_location();
+        this.mgraphics.set_source_rgba(...this.theme_colors.caret_color);
+        this.mgraphics.rectangle(offset_x, offset_y - (0.9 * this.charheight), this.charwidth, this.charheight);
+        this.mgraphics.fill();
+
+    }
+
+    draw_selection(){
+
+        var selection = this.getSelectionRect();
+        if (!this.#started_selection_mode && !selection){ return; }
+        // post('selection:', selection.top, selection.bottom, selection.left, selection.right, '\n');
+
+        const [cx, cy] = this.corner_to_location(selection.left, selection.top);
+        var rect_width = Math.abs((selection.right - selection.left)) * this.charwidth;
+        var rect_height = Math.abs(selection.top - selection.bottom-1) * this.charheight;
+        this.mgraphics.set_source_rgba(...this.theme_colors.selection_rect_color); 
+        this.mgraphics.rectangle(cx, cy-(this.charheight * 0.9), rect_width + this.charwidth, rect_height);
+        this.mgraphics.stroke();
+
+    }
+
+    draw_highlighted_lines(every_nth, sig = 4){
+
+        const hlit1 = this.theme_colors.row_highlight_color;
+        const hlit2 = this.theme_colors.row_highlight_color2;
+
+        const step = Math.max(every_nth, 1);
+        const group = Math.max(step * sig, 1);
+
+        for (let i = 0; i < this.pattern_markup.length; i++){
+
+            const logical_row = i + this.pattern_row_shift;
+
+            // negative-safe modulo
+            const mod_step = ((logical_row % step) + step) % step;
+            const mod_group = ((logical_row % group) + group) % group;
+
+            if (mod_step !== 0){
+                continue;
+            }
+
+            const tick_y = this.start_y + (i * this.settings_font_size) - (0.75 * this.text_h);
+            const color = (mod_group === 0) ? hlit2 : hlit1;
+
+            this.set_rgb(this.asRGB(...color), 1.3);
+            this.mgraphics.rectangle(this.start_x, tick_y, this.text_w, this.settings_font_size);
+            this.mgraphics.fill();
+        }
+    }
+
+
+    draw_edit_mode_indicator(h){
+
+        if (this.#g_in_edit_mode){
+            this.mgraphics.set_source_rgba(...this.theme_colors.edit_indicator_color);
+            this.mgraphics.rectangle(0, 0, 5, this.start_y - this.text_h);
+            this.mgraphics.fill();        
+        }
+    }
+
+    draw_command_background(){
+        /*
+        draws rectangles under the command part of the ffxxyy parameter tracks/columns
+        This is not essential but adds UI contrast.
+
+        restore this if i broke it.
+        */
+        var cw = this.charwidth;  //alias
+
+        // var param_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bffxxyy\b/g);
+        const param_indices = this.get_fx_columns(); // cached version :)
+        var xx_start = this.start_x + (4 * cw); // where to start from
+        var rect_length = this.charheight * this.pattern_markup.length;
+        var rect_y_start = (this.start_y - (0.9 * this.charheight));
+
+        this.mgraphics.set_source_rgba(...this.theme_colors.fx_bg_color);
+        for (const idx in param_indices){
+            this.mgraphics.rectangle(xx_start + (param_indices[idx] * cw), rect_y_start, (cw * 2), rect_length);
+        }
+        this.mgraphics.fill();
+    }
+
+    draw_command_overlay(){
+        /*
+        if the ff column of the ffxxyy track has a value other than two dots (..) 
+        this draws the cmd value using a different colour for UI contrast. 
+        */
+        // var param_indices = find_regexed_indices(this.pattern_markup.lexical_track, /\bffxxyy\b/g);
+        const param_indices = this.get_fx_columns();
+        var xx_start = this.start_x + (4 * this.charwidth); // where to start from
+        for (const idx in param_indices){
+
+            var start_idx = param_indices[idx];
+            this.mgraphics.set_source_rgba(...this.theme_colors.fx_fg_color);
+            const tx = xx_start + (start_idx * this.charwidth);
+            for (var pidx = 0; pidx < this.pattern_markup.length; pidx++){
+                // var tx = xx_start + (start_idx * this.charwidth);
+
+                // this makes it possible to enter data when the pattern is row-shifted.
+                var shifted_pidx = getRotatedIndex(this, pidx);
+
+                var command = this.faux_pattern[shifted_pidx].slice(start_idx, start_idx+2);
+                if (command !== '..'){
+                    this.mgraphics.move_to(tx, this.start_y + (pidx * this.settings_font_size));
+                    this.mgraphics.show_text(command);
+                }
+            }
+        }
+    }
+
+    draw_tick_position(){
+
+        function findLargestBeforeX(x, mlist, length) {
+            /*
+                converts global tick to local tick for this pattern
+            */
+            let best = null;
+            for (const value of mlist) {
+                if (value < x && (best === null || value > best)) { best = value; }
+            }
+
+            if (best === null) return null;
+            const diff = x - best;
+            return diff > length ? null : diff;
+        }
+
+        var gfx = this.mgraphics;
+
+        var tick_idx = this.g_pattern_playhead;
+        tick_idx = findLargestBeforeX(tick_idx, this.pattern_starts_at_ticks, this.pattern_markup.length);
+        /* 
+        if (!in_playing_ranges(ranges, tick_idx)){
+            return;
+        }
+        */
+        tick_idx = getRotatedIndex(this, tick_idx); 
+        var tick_y = this.start_y + (tick_idx * this.settings_font_size) - (0.75 * this.text_h);
+        gfx.set_source_rgba(...this.theme_colors.tick_index_color);
+        gfx.rectangle(this.start_x, tick_y, this.text_w, this.settings_font_size);
+        gfx.fill();
+    }
+
+    draw_pattern_data(){
+        var gfx = this.mgraphics;
+        gfx.set_source_rgba(...this.theme_colors.data_color);
+
+        // this is lazy.. i know.  maybe just do this one, if the pattern size changes.
+        const index_list = [...Array(this.pattern_markup.length).keys()];
+        
+        // maybe make a adjunct rotated_index_list to avoid recomputing this too.
+        const rotated_index_list = rotate(index_list, this.pattern_row_shift);
+
+        for (const idx in this.faux_pattern){
+
+            gfx.set_source_rgba(...this.theme_colors.data_color);
+            var idxx = rotated_index_list[idx];
+            gfx.move_to(this.start_x, this.start_y + (idx * this.settings_font_size));
+            var tick_row = fmt(idxx);
+            var pattern_row = this.faux_pattern[idxx];
+
+            // tick
+            var [cR, cG, cB, cA] = this.theme_colors.data_color;
+            var _d = (idxx % 4 === 0) ? 1.3 : 1.0;
+            gfx.set_source_rgb(cR/_d, cG/_d, cB/_d);
+            gfx.show_text(tick_row);
+
+            // data
+            gfx.set_source_rgba(...this.theme_colors.data_color);
+            if (this.dot_bars) {
+                gfx.show_text(pattern_row.replaceAll(".", " "));
+                gfx.set_source_rgba(cR, cG, cB, 0.25);
+                const x0 = this.start_x + tick_row.length * this.charwidth;
+                const by = this.start_y + idx * this.settings_font_size - this.settings_font_size * 0.3;
+                for (let i = 0; i < pattern_row.length; i++) {
+                    if (pattern_row[i] === ".") gfx.rectangle(x0 + i * this.charwidth + 1, by, this.charwidth - 2, 1.5);
+                }
+                gfx.fill();
+            } else {
+                gfx.show_text(pattern_row);
+            }
+
+            // 000 marker.
+            if (idxx === 0){
+                gfx.set_source_rgba(...this.theme_colors.divider_gfx_color);
+                gfx.move_to(this.start_x-2*this.charwidth, this.start_y + (idx * this.settings_font_size));
+                gfx.show_text("▼");
+            }
+        }
+    }
+
+    dark_background(){
+        var gfx = this.mgraphics;
+        var [w, h] = gfx.size;
+        // gfx.set_source_rgba(0.1, 0.2, 0.4, 1);  // this.ui_bg_color
+        gfx.set_source_rgba(...this.theme_colors.ui_bg_color);
+        gfx.rectangle(0, 0, w, h);
+        gfx.fill();
+    }
+
+    draw_track_descriptor(){
+
+        // draw at bottom
+        var gfx = this.mgraphics;
+        var [w, h] = gfx.size;
+
+        // this.set_rgb({r: 0.2, g: 0.3, b: 0.2}, 2.3); // this.status_bg_color
+        this.set_rgb(this.asRGB(...this.theme_colors.status_bg_color), 2.3);
+        gfx.rectangle(0, h-this.charheight, w, this.charheight);
+        gfx.fill();
+
+        var channel_idx = this.get_channel_at_caret();
+        const caret_string = '[' + this.#caret.row + ', ' + this.#caret.col + ']';
+
+        var idx = this.wheres_the_caret();
+        if (idx[0] >= 0) {
+
+            this.set_rgb(this.asRGB(...this.theme_colors.status_text_color), 1.3);
+            var locator_width = this.mgraphics.text_measure(caret_string + '  ')[0];
+            var current_descriptor = this.pattern_markup.descriptors.track[idx[1]][1];
+            gfx.move_to(locator_width, h - (0.25 * this.charheight));
+            
+            // descriptors can contain a pipe symbol, used for extra info
+            var [descriptor_head, descriptor_tail] = splitAtFirstPipe(current_descriptor);
+            gfx.show_text(descriptor_head);
+
+            gfx.move_to(0 + this.charwidth, h - (0.25 * this.charheight));
+            gfx.show_text(caret_string);
+            
+            var current_channel = "⌇ " + channel_idx + " |";
+            var current_octave = " Ξ " + this.#g_pattern_octave + " | ";
+            var version_identifier = current_channel + current_octave + this.#g_tracker_version;
+            var identifier_width = this.mgraphics.text_measure(version_identifier + ' ')[0];
+
+            // do we have enough space to show this in the statusbar?
+            var descriptor_width = this.mgraphics.text_measure(descriptor_head)[0];
+            var sum_width = (identifier_width + locator_width + descriptor_width);
+            // post(identifier_width, locator_width, descriptor_width, '=', sum_width);
+            if (w < sum_width) return;
+
+            gfx.move_to(w - identifier_width, h - (0.25 * this.charheight));
+            gfx.show_text(version_identifier);
+        }
+    }
+
+    draw_scrollbars(){
+
+        // these are not interactive, and aren't scaling correctly.
+        // LOL. i'll figure this out at some point.
+        // this will be a todo at a later date.
+
+        var gfx = this.mgraphics;
+        var [w, h] = gfx.size;
+
+        var data_width = this.start_x + this.text_w;
+        if (w < data_width){
+
+            var hidden_portion = (w / data_width) * w;
+            this.set_rgb(this.asRGB(...this.theme_colors.scrollbar_bg_color), 1.0);
+            gfx.rectangle(this.start_x, 0, w, 10);
+            gfx.fill();
+            
+            var wdim = hidden_portion - this.start_x;
+            if (wdim > 0){
+                this.set_rgb(this.asRGB(...this.theme_colors.scrollbar_fg_color), 1.0);
+                gfx.rectangle(this.start_x, 0, wdim, 10);
+                gfx.fill();
+            }
+        }
+
+        var data_height = this.start_y + ((this.pattern_markup.length + 0.2) * this.charheight);
+        if (h < data_height ){
+
+            var hidden_height_portion = ((h - this.charheight - this.start_y) / data_height) * h;
+            this.set_rgb(this.asRGB(...this.theme_colors.scrollbar_bg_color), 1.0);
+            gfx.rectangle(0, this.start_y, 10, (h - this.start_y) - this.charheight);
+            gfx.fill();
+
+            var hdim = hidden_height_portion - this.charheight;
+            if (hdim > 0){
+                this.set_rgb(this.asRGB(...this.theme_colors.scrollbar_fg_color), 1.0);  // this.scrollbar_fg_color
+                gfx.rectangle(0, (this.start_y - this.charheight), 10, hdim);
+                gfx.fill();
+            }
+        }
+
+    }
+
+    draw_toprow(){
+        // toprow is a visual indicator to show which parameters are grouped.
+        // topo group names? or just ID. there will always be minimum 1 charwidth space for an ID.
+        // I didn't intend this code to be so terse, but it worked first time and i 
+        // havent been able to break it.
+        var gfx = this.mgraphics;
+        var [w, h] = gfx.size;
+
+        gfx.set_source_rgba(this.theme_colors.divider_gfx_color);
+        gfx.move_to(this.start_x, this.start_y + (-1 * this.settings_font_size));
+
+        var midline = "═";
+        var divider = "╤";
+
+        var top_row_chars = [];
+        top_row_chars.push('   ');
+
+        let splitter_start_xlist = [];
+        var current_group = 0;
+        for (var i = 0; i < Object.keys(this.pattern_markup.descriptors.track).length; i++){
+            var element = this.pattern_markup.descriptors.track[i];
+            var group = element[2];
+            var vpffset = 1;
+            if (group !== current_group){
+                top_row_chars.push(divider);
+                current_group = group;
+                vpffset = 0;
+                splitter_start_xlist.push(top_row_chars.length);
+            }
+
+            // for (var j = 0; j < (element[0].length + vpffset); j++){
+            //     top_row_chars.push(midline);
+            // }
+            top_row_chars.push(...midline.repeat(element[0].length + vpffset).split(''));
+        }
+        top_row_chars.push('╕');
+        top_row_chars[1] = '╒';
+
+        var final_top_row_dividers = top_row_chars.join('');
+ 
+        /*    if you wish to display a small ID in the middle of the ====  then here's some code to choke on a little.
+        var find_group_indices = s => [...s.matchAll(/═+/g)].map(m => m.index + (m[0].length >> 1));
+        var group_indices = find_group_indices(final_top_row_dividers);
+        if (group_indices){
+            for (const tidx in group_indices){
+                var mid_index = group_indices[tidx];
+                final_top_row_dividers = replaceAt(final_top_row_dividers, mid_index, '0', 1);
+            }
+        }
+        */
+
+        gfx.show_text(final_top_row_dividers);
+
+        // draw a faint track splitter
+        gfx.set_source_rgba(...this.theme_colors.divider_gfx_color2);
+
+        // either the pattern is smaller than the available window height, in that case draw a line-length relative to the pattern length
+        // if the patternlength(px) exceeds window length, then draw to statusbar.
+        const line_length = Math.min(h - this.charheight, (this.pattern_markup.length + 2) * this.charheight);
+
+        for (const [idx, count] of splitter_start_xlist.entries()){
+            let splitstart = count + 6;
+            gfx.move_to(splitstart * this.charwidth, this.start_y + (-1 * this.settings_font_size));
+            gfx.line_to(splitstart * this.charwidth, line_length);
+            gfx.stroke();
+        }
+    }
+
+    draw_splash(){
+    
+        var gfx = this.mgraphics;
+        var [w, h] = gfx.size;
+        // gfx.set_source_rgba(0.1, 0.2, 0.4, 1);  // this.ui_bg_color
+        gfx.set_source_rgba(...this.theme_colors.ui_bg_color);
+        gfx.rectangle(0, 0, w, h);
+        gfx.fill();
+
+        // status bar
+        this.set_rgb(this.asRGB(...this.theme_colors.status_bg_color), 2.3);
+        gfx.rectangle(0, h-this.charheight, w, this.charheight);
+        gfx.fill();
+
+        // var conditions = [
+        //    {path: "M20,0 L20, 60", stroke: "red", stroke_width: "7", fill: "none"},
+        //    {path: "M80,0 L80, 60", stroke: "white", stroke_width: "3", fill: "none", translate: "translate(0,120)"},
+        // ];
+        // var mstr = generate_svg(conditions);
+        // gfx.svg_render(mstr);
+
+        // central message
+        this.set_rgb(this.asRGB(...this.theme_colors.data_color), 1.3);
+        var load_message = "ZTRK loaded: Waiting for patterns..";
+        var load_width = gfx.text_measure(load_message)[0];
+        gfx.move_to(((w/2.0) - load_width/2), h/2);
+        gfx.show_text(load_message);
+
+        // bottom right
+        this.set_rgb(this.asRGB(...this.theme_colors.status_text_color), 1.3);
+        var version_identifier = this.#g_tracker_version;
+        var identifier_width = gfx.text_measure(version_identifier + ' ')[0];
+        gfx.move_to(w - identifier_width, h - (0.25 * this.charheight));
+        gfx.show_text(version_identifier);
+    }
+
+    draw_pattern_information(){
+        var gfx = this.mgraphics;
+        var [w, h] = gfx.size;
+
+        let mu = this.pattern_markup;
+        var pattern_properties = `${mu.pattern_name} / ${mu.track_name} / ${mu.length}`;
+        var str_width = gfx.text_measure(pattern_properties)[0];
+
+        this.set_rgb(this.asRGB(...this.theme_colors.pattern_info_bg_color), 2.3);
+        gfx.rectangle(w - str_width - 5, 0, str_width, this.charheight);
+
+        gfx.fill();
+
+        this.set_rgb(this.asRGB(...this.theme_colors.status_text_color), 1.3);
+        gfx.move_to(w - (str_width + 10), this.charheight * 0.9);
+        gfx.show_text(pattern_properties);
+    }
+
+    calculate_num_visible_ticks(){
+        let gfx = this.mgraphics;
+        let [w, h] = gfx.size;
+
+        // .. a better calculation may be needed.
+        let drawable_Y = h - (this.charheight + this.start_y + this.charheight);
+        this.num_visible_rows = Math.floor(drawable_Y / this.charheight) + 2;
+        // post(this.num_visible_rows);
+    }
+
+    paint(){
+        /*
+        when not in edit mode, this could do some pop/push, rather than performing all draw commands..
+        */
+
+        this.get_text_width_and_height();
+
+        if (this.#received_first_pattern === false){
+            this.draw_splash(); return;
+        }
+
+        this.dark_background();
+        this.draw_highlighted_lines(4);
+        this.draw_tick_position();
+        this.draw_pattern_information();
+        this.draw_command_background();
+        this.draw_caret();
+        this.draw_pattern_data();
+        this.draw_command_overlay();  // if this is slowing stuff down, comment it out.
+        this.draw_edit_mode_indicator();
+        this.draw_selection();
+        this.draw_track_descriptor();
+        this.draw_scrollbars();
+        this.draw_toprow();
+
+        this.calculate_num_visible_ticks();  // for cursor driven scrol limits.
+
+    }
+
+    /* -------- Mouse Handling ------------ */
+
+    onclick(x, y, button){
+        this.#g_Mouse = [x, y];
+        if (this.#g_in_edit_mode){
+            this.find_cell_under_cursor(x, y);
+            this.pass_column_info_to_outlet2(); // or trigger a non opp moveCaret ? .. probably more sane.
+        }
+        this.mgraphics.redraw();
+        // post(button);
+    }
+
+    ondrag(x, y, button){ 
+        post(button);
+        return; 
+    }
+    onidle(x, y, button, mod1, shift, caps, opt, mod2) { this.#g_mouse_on_rect = true; }
+    onidleout(x, y, button, mod1, shift, caps, opt, mod2) { this.#g_mouse_on_rect = false; }
+
+};

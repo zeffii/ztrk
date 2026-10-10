@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pattern editor</title>
+<style>
+:root{--bg:#f3f1ec;--panel:#fbfaf7;--text:#2b2b2b;--dim:#8d8a82;--accent:#c97d00;--line:#e2ded5;--beat:#f1eee7;--bar:#e8e3d6;--cur:#ffd98a;--sel:#ffecc2;--play:#d5e8fb;--empty:#b9b5ab;--spec:#b3402a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161616;--panel:#1f1f1f;--text:#d6d3cc;--dim:#77746c;--accent:#ffad32;--line:#2c2c2c;--beat:#242424;--bar:#2d2d2d;--cur:#6b4a10;--sel:#3a2e14;--play:#173047;--empty:#4a4843;--spec:#ff7a5c}}
+:root[data-theme="dark"]{--bg:#161616;--panel:#1f1f1f;--text:#d6d3cc;--dim:#77746c;--accent:#ffad32;--line:#2c2c2c;--beat:#242424;--bar:#2d2d2d;--cur:#6b4a10;--sel:#3a2e14;--play:#173047;--empty:#4a4843;--spec:#ff7a5c}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--text);font:13px/20px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+#app{max-width:980px;margin:0 auto;padding:12px}
+#hdr{display:flex;flex-wrap:wrap;gap:2px 18px;padding:6px 10px;background:var(--panel);border:1px solid var(--line);border-bottom:0;border-radius:6px 6px 0 0}
+#hdr b{color:var(--accent);font-weight:600}
+#wrap{max-height:68vh;overflow:auto;background:var(--panel);border:1px solid var(--line);outline:none;border-radius:0 0 6px 6px}
+#wrap:focus-visible{border-color:var(--accent)}
+table{border-collapse:separate;border-spacing:0;white-space:pre}
+th{position:sticky;z-index:2;background:var(--panel);font-weight:normal;color:var(--dim);text-align:center;padding:0 9px;border-bottom:1px solid var(--line)}
+tr.g th{top:0;color:var(--accent);text-align:left}
+tr.l th{top:20px}
+td{padding:0 9px;text-align:center;scroll-margin-top:44px;cursor:default}
+td.rn{color:var(--dim);text-align:right}
+tr.beat td{background:var(--beat)}
+tr.bar td{background:var(--bar)}
+tr.play td{background:var(--play)}
+td.gs,th.gs{border-left:1px solid var(--line)}
+td.e{color:var(--empty)}
+td.x{color:var(--spec)}
+#wrap td.sel{background:var(--sel)}
+#wrap td.cur{background:var(--cur);outline:1px solid var(--accent);outline-offset:-1px}
+u{text-decoration:underline;text-decoration-color:var(--accent)}
+#help{margin-top:10px;color:var(--dim);font-size:12px;line-height:18px}
+#help kbd{font:inherit;color:var(--text)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="hdr"></div>
+  <div id="wrap" tabindex="0"><table id="tbl"></table></div>
+  <div id="help">
+    <kbd>arrows</kbd>/<kbd>Tab</kbd> move &middot; <kbd>z s x d c v g b h n j m</kbd> and <kbd>q 2 w 3 e r 5 t 6 y 7 u i</kbd> play notes (<kbd>F2</kbd>&ndash;<kbd>F8</kbd> octave) &middot; <kbd>1</kbd> = ^^^ &middot; <kbd>`</kbd> = === &middot; hex digits fill param cells &middot; <kbd>.</kbd>/<kbd>Del</kbd> clear<br>
+    <kbd>Shift+arrows</kbd> select &middot; <kbd>Ctrl+C</kbd>/<kbd>Ctrl+V</kbd> copy/paste &middot; <kbd>Ctrl+Space</kbd> write default values into this row &middot; <kbd>Space</kbd> play/stop
+  </div>
+</div>
+<script>
+// column descriptor: [token, label, group, default hex]; tokens: note, hh (2hex), hhhh (4hex)
+const COLS = [
+  ["note", "Note", 0, ""],
+  ["hh", "Saw", 1, "B3"], ["hh", "Pulse", 1, "00"], ["hh", "Sub", 1, "4D"], ["hh", "Range", 1, "80"],
+  ["hhhh", "Cutoff", 2, "9DB1"], ["hh", "Reson", 2, "4D"], ["hh", "EnvAmt", 2, "80"],
+  ["hh", "Atk", 3, "31"], ["hh", "DecT", 3, "A2"], ["hh", "Sus", 3, "99"], ["hh", "Rel", 3, "A2"],
+  ["hh", "Level", 4, "CC"],
+];
+const GROUPS = ["NOTE", "DCO", "VCF", "ENV", "VCA"];
+const W = { note: 3, hh: 2, hhhh: 4 };
+const R = 64, STEP = 1;
+const NN = ["C-", "C#", "D-", "D#", "E-", "F-", "F#", "G-", "G#", "A-", "A#", "B-"];
+const NOTE_KEYS = { z: 0, s: 1, x: 2, d: 3, c: 4, v: 5, g: 6, b: 7, h: 8, n: 9, j: 10, m: 11,
+  q: 12, "2": 13, w: 14, "3": 15, e: 16, r: 17, "5": 18, t: 19, "6": 20, y: 21, "7": 22, u: 23, i: 24 };
+
+// rows are arrays of cell strings; "" is an empty cell
+const rows = Array.from({ length: R }, () => COLS.map(() => ""));
+const seq = ["C-3", "", "E-3", "", "G-3", "", "C-4", "", "B-3", "", "G-3", "", "E-3", "", "D-3", ""];
+for (let r = 0; r < R; r += 2) rows[r][0] = seq[r % 16];
+rows[31][0] = "^^^"; rows[62][0] = "===";
+[[0, 5, "9DB1"], [16, 5, "4A20"], [32, 5, "E000"], [48, 5, "9DB1"], [0, 8, "31"], [0, 11, "A2"],
+ [8, 6, "C0"], [24, 6, "4D"], [40, 7, "B0"], [0, 12, "CC"]].forEach(([r, c, v]) => { rows[r][c] = v; });
+
+let cur = { r: 0, c: 0, sub: 0 }, anchor = null, oct = 3, play = -1, timer = null, clip = null;
+const tbl = document.getElementById("tbl"), wrap = document.getElementById("wrap"), hdr = document.getElementById("hdr");
+
+const noteName = n => `${NN[n % 12]}${Math.floor(n / 12)}`;
+const pad = tok => (tok === "note" ? "..." : ".".repeat(W[tok]));
+const gs = k => (k && COLS[k][2] !== COLS[k - 1][2] ? "gs" : "");
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+function selRect() {
+  if (!anchor) return null;
+  return { r0: Math.min(anchor.r, cur.r), r1: Math.max(anchor.r, cur.r), c0: Math.min(anchor.c, cur.c), c1: Math.max(anchor.c, cur.c) };
+}
+
+function render(scroll = true) {
+  const sr = selRect();
+  let h = '<thead><tr class="g"><th></th>';
+  for (let i = 0; i < COLS.length;) {
+    let j = i;
+    while (j < COLS.length && COLS[j][2] === COLS[i][2]) j++;
+    h += `<th colspan="${j - i}"${i ? ' class="gs"' : ""}>${GROUPS[COLS[i][2]]}</th>`;
+    i = j;
+  }
+  h += '</tr><tr class="l"><th></th>' + COLS.map((c, k) => `<th class="${gs(k)}">${c[1]}</th>`).join("") + "</tr></thead><tbody>";
+  for (let r = 0; r < R; r++) {
+    h += `<tr class="${r % 16 === 0 ? "bar" : r % 4 === 0 ? "beat" : ""}${r === play ? " play" : ""}"><td class="rn">${r.toString(16).toUpperCase().padStart(2, "0")}</td>`;
+    COLS.forEach((c, k) => {
+      const v = rows[r][k];
+      let t = v || pad(c[0]);
+      let cl = gs(k);
+      if (!v) cl += " e"; else if (v === "^^^" || v === "===") cl += " x";
+      if (sr && r >= sr.r0 && r <= sr.r1 && k >= sr.c0 && k <= sr.c1) cl += " sel";
+      if (r === cur.r && k === cur.c) {
+        cl += " cur";
+        if (c[0] !== "note") t = `${t.slice(0, cur.sub)}<u>${t[cur.sub]}</u>${t.slice(cur.sub + 1)}`;
+      }
+      h += `<td class="${cl}" data-r="${r}" data-c="${k}">${t}</td>`;
+    });
+    h += "</tr>";
+  }
+  tbl.innerHTML = `${h}</tbody>`;
+  hdr.innerHTML = `<span>Machine <b>juno06</b></span><span>Pattern <b>01 lead_a</b></span><span>${R} rows</span><span>Oct <b>${oct}</b></span><span>Step ${STEP}</span><span>${play >= 0 ? "&#9654; playing" : "&#9632; stopped"}</span>`;
+  if (scroll) {
+    const el = tbl.querySelector("td.cur");
+    if (el) el.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }
+}
+
+const step = () => { cur.r = Math.min(R - 1, cur.r + STEP); };
+
+function move(k, shift) {
+  if (shift && !anchor) anchor = { ...cur };
+  if (!shift) anchor = null;
+  if (k === "ArrowUp") cur.r = Math.max(0, cur.r - 1);
+  else if (k === "ArrowDown") cur.r = Math.min(R - 1, cur.r + 1);
+  else if (k === "ArrowLeft" || (k === "Tab" && shift)) cur.c = Math.max(0, cur.c - 1);
+  else if (k === "ArrowRight" || k === "Tab") cur.c = Math.min(COLS.length - 1, cur.c + 1);
+  else if (k === "PageUp") cur.r = Math.max(0, cur.r - 16);
+  else if (k === "PageDown") cur.r = Math.min(R - 1, cur.r + 16);
+  else if (k === "Home") cur.r = 0;
+  else if (k === "End") cur.r = R - 1;
+  cur.sub = 0;
+}
+
+function typeChar(ch) {
+  const tok = COLS[cur.c][0], row = rows[cur.r];
+  if (tok === "note") {
+    const lower = ch.toLowerCase();
+    if (ch === "1") row[cur.c] = "^^^";
+    else if (ch === "`") row[cur.c] = "===";
+    else if (lower in NOTE_KEYS) row[cur.c] = noteName(oct * 12 + NOTE_KEYS[lower]);
+    else return;
+    step();
+  } else if (/^[0-9a-f]$/i.test(ch)) {
+    const w = W[tok];
+    const s = row[cur.c] || "0".repeat(w);
+    row[cur.c] = s.slice(0, cur.sub) + ch.toUpperCase() + s.slice(cur.sub + 1);
+    if (++cur.sub >= w) { cur.sub = 0; step(); }
+  }
+}
+
+function clear() {
+  const s = selRect();
+  if (s) {
+    for (let r = s.r0; r <= s.r1; r++) for (let c = s.c0; c <= s.c1; c++) rows[r][c] = "";
+  } else {
+    rows[cur.r][cur.c] = "";
+    cur.sub = 0;
+    step();
+  }
+}
+
+function copy() {
+  const s = selRect() || { r0: cur.r, r1: cur.r, c0: cur.c, c1: cur.c };
+  clip = { c0: s.c0, cells: rows.slice(s.r0, s.r1 + 1).map(r => r.slice(s.c0, s.c1 + 1)) };
+}
+
+function paste() {
+  if (!clip) return;
+  clip.cells.forEach((row, i) => row.forEach((v, j) => {
+    const r = cur.r + i, c = cur.c + j;
+    if (r < R && c < COLS.length && COLS[c][0] === COLS[clip.c0 + j][0]) rows[r][c] = v;
+  }));
+}
+
+function togglePlay() {
+  if (timer) { clearInterval(timer); timer = null; play = -1; }
+  else { play = 0; timer = setInterval(() => { play = (play + 1) % R; render(false); }, 120); }
+}
+
+wrap.addEventListener("keydown", e => {
+  const k = e.key, ctrl = e.ctrlKey || e.metaKey;
+  let used = true;
+  if (k.startsWith("Arrow") || ["PageUp", "PageDown", "Home", "End", "Tab"].includes(k)) move(k, e.shiftKey);
+  else if (ctrl && k === " ") COLS.forEach((c, i) => { if (c[0] !== "note" && c[3]) rows[cur.r][i] = c[3]; });
+  else if (ctrl && k.toLowerCase() === "c") copy();
+  else if (ctrl && k.toLowerCase() === "v") paste();
+  else if (k === " ") togglePlay();
+  else if (k === "Escape") anchor = null;
+  else if (k === "Delete" || k === "Backspace" || k === ".") clear();
+  else if (/^F[2-8]$/.test(k)) oct = +k[1];
+  else if (!ctrl && !e.altKey && k.length === 1) typeChar(k);
+  else used = false;
+  if (used) { e.preventDefault(); render(); }
+});
+
+tbl.addEventListener("mousedown", e => {
+  const td = e.target.closest("td[data-r]");
+  if (!td) return;
+  e.preventDefault();
+  wrap.focus();
+  cur = { r: +td.dataset.r, c: +td.dataset.c, sub: 0 };
+  anchor = null;
+  render(false);
+});
+
+render();
+wrap.focus();
+</script>
+</body>
+</html>

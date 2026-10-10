@@ -1,0 +1,33 @@
+//#! subtractor
+// --- DCO ---
+Param saw(0.7);            // (type=coeff, default=0.7, scale=[0,1])
+Param pulse(0.0);          // (type=coeff, default=0.0, scale=[0,1])
+Param sub(0.3);            // (type=coeff, default=0.3, scale=[0,1])
+Param noiseLvl(0.0);       // (type=coeff, default=0.0, scale=[0,1])
+Param pwm(0.5);            // (type=coeff, default=0.5, scale=[0,1])
+Param pwmLfoDepth(0.0);    // (type=coeff, default=0.0, scale=[0,1])
+Param range(0);            // (type=semitones, default=0, scale=[-24,24])
+
+// --- HPF ---
+Param hpfCutoff(40);       // (type=hz, default=40, scale=[20,2000], log)
+
+// --- VCF ---
+Param cutoff(1200);        // (type=hz, default=1200, scale=[40,10000], log)
+Param resonance(0.3);      // (type=coeff, default=0.3, scale=[0,1])
+Param envAmount(0.0);      // (type=bipolar, default=0.0, scale=[-1,1])
+Param lfoDepth(0.0);       // (type=coeff, default=0.0, scale=[0,1])
+Param keyTrack(0.3);       // (type=coeff, default=0.3, scale=[0,1])
+
+// --- ENV (shared ADSR: drives VCF always, VCA if envMode) ---
+Param attack(0.005);       // (type=s, default=0.005, scale=[0.001,4], log)
+Param decayT(0.3);         // (type=s, default=0.3, scale=[0.001,8], log)
+Param sustain(0.6);        // (type=coeff, default=0.6, scale=[0,1])
+Param release(0.3);        // (type=s, default=0.3, scale=[0.001,8], log)
+
+// --- VCA ---
+Param level(0.8);          // (type=coeff, default=0.8, scale=[0,1])
+Param envMode(1);          // (type=bool, default=1, scale=[0,1])
+
+// --- LFO ---
+Param lfoRate(5.0);        // (type=hz, default=5.0, scale=[0.05,20], log)
+Param lfoDelay(0.0);       // (type=s, default=0.0, scale=[0,4], log)

@@ -1,0 +1,74 @@
+// Hi-hat v10 — testing multichannel Data instead of 6 separate Data objects
+
+hihatVoice(idx, exciter, delaymem, posD, pitch_hz, ratio, decay_time, dampAmt) {
+    History lp;
+
+    delay_size = dim(delaymem);
+    delay_samps = samplerate / (pitch_hz * ratio);
+
+    fb = pow(0.001, delay_samps / (decay_time * samplerate));
+
+    p = peek(posD, idx);
+
+    rp = p - delay_samps;
+    rp = rp < 0 ? rp + delay_size : rp;
+
+    // channel argument selects which of the 6 channels to read/write
+    y = peek(delaymem, rp, idx);
+    lp = y + dampAmt * (lp - y);
+    poke(delaymem, exciter + lp * fb, p, idx);
+
+    p = p + 1;
+    if (p >= delay_size) p = 0;
+    poke(posD, p, idx);
+
+    return y;
+}
+
+History trig_prev(0);
+History env(0);
+History hp1(0), hp2(0), hp3(0);
+History res1(0);
+
+Data delaymem(2048, 6);   // single multichannel Data: 2048 samples x 6 voice-channels
+Data posD(6);
+
+Param decay(0.12);
+Param brightness(0.7);
+Param amp(0.8);
+Param res_freq(4000);
+Param res_amount(0.85);
+Param pitch(2200);
+Param damp(0.35);
+
+trig = in1 > 0.5 && trig_prev <= 0.5;
+trig_prev = in1;
+
+env_coeff = pow(0.001, 1 / (decay * samplerate));
+env = trig ? 1 : env * env_coeff;
+
+n = noise() * 2 - 1;
+
+hp1 = n - brightness * hp1;
+hp2 = hp1 - brightness * hp2;
+hp3 = hp2 - brightness * hp3;
+
+res_coeff = cos(twopi * res_freq / samplerate);
+res1 = hp3 + res_amount * (res1 * res_coeff - res1 * 0);
+mixed = hp3 * 0.6 + res1 * 0.4;
+
+exciter = mixed * env;
+
+y1 = hihatVoice(0, exciter, delaymem, posD, pitch, 1.00, decay, damp);
+y2 = hihatVoice(1, exciter, delaymem, posD, pitch, 1.19, decay, damp);
+y3 = hihatVoice(2, exciter, delaymem, posD, pitch, 1.47, decay, damp);
+y4 = hihatVoice(3, exciter, delaymem, posD, pitch, 1.72, decay, damp);
+y5 = hihatVoice(4, exciter, delaymem, posD, pitch, 2.01, decay, damp);
+y6 = hihatVoice(5, exciter, delaymem, posD, pitch, 2.38, decay, damp);
+
+voices = (y1 + y2 + y3 + y4 + y5 + y6) / 6;
+
+shaped = tanh((mixed * 0.4 + voices * 0.6) * env * 3) * amp;
+
+out1 = shaped;
+out2 = shaped;

@@ -1,0 +1,81 @@
+{
+    "patcher": {
+        "fileversion": 1,
+        "appversion": {
+            "major": 9,
+            "minor": 1,
+            "revision": 5,
+            "architecture": "x64",
+            "modernui": 1
+        },
+        "classnamespace": "dsp.gen",
+        "rect": [ 84.0, 127.0, 1437.0, 1223.0 ],
+        "boxes": [
+            {
+                "box": {
+                    "code": "// Hi-hat — PWM-excited, phase-modulated Karplus-Strong resonator bank\r\n\r\nvoice(idx, exciter, pitch_hz, ratio, rate_mult, fb, damp, sh_phase, lp_state, delaymem, shimmer_rate, shimmer_depth, write_idx, delay_size) {\r\n  ph = peek(sh_phase, idx) + shimmer_rate * rate_mult / samplerate;\r\n  ph = ph - floor(ph);\r\n  poke(sh_phase, ph, idx);\r\n\r\n  delay_samps = (samplerate / (pitch_hz * ratio)) * (1 + sin(ph * twopi) * shimmer_depth);\r\n\r\n  read_pos = write_idx - delay_samps;\r\n  read_pos = read_pos - floor(read_pos / delay_size) * delay_size; // wrap into [0, delay_size)\r\n\r\n  y = peek(delaymem, read_pos);\r\n\r\n  lp_prev = peek(lp_state, idx);\r\n  lp_new = y + damp * (lp_prev - y);\r\n  poke(lp_state, lp_new, idx);\r\n\r\n  poke(delaymem, exciter + lp_new * fb, write_idx);\r\n\r\n  return y;\r\n}\r\n\r\n// --- persistent scalar state ---\r\nHistory trig_prev(0);\r\nHistory env_amp(0), burst_env(0);\r\nHistory exc_phase(0), pwm_phase(0);\r\nHistory hp(0);\r\nHistory write_idx(0);\r\n\r\n// --- persistent indexed state ---\r\nData sh_phase(6);   // shimmer LFO phase, one slot per voice\r\nData lp_state(6);   // damping lowpass state, one slot per voice\r\n\r\n// one Data object per voice's delay line — no multichannel form\r\nData delaymem0(4096);\r\nData delaymem1(4096);\r\nData delaymem2(4096);\r\nData delaymem3(4096);\r\nData delaymem4(4096);\r\nData delaymem5(4096);\r\n\r\n\r\n// --- params ---\r\nParam pitch(320);\r\nParam decay(0.35);\r\nParam damping(0.4);\r\nParam feedback(0.965);\r\nParam pwm_rate(7);\r\nParam pwm_depth(0.4);\r\nParam exc_freq(1900);\r\nParam noise_mix(0.45);\r\nParam shimmer_rate(0.6);\r\nParam shimmer_depth(0.006);\r\nParam brightness(0.55);\r\nParam amp(0.7);\r\n\r\nDELAY_SIZE = 4096;\r\n\r\n// --- trigger ---\r\ntrig = in1 > 0.5 && trig_prev <= 0.5;\r\ntrig_prev = in1;\r\n\r\nenv_coeff   = pow(0.001, 1 / (decay * samplerate));\r\nburst_coeff = pow(0.001, 1 / (0.004 * samplerate));\r\n\r\nenv_amp   = trig ? 1 : env_amp   * env_coeff;\r\nburst_env = trig ? 1 : burst_env * burst_coeff;\r\n\r\n// --- shared circular buffer write pointer ---\r\nwrite_idx = write_idx + 1;\r\nwrite_idx = write_idx % DELAY_SIZE;\r\n\r\n// --- PWM exciter ---\r\npwm_phase = pwm_phase + pwm_rate / samplerate;\r\npwm_phase = pwm_phase - floor(pwm_phase);\r\nduty = 0.5 + sin(pwm_phase * twopi) * pwm_depth * 0.5;\r\n\r\nexc_phase = exc_phase + exc_freq / samplerate;\r\nexc_phase = exc_phase - floor(exc_phase);\r\npulse = exc_phase < duty ? 1 : -1;\r\n\r\nnoise_sig = noise() * 2 - 1;\r\nexciter = (pulse * (1 - noise_mix) + noise_sig * noise_mix) * burst_env;\r\n\r\n// --- voices: add a new hat \"string\" by just adding one more call here ---\r\ny1 = voice(0, exciter, pitch, 1.0,   1.0,  feedback, damping, sh_phase, lp_state, delaymem0, shimmer_rate, shimmer_depth, write_idx, DELAY_SIZE);\r\ny2 = voice(1, exciter, pitch, 1.342, 1.31, feedback, damping, sh_phase, lp_state, delaymem1, shimmer_rate, shimmer_depth, write_idx, DELAY_SIZE);\r\ny3 = voice(2, exciter, pitch, 1.653, 0.87, feedback, damping, sh_phase, lp_state, delaymem2, shimmer_rate, shimmer_depth, write_idx, DELAY_SIZE);\r\ny4 = voice(3, exciter, pitch, 1.984, 1.62, feedback, damping, sh_phase, lp_state, delaymem3, shimmer_rate, shimmer_depth, write_idx, DELAY_SIZE);\r\n\r\nnum_voices = 4;\r\nmixed = (y1 + y2 + y3 + y4) / num_voices * env_amp;\r\n\r\n// --- mix + shape ---\r\nhp = mixed - brightness * hp;\r\nshaped = tanh(hp * 2.0) * amp;\r\n\r\nout1 = shaped;\r\nout2 = shaped;",
+                    "fontface": 0,
+                    "fontname": "<Monospaced>",
+                    "fontsize": 12.0,
+                    "id": "obj-6",
+                    "maxclass": "codebox",
+                    "numinlets": 1,
+                    "numoutlets": 2,
+                    "outlettype": [ "", "" ],
+                    "patching_rect": [ 190.0, 5.0, 1137.0, 1139.0 ]
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-5",
+                    "maxclass": "newobj",
+                    "numinlets": 1,
+                    "numoutlets": 0,
+                    "patching_rect": [ 400.0, 1156.0, 35.0, 22.0 ],
+                    "text": "out 2"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-1",
+                    "maxclass": "newobj",
+                    "numinlets": 0,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 50.0, 14.0, 28.0, 22.0 ],
+                    "text": "in 1"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-4",
+                    "maxclass": "newobj",
+                    "numinlets": 1,
+                    "numoutlets": 0,
+                    "patching_rect": [ 58.0, 1156.0, 35.0, 22.0 ],
+                    "text": "out 1"
+                }
+            }
+        ],
+        "lines": [
+            {
+                "patchline": {
+                    "destination": [ "obj-6", 0 ],
+                    "source": [ "obj-1", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-4", 0 ],
+                    "source": [ "obj-6", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-5", 0 ],
+                    "source": [ "obj-6", 1 ]
+                }
+            }
+        ]
+    }
+}

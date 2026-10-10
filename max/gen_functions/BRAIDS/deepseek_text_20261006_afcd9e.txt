@@ -1,0 +1,8 @@
+braids_pack/
+├── README.md
+├── js/
+│   ├── braids_table.js        # wavetable builder (Data → buffer~)
+│   ├── braids_ui.js           # UI state + rebuild throttle
+│   └── braids_view.js         # builds vertex + color matrices for jit.gl.mesh
+└── gen/
+    └── braids_osc.gendsp      # gen~ codebox source (paste into a gen~ object)

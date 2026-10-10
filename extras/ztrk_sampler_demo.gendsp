@@ -1,0 +1,116 @@
+// ztrk_sampler_prototype.gendsp
+// Single-voice one-shot sample player (prototype for note-cutout testing)
+//
+// Inputs (signal ins, NOT parameters):
+//   in1 = Note        (MIDI 0-127; 60 = unity pitch; 0 = note-off/rest)
+//   in2 = SampleIndex (0-10, selects one of 11 sample buffers)
+//   in3 = SampleVol   (0-1)
+//   in4 = Pan         (-1..1; only applied when the selected sample is mono)
+//   in5 = Duration    (ms; playback is cut off at this point, with an
+//                       implicit 50ms linear fadeout leading into the cutoff)
+// Outputs: stereo (out1 = L, out2 = R)
+//
+// Assumptions (easy to change, flagging for review):
+//   - buffers are named sample0..sample10 and match the patch's samplerate
+//   - retriggers (restarts playback from sample start) on ANY change in Note
+//     while Note > 0 - so two identical consecutive notes with no rest
+//     between them will NOT retrigger. Say the word if you want that instead.
+//   - stereo samples are left un-panned (pan only affects mono sources),
+//     matching how most hardware samplers behave
+//   - readBuf() below returns three values via comma syntax - if your gen
+//     version chokes on multi-return, the fallback is inlining the two
+//     peek() calls + a separate isMono flag per buffer instead
+
+Function readBuf(buf, ph) {
+    nch = channels(buf);
+    isMono = (nch == 1);
+    l = peek(buf, ph, 0);
+    r = isMono ? l : peek(buf, ph, 1);
+    return l, r, isMono;
+}
+
+Buffer buf0("sample0");
+Buffer buf1("sample1");
+Buffer buf2("sample2");
+Buffer buf3("sample3");
+Buffer buf4("sample4");
+Buffer buf5("sample5");
+Buffer buf6("sample6");
+Buffer buf7("sample7");
+Buffer buf8("sample8");
+Buffer buf9("sample9");
+Buffer buf10("sample10");
+
+History prevNoteH(0.);
+History phaseH(0.);
+History elapsedH(0.);
+
+Note = in1;
+SampleIndex = clamp(round(in2), 0, 10);
+SampleVol = in3;
+Pan = clamp(in4, -1., 1.);
+Duration = in5;
+
+// --- trigger detection: any change in Note while Note > 0 restarts phase ---
+prevNote = prevNoteH;
+noteChanged = (Note != prevNote);
+doTrigger = noteChanged * (Note > 0.);
+prevNoteH = Note;
+
+// --- playback rate from MIDI note (60 = unity / original pitch) ---
+rate = pow(2., (Note - 60.) / 12.);
+
+phase = doTrigger ? 0. : (phaseH + rate);
+phaseH = phase;
+// no explicit end-of-sample stop needed: peek() returns 0 past buffer end
+
+// elapsed real-time samples since trigger, independent of pitch/rate -
+// used for Duration cutoff + fadeout, so pitch doesn't affect timing
+elapsed = doTrigger ? 0. : (elapsedH + 1.);
+elapsedH = elapsed;
+
+durSamps = Duration * 0.001 * samplerate;
+fadeSamps = 0.05 * samplerate;
+fadeStart = durSamps - fadeSamps;
+fadeGain = clamp(1. - (elapsed - fadeStart) / fadeSamps, 0., 1.);
+
+// --- read all 11 candidate buffers, then mux the selected one ---
+l0, r0, m0 = readBuf(buf0, phase);
+l1, r1, m1 = readBuf(buf1, phase);
+l2, r2, m2 = readBuf(buf2, phase);
+l3, r3, m3 = readBuf(buf3, phase);
+l4, r4, m4 = readBuf(buf4, phase);
+l5, r5, m5 = readBuf(buf5, phase);
+l6, r6, m6 = readBuf(buf6, phase);
+l7, r7, m7 = readBuf(buf7, phase);
+l8, r8, m8 = readBuf(buf8, phase);
+l9, r9, m9 = readBuf(buf9, phase);
+l10, r10, m10 = readBuf(buf10, phase);
+
+L = 0.;
+R = 0.;
+isMono = 0;
+
+if (SampleIndex == 0)  { L = l0;  R = r0;  isMono = m0; }
+if (SampleIndex == 1)  { L = l1;  R = r1;  isMono = m1; }
+if (SampleIndex == 2)  { L = l2;  R = r2;  isMono = m2; }
+if (SampleIndex == 3)  { L = l3;  R = r3;  isMono = m3; }
+if (SampleIndex == 4)  { L = l4;  R = r4;  isMono = m4; }
+if (SampleIndex == 5)  { L = l5;  R = r5;  isMono = m5; }
+if (SampleIndex == 6)  { L = l6;  R = r6;  isMono = m6; }
+if (SampleIndex == 7)  { L = l7;  R = r7;  isMono = m7; }
+if (SampleIndex == 8)  { L = l8;  R = r8;  isMono = m8; }
+if (SampleIndex == 9)  { L = l9;  R = r9;  isMono = m9; }
+if (SampleIndex == 10) { L = l10; R = r10; isMono = m10; }
+
+// --- equal-power pan (mono sources only) ---
+// HALFPI = acos(0.);  <-- now a reserved KW.
+angle = (Pan + 1.) * 0.5 * HALFPI;
+panL = cos(angle);
+panR = sin(angle);
+
+outL = isMono ? (L * panL) : L;
+outR = isMono ? (R * panR) : R;
+
+out1 = outL * SampleVol * fadeGain;
+out2 = outR * SampleVol * fadeGain;

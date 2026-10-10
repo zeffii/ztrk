@@ -1,0 +1,17 @@
+// WMAP variant (replace the WLIN block above)
+GX = timbre * 15;      // 0..15
+GY = color  * 15;      // 0..15
+X0 = floor(GX); Y0 = floor(GY);
+XF = GX - X0;   YF = GY - Y0;
+
+// Row-major 16x16 grid: index = (row * 16 + col) * TABLE_SIZE
+idx(c, r) = (r * 16 + c) * TABLE_SIZE;
+
+A = wave(wt, Phase, idx(X0,     Y0),     idx(X0,     Y0)     + TABLE_SIZE, interp="linear");
+B = wave(wt, Phase, idx(X0 + 1, Y0),     idx(X0 + 1, Y0)     + TABLE_SIZE, interp="linear");
+C = wave(wt, Phase, idx(X0,     Y0 + 1), idx(X0,     Y0 + 1) + TABLE_SIZE, interp="linear");
+D = wave(wt, Phase, idx(X0 + 1, Y0 + 1), idx(X0 + 1, Y0 + 1) + TABLE_SIZE, interp="linear");
+
+Top    = A * (1 - XF) + B * XF;
+Bottom = C * (1 - XF) + D * XF;
+Out1   = Top * (1 - YF) + Bottom * YF;

@@ -1,0 +1,92 @@
+// Hi-hat — PWM-excited, phase-modulated Karplus-Strong resonator bank
+
+// --- persistent state ---
+History trig_prev(0);
+History env_amp(0), burst_env(0);
+History exc_phase(0), pwm_phase(0);
+History sh1(0), sh2(0), sh3(0), sh4(0); // shimmer LFO phases (one per voice)
+History lp1(0), lp2(0), lp3(0), lp4(0); // damping lowpass state per voice
+History hp(0);
+
+Delay del1(4096), del2(4096), del3(4096), del4(4096);
+
+// --- params ---
+Param pitch(320);         // Hz — base tuning of the resonator bank
+Param decay(0.35);        // seconds — overall amplitude envelope
+Param damping(0.4);       // 0-1 — feedback loop lowpass (higher = darker, faster-decaying "strings")
+Param feedback(0.965);    // 0-1 — resonator feedback gain; push toward 1 for open-hat-like ring
+Param pwm_rate(7);        // Hz — LFO modulating the exciter's duty cycle
+Param pwm_depth(0.4);     // 0-1 — depth of duty-cycle wobble
+Param exc_freq(1900);     // Hz — exciter pulse fundamental
+Param noise_mix(0.45);    // 0-1 — blend of noise vs pulse in the exciter
+Param shimmer_rate(0.6);  // Hz — per-voice phase-mod shimmer LFO rate
+Param shimmer_depth(0.006); // fraction of delay length modulated (chorus/beating amount)
+Param brightness(0.55);   // 0-1 — final highpass amount
+Param amp(0.7);
+
+// inharmonic ratio set — loosely inspired by classic multi-oscillator analog hihats
+r1 = 1.0;
+r2 = 1.342;
+r3 = 1.653;
+r4 = 1.984;
+
+// --- trigger ---
+trig = in1 > 0.5 && trig_prev <= 0.5;
+trig_prev = in1;
+
+env_coeff   = pow(0.001, 1 / (decay * samplerate));
+burst_coeff = pow(0.001, 1 / (0.004 * samplerate)); // ~4ms exciter burst
+
+env_amp   = trig ? 1 : env_amp   * env_coeff;
+burst_env = trig ? 1 : burst_env * burst_coeff;
+
+// --- PWM exciter ---
+pwm_phase = pwm_phase + pwm_rate / samplerate;
+pwm_phase = pwm_phase - floor(pwm_phase);
+duty = 0.5 + sin(pwm_phase * twopi) * pwm_depth * 0.5;
+
+exc_phase = exc_phase + exc_freq / samplerate;
+exc_phase = exc_phase - floor(exc_phase);
+pulse = exc_phase < duty ? 1 : -1;
+
+noise_sig = noise() * 2 - 1;
+exciter = (pulse * (1 - noise_mix) + noise_sig * noise_mix) * burst_env;
+
+// --- shimmer LFOs (phase-mod each voice's effective delay length) ---
+sh1 = sh1 + shimmer_rate / samplerate;       sh1 = sh1 - floor(sh1);
+sh2 = sh2 + shimmer_rate * 1.31 / samplerate; sh2 = sh2 - floor(sh2);
+sh3 = sh3 + shimmer_rate * 0.87 / samplerate; sh3 = sh3 - floor(sh3);
+sh4 = sh4 + shimmer_rate * 1.62 / samplerate; sh4 = sh4 - floor(sh4);
+
+// --- voice 1 ---
+len1 = (samplerate / (pitch * r1)) * (1 + sin(sh1 * twopi) * shimmer_depth);
+y1 = del1.read(len1);
+lp1 = y1 + damping * (lp1 - y1);
+del1.write(exciter + lp1 * feedback);
+
+// --- voice 2 ---
+len2 = (samplerate / (pitch * r2)) * (1 + sin(sh2 * twopi) * shimmer_depth);
+y2 = del2.read(len2);
+lp2 = y2 + damping * (lp2 - y2);
+del2.write(exciter + lp2 * feedback);
+
+// --- voice 3 ---
+len3 = (samplerate / (pitch * r3)) * (1 + sin(sh3 * twopi) * shimmer_depth);
+y3 = del3.read(len3);
+lp3 = y3 + damping * (lp3 - y3);
+del3.write(exciter + lp3 * feedback);
+
+// --- voice 4 ---
+len4 = (samplerate / (pitch * r4)) * (1 + sin(sh4 * twopi) * shimmer_depth);
+y4 = del4.read(len4);
+lp4 = y4 + damping * (lp4 - y4);
+del4.write(exciter + lp4 * feedback);
+
+// --- mix + shape ---
+mixed = (y1 + y2 + y3 + y4) * 0.25 * env_amp;
+
+hp = mixed - brightness * hp;   // one-pole highpass-ish shaping, same trick as the snare
+shaped = tanh(hp * 2.0) * amp;
+
+out1 = shaped;
+out2 = shaped;

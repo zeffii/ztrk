@@ -1,0 +1,20 @@
++// hex readout of the normalised position scaled to the full n-digit range (2 -> 00..FF, 4 -> 0000..FFFF)
++const fmtHex = (norm, digits) =>
++  Math.round(norm * (16 ** digits - 1)).toString(16).toUpperCase().padStart(digits, "0");
+...
+ class Dial extends Widget {
+...
++  // display only; the value sent out is always the real range
++  get readout() {
++    return this.spec.hex
++      ? fmtHex(this.norm, this.spec.hex)
++      : fmtValue(this.value, this.isInt, this.spec.unit);
++  }
++
+   get hover() {
+-    return this.spec.hover ?? `${this.label}: ${fmtValue(this.value, this.isInt, this.spec.unit)}`;
++    return this.spec.hover ?? `${this.label}: ${this.readout}`;
+   }
+...
+-    const str = showVal ? fmtValue(this.value, this.isInt, this.spec.unit) : this.label;
++    const str = showVal ? this.readout : this.label;

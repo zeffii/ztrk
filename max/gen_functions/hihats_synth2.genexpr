@@ -1,0 +1,102 @@
+// Hi-hat — PWM-excited, phase-modulated Karplus-Strong resonator bank
+
+// --- persistent scalar state ---
+History trig_prev(0);
+History env_amp(0), burst_env(0);
+History exc_phase(0), pwm_phase(0);
+History hp(0);
+History write_idx(0);
+
+// --- persistent indexed state (per-voice) ---
+Data sh_phase(6);       // shimmer LFO phase per voice
+Data lp_state(6);       // damping lowpass state per voice
+Data delaymem(4096, 6); // delay memory: 4096 samples x 6 voice-channels
+
+// --- params ---
+Param pitch(320);
+Param decay(0.35);
+Param damping(0.4);
+Param feedback(0.965);
+Param pwm_rate(7);
+Param pwm_depth(0.4);
+Param exc_freq(1900);
+Param noise_mix(0.45);
+Param shimmer_rate(0.6);
+Param shimmer_depth(0.006);
+Param brightness(0.55);
+Param amp(0.7);
+
+DELAY_SIZE = 4096;
+
+// --- trigger ---
+trig = in1 > 0.5 && trig_prev <= 0.5;
+trig_prev = in1;
+
+env_coeff   = pow(0.001, 1 / (decay * samplerate));
+burst_coeff = pow(0.001, 1 / (0.004 * samplerate));
+
+env_amp   = trig ? 1 : env_amp   * env_coeff;
+burst_env = trig ? 1 : burst_env * burst_coeff;
+
+// --- shared circular buffer write pointer ---
+write_idx = write_idx + 1;
+write_idx = write_idx % DELAY_SIZE;
+
+// --- PWM exciter ---
+pwm_phase = pwm_phase + pwm_rate / samplerate;
+pwm_phase = pwm_phase - floor(pwm_phase);
+duty = 0.5 + sin(pwm_phase * twopi) * pwm_depth * 0.5;
+
+exc_phase = exc_phase + exc_freq / samplerate;
+exc_phase = exc_phase - floor(exc_phase);
+pulse = exc_phase < duty ? 1 : -1;
+
+noise_sig = noise() * 2 - 1;
+exciter = (pulse * (1 - noise_mix) + noise_sig * noise_mix) * burst_env;
+
+// --- voice function ---
+// idx: voice slot (0..5) into sh_phase/lp_state/delaymem
+// ratio: inharmonic tuning ratio for this voice
+// rate_mult: shimmer LFO rate multiplier, so voices beat against each other
+function voice(idx, exciter, pitch_hz, ratio, rate_mult, fb, damp) {
+  ph = sh_phase.peek(idx) + shimmer_rate * rate_mult / samplerate;
+  ph = ph - floor(ph);
+  sh_phase.poke(ph, idx);
+
+  delay_samps = (samplerate / (pitch_hz * ratio)) * (1 + sin(ph * twopi) * shimmer_depth);
+
+  read_pos = write_idx - delay_samps;
+  read_pos = read_pos - floor(read_pos / DELAY_SIZE) * DELAY_SIZE; // wrap into [0, DELAY_SIZE)
+
+  i0 = floor(read_pos);
+  frac = read_pos - i0;
+  i1 = (i0 + 1) % DELAY_SIZE;
+
+  y0 = delaymem.peek(i0, idx);
+  y1 = delaymem.peek(i1, idx);
+  y = y0 + frac * (y1 - y0);
+
+  lp_prev = lp_state.peek(idx);
+  lp_new = y + damp * (lp_prev - y);
+  lp_state.poke(lp_new, idx);
+
+  delaymem.poke(exciter + lp_new * fb, write_idx, idx);
+
+  return y;
+}
+
+// --- voices: add a new hat "string" by just adding one more call here ---
+y1 = voice(0, exciter, pitch, 1.0,   1.0,  feedback, damping);
+y2 = voice(1, exciter, pitch, 1.342, 1.31, feedback, damping);
+y3 = voice(2, exciter, pitch, 1.653, 0.87, feedback, damping);
+y4 = voice(3, exciter, pitch, 1.984, 1.62, feedback, damping);
+
+num_voices = 4;
+mixed = (y1 + y2 + y3 + y4) / num_voices * env_amp;
+
+// --- mix + shape ---
+hp = mixed - brightness * hp;
+shaped = tanh(hp * 2.0) * amp;
+
+out1 = shaped;
+out2 = shaped;

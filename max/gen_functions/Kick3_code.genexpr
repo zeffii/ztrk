@@ -1,0 +1,77 @@
+// === Improved Kick Skeleton ===
+// Bezier pitch curve + Click/Noise layer
+// Inlet 1 = trigger
+
+// --- PITCH ENV ---
+Param start_freq(130);       // (type=hz, default=130, scale=[20,400])
+Param end_freq(38);          // (type=hz, default=38, scale=[20,200])
+Param pitch_time(0.22);      // (type=s, default=0.22, scale=[0.01,2], log)
+Param curve(0.65);           // (type=coeff, default=0.65, scale=[0,1])
+
+// --- AMP ENV ---
+Param amp_decay(0.42);       // (type=s, default=0.42, scale=[0.01,4], log)
+
+// --- OSCILLATOR ---
+Param wave_mix(0.35);        // (type=coeff, default=0.35, scale=[0,1])
+
+// --- CLICK / NOISE LAYER ---
+Param click_amount(0.45);    // (type=coeff, default=0.45, scale=[0,1])
+Param click_decay(0.018);    // (type=s, default=0.018, scale=[0.001,0.2], log)
+Param noise_color(0.6);      // (type=coeff, default=0.6, scale=[0,1])
+
+// --- OUTPUT ---
+Param gain(0.85);            // (type=coeff, default=0.85, scale=[0,1.5])
+
+History phase(0);
+History pitch_env(0);
+History amp_env(0);
+History click_env(0);
+History trig(0);
+History noise_state(0.12345);   // simple noise seed
+
+// --- Trigger ---
+t = in1 > 0.5 && trig <= 0.5;
+trig = in1 > 0.5;
+
+if (t) {
+    phase = 0;
+    pitch_env = 1;
+    amp_env = 1;
+    click_env = 1;
+}
+
+// 1. BEZIER-STYLE PITCH ENVELOPE
+// quadratic Bezier-like curve controlled by 'curve'
+// curve: 0=linear, 1=strong ease-out (fast start, slow end)
+p = 1 - pitch_env;                             // progress 0 → 1
+
+cp = mix(0.5, 0.15, curve); // move control pt, (higher = more pronounced fast start) 
+
+shaped = (1-p)*(1-p)*0 + 2*(1-p)*p*cp + p*p*1; // quad wave approx
+freq = mix(start_freq, end_freq, shaped);      // modify freq by shape
+pitch_env *= exp(-1.0 / (pitch_time * samplerate)); // Advance pitch envelope
+
+// 2. AMP ENV
+amp_env *= exp(-1.0 / (amp_decay * samplerate));
+
+// 3. OSCILLATOR (Sine ↔ Overtones)
+phase += freq / samplerate;
+phase -= floor(phase);
+sine = sin(phase * twopi);
+
+// overtones (faint triangle + saturation)
+tri = abs(phase * 4 - 2) - 1;
+overtones = tanh(tri * 1.7) * 0.65 + sine * 0.35;
+osc = mix(sine, overtones, wave_mix);
+
+// 4. CLICK + NOISE LAYER
+click_env *= exp(-1.0 / (click_decay * samplerate));
+noise_state = (noise_state * 1103515245 + 12345) % 4294967296;  // Simple noise
+noise = (noise_state / 2147483648.0) - 1;                       // -1 to 1
+noise = noise * mix(0.4, 1.0, noise_color);                     // noise brightness
+
+// Short pulse + noise
+click = (click_env * click_env) * 0.7 + noise * click_env * 0.5;
+click *= click_amount;
+
+out1 = (osc * amp_env + click) * gain;

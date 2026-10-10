@@ -1,0 +1,37 @@
+// braids_osc.gendsp
+// Braids-style wavetable oscillator.
+// Expects:
+//   Data param named `wt` — flat merged wavetable, 256 waves x 256 samples
+//   Param `timbre` in 0..1  — wave index (WLIN)
+//   Param `color`  in 0..1  — reserved for future WMAP / crossfade shaping
+//   Param `freq`   in Hz
+
+Param timbre(0.5);
+Param color(0.5);
+Param freq(220);
+
+Data wt;
+
+TABLE_SIZE = 256;
+
+// Phase accumulator
+Phase = wrap(Phase + freq / samplerate);
+
+// Fractional wave index from timbre
+WaveIdx = timbre * 255;
+W0 = floor(WaveIdx);
+W1 = W0 + 1;
+W1 = min(W1, 255);
+Frac = WaveIdx - W0;
+
+// Sample offsets into the merged table
+StartA = W0 * TABLE_SIZE;
+StartB = W1 * TABLE_SIZE;
+
+// Read both waves with the `wave` operator.
+// wave(<Data>, phase, start, end, interp)
+SampleA = wave(wt, Phase, StartA, StartA + TABLE_SIZE, interp="linear");
+SampleB = wave(wt, Phase, StartB, StartB + TABLE_SIZE, interp="linear");
+
+// Crossfade between adjacent waves
+Out1 = SampleA * (1 - Frac) + SampleB * Frac;

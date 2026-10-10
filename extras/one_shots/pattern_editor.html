@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pattern Editor - Vanilla</title>
+<style>
+  body {
+    margin: 0;
+    background: #1a1a1a;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: #e0e0e0;
+  }
+
+  .window {
+    width: 960px;
+    background: #2b2b2b;
+    border-radius: 10px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    overflow: hidden;
+    border: 1px solid #444;
+  }
+
+  .titlebar {
+    background: #3a3a3a;
+    padding: 8px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+  }
+
+  .titlebar .controls span {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-left: 6px;
+  }
+  .close    { background: #ff5f57; }
+  .minimize { background: #febc2e; }
+  .maximize { background: #28c840; }
+
+  .content {
+    padding: 12px;
+    background: #222;
+  }
+
+  #grid {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.45;
+    background: #1e1e1e;
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 10px 14px;
+    overflow: auto;
+    max-height: 480px;
+    white-space: pre;
+  }
+
+  .header { color: #888; }
+  .note   { color: #7fdbca; }
+  .hex    { color: #c3e88d; }
+  .cc     { color: #ffcb6b; }
+  .empty  { color: #555; }
+  .rownum { color: #666; }
+</style>
+</head>
+<body>
+
+<div class="window">
+  <div class="titlebar">
+    <div>Pattern Editor — Lane 1</div>
+    <div class="controls">
+      <span class="minimize"></span>
+      <span class="maximize"></span>
+      <span class="close"></span>
+    </div>
+  </div>
+
+  <div class="content">
+    <div id="grid"></div>
+  </div>
+</div>
+
+<script>
+// -------------------------------------------------
+// 1. Pattern data (easy to replace with your markup)
+// -------------------------------------------------
+const pattern = [
+  // each row is an array of cells matching: nnn hh hh  nnn hh hh  nnn hh hh  nnn hh hh  ccxxyy ccxxyy
+  ["C-4","80","40", "---","..","..", "E-4","70","20", "---","..","..", "01A080","......"],
+  ["---","..","..", "D#4","90","30", "---","..","..", "G-4","A0","10", "......","07C0FF"],
+  ["E-4","85","35", "---","..","..", "G-4","75","25", "---","..","..", "02B090","......"],
+  ["---","..","..", "F#4","A0","40", "---","..","..", "A-4","B0","15", "......","0A2040"],
+  ["G-4","90","50", "---","..","..", "A#4","80","30", "---","..","..", "03C0A0","......"],
+  ["---","..","..", "A-4","B0","20", "---","..","..", "C-5","C0","20", "......","0B3050"],
+  ["A#4","95","45", "---","..","..", "C-5","85","35", "---","..","..", "04D0B0","......"],
+  ["---","..","..", "C-5","C0","50", "---","..","..", "D#5","D0","25", "......","0C4060"],
+  ["C-5","A0","60", "---","..","..", "D-5","90","40", "---","..","..", "05E0C0","......"],
+  ["---","..","..", "D#5","D0","30", "---","..","..", "F-5","E0","30", "......","0D5070"],
+  ["D-5","B0","55", "---","..","..", "E-5","A0","45", "---","..","..", "06F0D0","......"],
+  ["---","..","..", "F-5","E0","40", "---","..","..", "G-5","F0","35", "......","0E6080"],
+  ["E-5","C0","50", "---","..","..", "F#5","B0","50", "---","..","..", "0700E0","......"],
+  ["---","..","..", "G-5","F0","35", "---","..","..", "A-5","80","40", "......","0F7090"],
+  ["F-5","D0","45", "---","..","..", "G#5","C0","55", "---","..","..", "0810F0","......"],
+  ["---","..","..", "A-5","80","40", "---","..","..", "C-6","90","45", "......","1080A0"]
+];
+
+// -------------------------------------------------
+// 2. Simple render function
+// -------------------------------------------------
+function renderPattern(data) {
+  const grid = document.getElementById("grid");
+  let html = "";
+
+  // Header
+  html += `<span class="header">Row  nnn  hh  hh   nnn  hh  hh   nnn  hh  hh   nnn  hh  hh   ccxxyy  ccxxyy</span>\n`;
+  html += `<span class="header">───  ───  ──  ──   ───  ──  ──   ───  ──  ──   ───  ──  ──   ──────  ──────</span>\n`;
+
+  data.forEach((row, i) => {
+    const rowNum = String(i).padStart(2, "0");
+    html += `<span class="rownum">${rowNum}</span>   `;
+
+    // 4 note columns (nnn hh hh)
+    for (let c = 0; c < 4; c++) {
+      const base = c * 3;
+      const note = row[base];
+      const h1   = row[base + 1];
+      const h2   = row[base + 2];
+
+      html += `<span class="${note === '---' ? 'empty' : 'note'}">${note.padEnd(3)}</span>  `;
+      html += `<span class="${h1 === '..' ? 'empty' : 'hex'}">${h1}</span>  `;
+      html += `<span class="${h2 === '..' ? 'empty' : 'hex'}">${h2}</span>   `;
+    }
+
+    // 2 CC columns
+    html += `<span class="${row[12] === '......' ? 'empty' : 'cc'}">${row[12]}</span>  `;
+    html += `<span class="${row[13] === '......' ? 'empty' : 'cc'}">${row[13]}</span>`;
+    html += `\n`;
+  });
+
+  grid.innerHTML = html;
+}
+
+// -------------------------------------------------
+// 3. Initial render
+// -------------------------------------------------
+renderPattern(pattern);
+</script>
+
+</body>
+</html>

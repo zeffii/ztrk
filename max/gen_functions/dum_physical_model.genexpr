@@ -1,0 +1,127 @@
+// = (YO-v3) ==================================================
+// dum — genexpr physical model of a struck membrane drum
+// (modal/Bessel-ratio membrane bank + coupled cavity resonator)
+// ============================================================
+
+// ---- Geometry ----
+Param drumRadius(0.18);    // (type=m, default=0.18, scale=[0.05,0.4])
+Param drumDepth(0.15);     // (type=m, default=0.15, scale=[0.03,0.5])
+Param hitRadius(0.09);     // (type=m, default=0.09, scale=[0,0.4]) — clamped to drumRadius internally
+
+// ---- Vellum ----
+Param vellumThickness(1.0);   // (type=coeff, default=1.0, scale=[0.2,2.0])
+Param tightness(0.6);         // (type=coeff, default=0.6, scale=[0,1])
+Param tightnessEnv(0.15);     // (type=coeff, default=0.15, scale=[0,1])
+Param inflection(0.5);        // (type=coeff, default=0.5, scale=[0,1])
+Param membraneDamp(0.35);     // (type=coeff, default=0.35, scale=[0,1])
+
+// ---- Stroke ----
+Param strokeIntensity(0.8);   // (type=coeff, default=0.8, scale=[0,1])
+Param strokeLinger(0.12);     // (type=coeff, default=0.12, scale=[0,1])
+Param strokeMaterial(0.5);    // (type=coeff, default=0.5, scale=[0,1])
+Param beaterSize(0.3);        // (type=coeff, default=0.3, scale=[0,1])
+
+// ---- Cavity ----
+Param cavityDamp(0.5);        // (type=coeff, default=0.5, scale=[0,1])
+Param coupling(0.3);          // (type=coeff, default=0.3, scale=[0,1])
+
+// ---- Global ----
+Param loudness(0.7);          // (type=coeff, default=0.7, scale=[0,1])
+
+// ---- state ----
+Data modeY1(1, 8);   // 1 sample, 8 channels — first history per mode
+Data modeY2(1, 8);   // 1 sample, 8 channels — second history per mode
+History cY1;
+History cY2;
+History envH;
+
+sr = samplerate;
+
+// strike envelope: jumps on impulse, decays over strokeLinger (contact time)
+lingerT60 = 0.01 + strokeLinger * 0.4;             // 10ms .. 410ms
+lingerCoef = exp(-6.9078 / (lingerT60 * sr));
+envIn = in1 * strokeIntensity;
+env = max(envIn, envH * lingerCoef);
+envH = env;
+
+// tension: S-curve shaping around 'inflection', plus transient bump from the strike envelope
+k = 9;
+lo = 1 / (1 + exp(k * inflection));
+hi = 1 / (1 + exp(-k * (1 - inflection)));
+raw = 1 / (1 + exp(-k * (tightness - inflection)));
+tensionShaped = (raw - lo) / (hi - lo);
+tension = clamp(tensionShaped + tightnessEnv * env * 0.5, 0.01, 1.5);
+
+// fundamental frequency from geometry + tension + mass (thickness)
+K0 = 28;   // wave-speed calibration constant
+f0 = K0 * sqrt(tension / vellumThickness) / max(drumRadius, 0.02);
+
+// strike position, normalized 0..1
+posNorm = clamp(hitRadius / max(drumRadius, 0.001), 0, 1);
+
+// strike spectral brightness: harder/smaller beater = brighter
+brightness = clamp(strokeMaterial * (1 - 0.5 * beaterSize), 0.05, 1);
+
+// damping calibration
+t60base = 2 - membraneDamp * 1.95;    // 2.0s .. 0.05s
+
+membraneOut = 0;
+
+for (i = 0; i < 8; i += 1) {
+
+	// ideal circular-membrane mode table: freq ratio, angular order m, radial order n
+	ratio, m, n = 1.0000, 0, 1;
+	if (i == 1) { ratio, m, n = 1.5933, 1, 1; }
+	if (i == 2) { ratio, m, n = 2.1355, 2, 1; }
+	if (i == 3) { ratio, m, n = 2.2954, 0, 2; }
+	if (i == 4) { ratio, m, n = 2.6531, 3, 1; }
+	if (i == 5) { ratio, m, n = 2.9173, 1, 2; }
+	if (i == 6) { ratio, m, n = 3.1558, 4, 1; }
+	if (i == 7) { ratio, m, n = 3.5001, 2, 2; }
+
+	// approximate radial mode shape -> excitation weight at strike position
+	// (r^m near center, forced to zero at the clamped rim, cos term ~ internal nodes)
+	shape = pow(posNorm, m) * (1 - posNorm) * cos((n - 1) * pi * posNorm);
+	posWeight = abs(shape);
+	posWeight = posWeight + (0.5 - posWeight) * (beaterSize * 0.5); // big beater blurs position selectivity
+
+	specGain = pow(brightness, ratio - 1);
+	modeGain = strokeIntensity * posWeight * specGain;
+
+	// frequency + damping for this mode
+	freq = min(f0 * ratio, sr * 0.45);
+	t60 = t60base / pow(ratio, 1.5);
+	r = exp(-6.9078 / (t60 * sr));
+	r = r * (1 - env * strokeLinger * 0.15);   // slight extra damping while beater is in contact
+	r = clamp(r, 0, 0.9999);
+
+	theta = 2 * pi * freq / sr;
+	y1 = peek(modeY1, 0, i);
+	y2 = peek(modeY2, 0, i);
+    y = 2 * r * cos(theta) * y1 - r * r * y2 + modeGain * in1;
+
+	poke(modeY2, y1, 0, i);
+	poke(modeY1, y,  0, i);
+
+	membraneOut = membraneOut + y;
+}
+
+membraneOut = membraneOut * 0.35;   // trim for 8-mode sum
+
+// ---- cavity resonator (shell air resonance), coupled from membrane ----
+cavFreq = min(343 / (4 * max(drumDepth, 0.02)), sr * 0.45);
+cavT60 = 1.5 - cavityDamp * 1.45;
+cavR = clamp(exp(-6.9078 / (cavT60 * sr)), 0, 0.9999);
+cavTheta = 2 * pi * cavFreq / sr;
+
+cy1 = cY1;
+cy2 = cY2;
+cy = 2 * cavR * cos(cavTheta) * cy1 - cavR * cavR * cy2 + coupling * membraneOut;
+cY2 = cy1;
+cY1 = cy;
+
+// ---- mix + output ----
+dry = membraneOut * (1 - coupling * 0.5);
+wet = cy * coupling;
+out1 = tanh((dry + wet) * loudness * 2);
+out2 = out1;

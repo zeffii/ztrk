@@ -1,0 +1,76 @@
+{
+    "patcher": {
+        "fileversion": 1,
+        "appversion": {
+            "major": 9,
+            "minor": 1,
+            "revision": 5,
+            "architecture": "x64",
+            "modernui": 1
+        },
+        "classnamespace": "dsp.gen",
+        "rect": [ 59.0, 107.0, 962.0, 1027.0 ],
+        "boxes": [
+            {
+                "box": {
+                    "code": "voice(idx, exciter, delaymem, pitch_hz, ratio, rate_mult, fb, damp, shimmer_rate, shimmer_depth, delay_size) {\r\n    History p;\r\n    History sh;\r\n    History lp;\r\n\r\n    sh = sh + shimmer_rate * rate_mult / samplerate;\r\n    if (sh > 1) sh = sh - 1;\r\n\r\n    delay_samps = (samplerate / (pitch_hz * ratio)) * (1 + sin(sh * twopi) * shimmer_depth);\r\n\r\n    rp = p - delay_samps;\r\n    rp = rp < 0 ? rp + delay_size : rp;\r\n\r\n    y = peek(delaymem, rp);\r\n    lp = y + damp * (lp - y);\r\n    poke(delaymem, exciter + lp * fb, p);\r\n\r\n    p = p + 1;\r\n    if (p >= delay_size) p = 0;\r\n\r\n    return y;\r\n}\r\n\r\nHistory trig_prev(0);\r\nHistory env_amp(0), burst_env(0);\r\nHistory exc_phase(0), pwm_phase(0);\r\nHistory hp(0);\r\n\r\nData delaymem0(4096);\r\nData delaymem1(4096);\r\nData delaymem2(4096);\r\nData delaymem3(4096);\r\n\r\nParam pitch(320);\r\nParam decay(0.35);\r\nParam damping(0.4);\r\nParam feedback(0.965);\r\nParam pwm_rate(7);\r\nParam pwm_depth(0.4);\r\nParam exc_freq(1900);\r\nParam noise_mix(0.45);\r\nParam shimmer_rate(0.6);\r\nParam shimmer_depth(0.006);\r\nParam brightness(0.55);\r\nParam amp(0.7);\r\n\r\nDELAY_SIZE = 4096;\r\n\r\ntrig = in1 > 0.5 && trig_prev <= 0.5;\r\ntrig_prev = in1;\r\n\r\nenv_coeff   = pow(0.001, 1 / (decay * samplerate));\r\nburst_coeff = pow(0.001, 1 / (0.004 * samplerate));\r\n\r\nenv_amp   = trig ? 1 : env_amp   * env_coeff;\r\nburst_env = trig ? 1 : burst_env * burst_coeff;\r\n\r\npwm_phase = pwm_phase + pwm_rate / samplerate;\r\nif (pwm_phase > 1) {pwm_phase = pwm_phase - 1;}\r\nduty = 0.5 + sin(pwm_phase * twopi) * pwm_depth * 0.5;\r\n\r\nexc_phase = exc_phase + exc_freq / samplerate;\r\nif (exc_phase > 1) {exc_phase = exc_phase - 1;}\r\npulse = exc_phase < duty ? 1 : -1;\r\n\r\nnoise_sig = noise() * 2 - 1;\r\nexciter = (pulse * (1 - noise_mix) + noise_sig * noise_mix) * burst_env;\r\n\r\ny1 = voice(0, exciter, delaymem0, pitch, 1.0,   1.0,  feedback, damping, shimmer_rate, shimmer_depth, DELAY_SIZE);\r\ny2 = voice(1, exciter, delaymem1, pitch, 1.342, 1.31, feedback, damping, shimmer_rate, shimmer_depth, DELAY_SIZE);\r\ny3 = voice(2, exciter, delaymem2, pitch, 1.653, 0.87, feedback, damping, shimmer_rate, shimmer_depth, DELAY_SIZE);\r\ny4 = voice(3, exciter, delaymem3, pitch, 1.984, 1.62, feedback, damping, shimmer_rate, shimmer_depth, DELAY_SIZE);\r\n\r\nmixed = (y1 + y2 + y3 + y4) * 0.25 * env_amp;\r\n\r\nhp = mixed - brightness * hp;\r\nshaped = tanh(hp * 2.0) * amp;\r\n\r\nout1 = shaped;\r\nout2 = shaped;",
+                    "fontface": 0,
+                    "fontname": "<Monospaced>",
+                    "fontsize": 12.0,
+                    "id": "obj-5",
+                    "maxclass": "codebox",
+                    "numinlets": 1,
+                    "numoutlets": 2,
+                    "outlettype": [ "", "" ],
+                    "patching_rect": [ 57.0, 55.0, 686.0, 695.0 ]
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-1",
+                    "maxclass": "newobj",
+                    "numinlets": 0,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 50.0, 14.0, 28.0, 22.0 ],
+                    "text": "in 1"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-2",
+                    "maxclass": "newobj",
+                    "numinlets": 0,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 305.0, 14.0, 28.0, 22.0 ],
+                    "text": "in 2"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-4",
+                    "maxclass": "newobj",
+                    "numinlets": 1,
+                    "numoutlets": 0,
+                    "patching_rect": [ 11.0, 762.0, 35.0, 22.0 ],
+                    "text": "out 1"
+                }
+            }
+        ],
+        "lines": [
+            {
+                "patchline": {
+                    "destination": [ "obj-5", 0 ],
+                    "source": [ "obj-1", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-4", 0 ],
+                    "source": [ "obj-5", 0 ]
+                }
+            }
+        ]
+    }
+}

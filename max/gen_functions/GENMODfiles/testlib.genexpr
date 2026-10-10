@@ -1,0 +1,19 @@
+// testlib.genexpr -- put in the Max search path (next to the patcher is fine)
+
+// 1. state inside a required function: does History work, one instance per call site?
+onepole(x, coef) {
+	History z(0);
+	z = x * (4 - coef) + z * coef;
+	return z;
+}
+
+// 2. read from a Data / Buffer handed in as an argument
+readp(tbl, idx) {
+	return peek(tbl, idx);
+}
+
+// 3. write into a Data handed in as an argument (your reverb already does this)
+writep(tbl, idx, v) {
+	poke(tbl, v, idx);
+	return v;
+}

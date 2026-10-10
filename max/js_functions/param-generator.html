@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Machine Param Generator</title>
+<style>
+  :root {
+    --bg: #14171a;
+    --panel: #1c2024;
+    --border: #2c3236;
+    --text: #dfe4e8;
+    --dim: #7c8790;
+    --accent: #5fb3a3;
+    --accent-dim: #3a6f65;
+    --mono: 'SF Mono', 'JetBrains Mono', Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 24px;
+  }
+  h1 {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin: 0 0 4px 0;
+    color: var(--text);
+  }
+  .sub {
+    color: var(--dim);
+    font-size: 12px;
+    margin: 0 0 18px 0;
+    line-height: 1.5;
+  }
+  .row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .col {
+    flex: 1 1 380px;
+    min-width: 300px;
+  }
+  .field-label {
+    display: block;
+    color: var(--dim);
+    font-size: 11px;
+    text-transform: none;
+    margin-bottom: 6px;
+  }
+  .name-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    align-items: center;
+  }
+  input[type="text"] {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 6px 8px;
+    border-radius: 3px;
+    width: 120px;
+  }
+  input[type="text"]:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+  textarea {
+    width: 100%;
+    height: 340px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.5;
+    padding: 12px;
+    border-radius: 4px;
+    resize: vertical;
+    white-space: pre;
+  }
+  textarea:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+  .btn {
+    background: var(--accent-dim);
+    border: 1px solid var(--accent);
+    color: #eafff9;
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .btn:hover { background: var(--accent); }
+  .btn.ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--dim);
+  }
+  .btn.ghost:hover { border-color: var(--dim); color: var(--text); }
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .status {
+    font-size: 11px;
+    color: var(--dim);
+    margin-top: 8px;
+    min-height: 14px;
+  }
+  .status.err { color: #e08585; }
+  .status.ok { color: var(--accent); }
+  .hint {
+    font-size: 11px;
+    color: var(--dim);
+    margin-top: 10px;
+    line-height: 1.6;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+  }
+  .hint code {
+    color: #b7c6cd;
+    background: #0f1214;
+    padding: 1px 4px;
+    border-radius: 2px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Machine Param Generator</h1>
+<p class="sub">Paste gendsp code containing <code style="color:#b7c6cd;background:#0f1214;padding:1px 4px;border-radius:2px;">Param</code> declarations with metadata comments. Grouping follows your <code style="color:#b7c6cd;background:#0f1214;padding:1px 4px;border-radius:2px;">// --- section ---</code> dividers.</p>
+
+<div class="row">
+  <div class="col">
+    <div class="name-row">
+      <span class="field-label" style="margin-bottom:0;">Machine key:</span>
+      <input type="text" id="machineName" value="HTX">
+    </div>
+    <span class="field-label">gendsp source</span>
+    <textarea id="input" spellcheck="false" placeholder="Param amp(0.8);            // (type=coeff, default=0.8, scale=[0,1])
+Param pitch(2200);         // (type=hz, default=2200, scale=[800,6000])
+Param brightness(0.7);     // (type=coeff, default=0.7, scale=[0,0.95])
+
+// --- resonance ---
+Param resFreq(4000);       // (type=hz, default=4000, scale=[1500,8000])
+Param resAmount(0.85);     // (type=coeff, default=0.85, scale=[0,0.9])"></textarea>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="col">
+    <div class="toolbar">
+      <span class="field-label" style="margin-bottom:0;">Output</span>
+      <button class="btn ghost" id="copyBtn">Copy</button>
+    </div>
+    <textarea id="output" spellcheck="false" readonly></textarea>
+  </div>
+</div>
+
+<div class="hint">
+  Name shown to the user is derived from the variable name (camelCase → Title Case).
+  Hex width is <code>hhhh</code> for <code>type=hz</code>, <code>hh</code> otherwise.
+  Group number increments on each <code>// ---</code> divider line found before it in the source.
+  Edit the parsed values directly in the output box if anything needs a manual tweak — it won't be re-parsed.
+</div>
+
+<script>
+function titleCase(varName) {
+  const spaced = varName
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2');
+  return spaced
+    .split(/[\s_]+/)
+    .filter(Boolean)
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+}
+
+function hexCode(type) {
+  return type === 'hz' ? 'hhhh' : 'hh';
+}
+
+function splitTopLevel(str) {
+  // Splits on commas that are NOT inside [ ] brackets, so scale=[0,1]
+  // stays intact as one segment instead of being cut in half.
+  const parts = [];
+  let depth = 0;
+  let current = '';
+  for (const ch of str) {
+    if (ch === '[') depth++;
+    if (ch === ']') depth--;
+    if (ch === ',' && depth === 0) {
+      parts.push(current);
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  if (current.trim() !== '') parts.push(current);
+  return parts;
+}
+
+function parseMetaComment(commentBody) {
+  const meta = {};
+  for (const part of splitTopLevel(commentBody)) {
+    const idx = part.indexOf('=');
+    if (idx === -1) continue;
+    const key = part.slice(0, idx).trim();
+    let value = part.slice(idx + 1).trim();
+    if (key === 'scale' && value.startsWith('[')) {
+      const nums = value.slice(1, -1).split(',').map(s => Number(s.trim())).filter(n => !Number.isNaN(n));
+      meta.scaleMin = nums[0];
+      meta.scaleMax = nums[1];
+    } else {
+      meta[key] = value;
+    }
+  }
+  return meta;
+}
+
+function parseSource(src) {
+  const lines = src.split('\n');
+  const paramRe = /Param\s+(\w+)\s*\(([^)]*)\)\s*;\s*(?:\/\/\s*\(([^)]*)\))?/;
+  const dividerRe = /^\s*\/\/\s*---/;
+
+  const params = [];
+  let group = 1;
+  let sawParamInGroup = false;
+
+  for (const line of lines) {
+    if (dividerRe.test(line)) {
+      if (sawParamInGroup) {
+        group++;
+        sawParamInGroup = false;
+      }
+      continue;
+    }
+    const m = line.match(paramRe);
+    if (!m) continue;
+
+    const varName = m[1];
+    const fallbackDefault = m[2].trim();
+    const commentBody = m[3];
+
+    if (!commentBody) {
+      params.push({ error: `No metadata comment found for Param ${varName}` });
+      continue;
+    }
+
+    const meta = parseMetaComment(commentBody);
+    if (meta.type == null || meta.default == null || meta.scaleMin == null || meta.scaleMax == null) {
+      params.push({ error: `Incomplete metadata for Param ${varName}: ${commentBody}` });
+      continue;
+    }
+
+    params.push({
+      varName,
+      displayName: titleCase(varName),
+      type: meta.type,
+      default: meta.default,
+      min: meta.scaleMin,
+      max: meta.scaleMax,
+      group,
+    });
+    sawParamInGroup = true;
+  }
+
+  return params;
+}
+
+function generate() {
+  const src = document.getElementById('input').value;
+  const machineName = document.getElementById('machineName').value.trim() || 'MACHINE';
+  const statusEl = document.getElementById('status');
+  const outEl = document.getElementById('output');
+
+  const parsed = parseSource(src);
+  const errors = parsed.filter(p => p.error);
+  const ok = parsed.filter(p => !p.error);
+
+  if (ok.length === 0) {
+    outEl.value = '';
+    statusEl.textContent = errors.length
+      ? errors.map(e => e.error).join('\n')
+      : 'No Param lines found.';
+    statusEl.className = 'status err';
+    return;
+  }
+
+  const rows = ok.map(p => {
+    const metaStr = `${p.displayName} |(t:${p.type}, d:${p.default}, s:[${p.min},${p.max}])`;
+    return `        [${JSON.stringify(hexCode(p.type))}, ${JSON.stringify(metaStr)}, ${p.group}]`;
+  });
+
+  const body = [
+    `        ['b', 'Trigger', 0], `,
+    ...rows.map((r, i) => r.trim() + (i < rows.length - 1 ? ', ' : ''))
+      .map(r => '        ' + r)
+  ].join('\n');
+
+  const output = `    "${machineName}": [\n${body}\n    ]`;
+  outEl.value = output;
+
+  if (errors.length) {
+    statusEl.textContent = `Generated ${ok.length} param(s). Skipped ${errors.length}: ` + errors.map(e => e.error).join(' | ');
+    statusEl.className = 'status err';
+  } else {
+    statusEl.textContent = `Generated ${ok.length} param(s) across ${Math.max(...ok.map(p => p.group))} group(s).`;
+    statusEl.className = 'status ok';
+  }
+}
+
+document.getElementById('input').addEventListener('input', generate);
+document.getElementById('machineName').addEventListener('input', generate);
+
+document.getElementById('copyBtn').addEventListener('click', () => {
+  const outEl = document.getElementById('output');
+  outEl.select();
+  document.execCommand('copy');
+  const btn = document.getElementById('copyBtn');
+  const original = btn.textContent;
+  btn.textContent = 'Copied';
+  setTimeout(() => { btn.textContent = original; }, 900);
+});
+
+// seed with the placeholder example on load
+document.getElementById('input').value = document.getElementById('input').getAttribute('placeholder');
+generate();
+</script>
+
+</body>
+</html>

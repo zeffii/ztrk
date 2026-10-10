@@ -1,0 +1,81 @@
+{
+    "patcher": {
+        "fileversion": 1,
+        "appversion": {
+            "major": 9,
+            "minor": 1,
+            "revision": 5,
+            "architecture": "x64",
+            "modernui": 1
+        },
+        "classnamespace": "dsp.gen",
+        "rect": [ 59.0, 107.0, 802.0, 879.0 ],
+        "boxes": [
+            {
+                "box": {
+                    "id": "obj-6",
+                    "maxclass": "newobj",
+                    "numinlets": 1,
+                    "numoutlets": 0,
+                    "patching_rect": [ 639.0, 656.0, 35.0, 22.0 ],
+                    "text": "out 2"
+                }
+            },
+            {
+                "box": {
+                    "code": "voice(exciter, delaymem, fb) {\r\n  y = peek(delaymem, 0);\r\n  poke(delaymem, exciter + y * fb, 0);\r\n  return y;\r\n}\r\n\r\nHistory env_amp(0), trig_prev(0);\r\nData delaymem0(4096);\r\n\r\ntrig = in1 > 0.5 && trig_prev <= 0.5;\r\ntrig_prev = in1;\r\n\r\nenv_coeff = pow(0.001, 1 / (0.3 * samplerate));\r\nenv_amp = trig ? 1 : env_amp * env_coeff;\r\n\r\nexciter = (noise() * 2 - 1) * env_amp;\r\n\r\ny = voice(exciter, delaymem0, 0.9);\r\n\r\nout1 = y;\r\nout2 = y;",
+                    "fontface": 0,
+                    "fontname": "<Monospaced>",
+                    "fontsize": 12.0,
+                    "id": "obj-5",
+                    "maxclass": "codebox",
+                    "numinlets": 1,
+                    "numoutlets": 2,
+                    "outlettype": [ "", "" ],
+                    "patching_rect": [ 46.0, 93.0, 608.0, 453.0 ]
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-1",
+                    "maxclass": "newobj",
+                    "numinlets": 0,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 50.0, 14.0, 28.0, 22.0 ],
+                    "text": "in 1"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-4",
+                    "maxclass": "newobj",
+                    "numinlets": 1,
+                    "numoutlets": 0,
+                    "patching_rect": [ 46.0, 656.0, 35.0, 22.0 ],
+                    "text": "out 1"
+                }
+            }
+        ],
+        "lines": [
+            {
+                "patchline": {
+                    "destination": [ "obj-5", 0 ],
+                    "source": [ "obj-1", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-4", 0 ],
+                    "source": [ "obj-5", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-6", 0 ],
+                    "source": [ "obj-5", 1 ]
+                }
+            }
+        ]
+    }
+}

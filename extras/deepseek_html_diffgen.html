@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>diff highlighter · paste & view</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      font-family: ui-monospace, 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+    }
+    body {
+      background: #0d1117;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1.5rem;
+      margin: 0;
+    }
+    .app {
+      max-width: 1100px;
+      width: 100%;
+      background: #161b22;
+      border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.7);
+      border: 1px solid #30363d;
+      padding: 1.5rem 1.5rem 1.8rem;
+    }
+    h1 {
+      font-size: 1.3rem;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      color: #f0f6fc;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid #30363d;
+      padding-bottom: 0.8rem;
+    }
+    h1 span {
+      background: #2d7d46;
+      padding: 0.1rem 0.6rem;
+      border-radius: 40px;
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: #e6edf3;
+      letter-spacing: 0.01em;
+    }
+    .paste-area {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    textarea {
+      width: 100%;
+      min-height: 140px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 1rem;
+      color: #c9d1d9;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      resize: vertical;
+      outline: none;
+      transition: border 0.15s;
+      font-family: inherit;
+    }
+    textarea:focus {
+      border-color: #58a6ff;
+      box-shadow: 0 0 0 3px rgba(88,166,255,0.15);
+    }
+    textarea::placeholder {
+      color: #6e7681;
+      font-style: italic;
+    }
+    .button-bar {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    button {
+      background: #21262d;
+      border: 1px solid #30363d;
+      color: #f0f6fc;
+      padding: 0.6rem 1.4rem;
+      border-radius: 30px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    button:hover {
+      background: #30363d;
+      border-color: #8b949e;
+    }
+    button.primary {
+      background: #238636;
+      border-color: #2ea043;
+      color: white;
+    }
+    button.primary:hover {
+      background: #2ea043;
+    }
+    button.secondary {
+      background: transparent;
+      border-color: #30363d;
+    }
+    .diff-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.6rem;
+    }
+    .diff-header h2 {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .badge {
+      font-size: 0.75rem;
+      background: #21262d;
+      padding: 0.2rem 0.7rem;
+      border-radius: 20px;
+      color: #8b949e;
+      border: 1px solid #30363d;
+    }
+    .diff-container {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      overflow: auto;
+      max-height: 460px;
+      padding: 0.25rem 0;
+      font-size: 0.85rem;
+      line-height: 1.55;
+    }
+    .diff-line {
+      display: flex;
+      white-space: pre;
+      font-family: ui-monospace, 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+      padding: 0 1rem 0 0;
+    }
+    .line-prefix {
+      flex-shrink: 0;
+      width: 2.5rem;
+      text-align: right;
+      padding-right: 1rem;
+      color: #484f58;
+      user-select: none;
+      font-size: 0.8rem;
+      border-right: 1px solid #21262d;
+      margin-right: 1rem;
+    }
+    .line-content {
+      flex: 1;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: #c9d1d9;
+    }
+    /* diff line colors */
+    .diff-line.added .line-content {
+      background: rgba(46, 160, 67, 0.15);
+      color: #aff5b4;
+    }
+    .diff-line.removed .line-content {
+      background: rgba(248, 81, 73, 0.15);
+      color: #ffb3b8;
+    }
+    .diff-line.header .line-content {
+      color: #79c0ff;
+      font-weight: 500;
+    }
+    .diff-line.meta .line-content {
+      color: #8b949e;
+    }
+    .diff-line.context .line-content {
+      color: #c9d1d9;
+    }
+    .diff-line.empty .line-content {
+      color: #484f58;
+    }
+    .diff-line.added .line-prefix {
+      color: #3fb950;
+      background: rgba(46, 160, 67, 0.1);
+    }
+    .diff-line.removed .line-prefix {
+      color: #f85149;
+      background: rgba(248, 81, 73, 0.1);
+    }
+    .diff-line.header .line-prefix {
+      color: #79c0ff;
+    }
+    .empty-state {
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      color: #6e7681;
+      font-style: italic;
+      font-size: 0.9rem;
+    }
+    .footer-note {
+      font-size: 0.75rem;
+      color: #6e7681;
+      margin-top: 1rem;
+      text-align: right;
+      border-top: 1px solid #21262d;
+      padding-top: 0.8rem;
+    }
+    .footer-note code {
+      background: #21262d;
+      padding: 0.1rem 0.4rem;
+      border-radius: 6px;
+      color: #c9d1d9;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <h1>
+    ⚡ diff highlighter
+    <span>paste & render</span>
+  </h1>
+
+  <div class="paste-area">
+    <textarea id="diffInput" placeholder="Paste your diff here…
+
+Example:
+diff --git a/hello.txt b/hello.txt
+index ce01362..94954ab 100644
+--- a/hello.txt
++++ b/hello.txt
+@@ -1 +1 @@
+-hello old
++hello new
+"></textarea>
+    <div class="button-bar">
+      <button class="primary" id="renderBtn">↓ Render diff</button>
+      <button class="secondary" id="clearBtn">Clear</button>
+      <button class="secondary" id="sampleBtn">Load sample</button>
+    </div>
+  </div>
+
+  <div class="diff-header">
+    <h2>highlighted diff</h2>
+    <div class="badge" id="lineCount">0 lines</div>
+  </div>
+
+  <div class="diff-container" id="diffOutput">
+    <div class="empty-state">— paste a diff and click render —</div>
+  </div>
+  <div class="footer-note">
+    <code>+ added</code> · <code>- removed</code> · <code>@@ hunk</code> · <code>diff --git</code>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const inputEl = document.getElementById('diffInput');
+    const outputEl = document.getElementById('diffOutput');
+    const lineCountEl = document.getElementById('lineCount');
+    const renderBtn = document.getElementById('renderBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const sampleBtn = document.getElementById('sampleBtn');
+
+    // ---- sample diff (realistic) ----
+    const SAMPLE_DIFF = `diff --git a/src/utils.js b/src/utils.js
+index 3a4b5c6..7d8e9f0 100644
+--- a/src/utils.js
++++ b/src/utils.js
+@@ -10,7 +10,9 @@ function formatName(first, last) {
+   const trimmedFirst = first.trim();
+   const trimmedLast = last.trim();
+-  return trimmedFirst + ' ' + trimmedLast;
++  const fullName = trimmedFirst + ' ' + trimmedLast;
++  // ensure proper spacing
++  return fullName.replace(/\\s+/g, ' ').trim();
+ }
+ 
+ function greet(name) {
+@@ -25,4 +27,6 @@ function greet(name) {
+   console.log(\`Hello, \${name}!\`);
+ }
+ 
+-export { formatName, greet };
++export { formatName, greet };
++
++// end of file
+`;
+
+    // ---- core render function ----
+    function renderDiff(rawText) {
+      // if nothing (or only whitespace) → show empty state
+      if (!rawText || rawText.trim() === '') {
+        outputEl.innerHTML = '<div class="empty-state">— no diff to display —</div>';
+        lineCountEl.textContent = '0 lines';
+        return;
+      }
+
+      // split into lines, preserving empty lines
+      const lines = rawText.split(/\r?\n/);
+      const fragment = document.createDocumentFragment();
+
+      // determine if we have any diff markers to potentially add a hint
+      let hasDiffMarkers = false;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        // classify line
+        let type = 'context'; // default: plain / context
+
+        // ---- classification logic ----
+        if (line.startsWith('diff --git') || line.startsWith('diff --') ||
+            line.startsWith('index ') || line.startsWith('--- ') || line.startsWith('+++ ') ||
+            line.startsWith('new file') || line.startsWith('deleted file') ||
+            line.startsWith('similarity index') || line.startsWith('rename from') ||
+            line.startsWith('rename to')) {
+          // git header / metadata lines
+          type = 'header';
+          hasDiffMarkers = true;
+        } else if (line.startsWith('@@')) {
+          // hunk header
+          type = 'header';  // treat as header (blue-ish)
+          hasDiffMarkers = true;
+        } else if (line.startsWith('+')) {
+          type = 'added';
+          hasDiffMarkers = true;
+        } else if (line.startsWith('-')) {
+          type = 'removed';
+          hasDiffMarkers = true;
+        } else if (line.startsWith('\\ No newline at end of file')) {
+          // special meta
+          type = 'meta';
+          hasDiffMarkers = true;
+        } else if (line.trim() === '') {
+          // completely empty line — context but we can mark as empty for subtle styling
+          type = 'empty';
+          // empty lines don't count as diff marker, but we keep type for styling
+        } else {
+          // regular context line (maybe starts with space, or any other)
+          // we can treat lines starting with space as explicit context, but any other is context too
+          type = 'context';
+        }
+
+        // ---- create line element ----
+        const lineDiv = document.createElement('div');
+        lineDiv.className = `diff-line ${type}`;
+
+        // line number (simple index +1)
+        const prefixSpan = document.createElement('span');
+        prefixSpan.className = 'line-prefix';
+        prefixSpan.textContent = (i + 1).toString().padStart(3, ' ');
+
+        // content span — we preserve the original line (including leading space, +, -, etc.)
+        const contentSpan = document.createElement('span');
+        contentSpan.className = 'line-content';
+        // Use textContent to avoid XSS; but we want to display leading spaces and symbols as-is.
+        // We'll replace nothing; textContent preserves exact characters.
+        contentSpan.textContent = line;
+
+        lineDiv.appendChild(prefixSpan);
+        lineDiv.appendChild(contentSpan);
+        fragment.appendChild(lineDiv);
+      }
+
+      // clear output and append new content
+      outputEl.innerHTML = '';
+      outputEl.appendChild(fragment);
+
+      // update line count
+      lineCountEl.textContent = `${lines.length} line${lines.length !== 1 ? 's' : ''}`;
+
+      // if no diff markers but we have lines, maybe gently indicate
+      if (!hasDiffMarkers && lines.length > 0 && lines.some(l => l.trim() !== '')) {
+        // but we don't want to override output, just subtle note? not needed.
+        // we can leave as is.
+      }
+    }
+
+    // ---- event listeners ----
+    renderBtn.addEventListener('click', () => {
+      renderDiff(inputEl.value);
+    });
+
+    clearBtn.addEventListener('click', () => {
+      inputEl.value = '';
+      renderDiff('');
+      inputEl.focus();
+    });
+
+    sampleBtn.addEventListener('click', () => {
+      inputEl.value = SAMPLE_DIFF;
+      renderDiff(SAMPLE_DIFF);
+      inputEl.focus();
+    });
+
+    // ---- also render on ctrl+enter (or cmd+enter) in textarea ----
+    inputEl.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        renderDiff(inputEl.value);
+      }
+    });
+
+    // ---- initialize with a friendly empty state ----
+    // (nothing rendered, but we might pre-fill the sample? No — start empty)
+    // But let's make it easy: load sample on first load? Could be nice but maybe not.
+    // I'll keep empty, but pre-fill the placeholder already shows example.
+    // For better UX, I'll auto-load sample? No — let user click.
+    // But we can render empty state already present.
+
+    // If you want the sample to appear immediately, uncomment line below:
+    // sampleBtn.click();
+    // I'll keep it empty for clarity.
+  })();
+</script>
+</body>
+</html>
